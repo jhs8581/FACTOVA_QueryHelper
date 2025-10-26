@@ -1,0 +1,1632 @@
+﻿using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using Microsoft.Win32;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.IO;
+using System.Collections.ObjectModel;
+using System.Windows.Threading;
+using OfficeOpenXml;
+using System.Text.Json;
+
+namespace FACTOVA_Palletizing_Analysis
+{
+    // SFC 모니터링 데이터 모델
+    public class SfcEquipmentInfo
+    {
+        public string IpAddress { get; set; } = string.Empty;
+        public string EquipmentId { get; set; } = string.Empty;
+        public string EquipmentName { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string BizActor { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        private AppSettings _settings;
+        private List<TnsEntry> _tnsEntries;
+        private List<QueryItem> _loadedQueries;
+        private DispatcherTimer? _queryTimer;
+        private bool _isAutoQueryRunning = false;
+        private ObservableCollection<SfcEquipmentInfo> _sfcEquipmentList;
+        private ObservableCollection<SfcEquipmentInfo> _sfcFilteredList;
+        private ObservableCollection<CheckableComboBoxItem> _statusFilterItems;
+        private ObservableCollection<CheckableComboBoxItem> _bizActorFilterItems;
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            _settings = new AppSettings();
+            _tnsEntries = new List<TnsEntry>();
+            _loadedQueries = new List<QueryItem>();
+            _sfcEquipmentList = new ObservableCollection<SfcEquipmentInfo>();
+            _sfcFilteredList = new ObservableCollection<SfcEquipmentInfo>();
+            _statusFilterItems = new ObservableCollection<CheckableComboBoxItem>();
+            _bizActorFilterItems = new ObservableCollection<CheckableComboBoxItem>();
+            
+            Loaded += MainWindow_Loaded;
+            Closing += MainWindow_Closing;
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            // 설정 로드
+            _settings = SettingsManager.LoadSettings();
+            
+            // 기본 경로 표시
+            DefaultPathTextBlock.Text = SettingsManager.GetDefaultTnsPath();
+            TnsPathTextBox.Text = _settings.TnsPath;
+
+            // Excel 파일 경로 로드
+            if (!string.IsNullOrWhiteSpace(_settings.ExcelFilePath) && File.Exists(_settings.ExcelFilePath))
+            {
+                ExcelFilePathTextBox.Text = _settings.ExcelFilePath;
+                LoadQueriesButton.IsEnabled = true;
+
+                // 시트 목록 로드
+                try
+                {
+                    var sheets = ExcelQueryReader.GetSheetNames(_settings.ExcelFilePath);
+                    SheetComboBox.ItemsSource = sheets;
+                    if (sheets.Count > 0)
+                    {
+                        SheetComboBox.SelectedIndex = 0;
+                    }
+                }
+                catch
+                {
+                    // 시트 로드 실패 무시
+                }
+            }
+
+            // SFC Excel 파일 경로 로드
+            if (!string.IsNullOrWhiteSpace(_settings.SfcExcelFilePath) && File.Exists(_settings.SfcExcelFilePath))
+            {
+                SfcExcelFilePathTextBox.Text = _settings.SfcExcelFilePath;
+                LoadSfcExcelButton.IsEnabled = true;
+            }
+
+            // SFC 계정 정보 로드
+            SfcUserIdTextBox.Text = _settings.SfcUserId;
+            SfcPasswordBox.Password = _settings.SfcPassword;
+
+            // 쿼리 타이머 간격 로드
+            QueryIntervalTextBox.Text = _settings.QueryIntervalSeconds.ToString();
+
+            // SFC 조회 날짜를 오늘로 설정
+            ConfigDatePicker.SelectedDate = DateTime.Today;
+
+            // TNS 엔트리 로드
+            LoadTnsEntries();
+
+            // SFC TNS 콤보박스 설정
+            LoadSfcTnsComboBox();
+
+            // SFC 필터 콤보박스 초기화
+            InitializeSfcFilterComboBoxes();
+
+            // SFC 데이터그리드 바인딩
+            SfcMonitorDataGrid.ItemsSource = _sfcFilteredList;
+        }
+
+        private void LoadSfcTnsComboBox()
+        {
+            if (_tnsEntries.Count > 0)
+            {
+                SfcTnsComboBox.ItemsSource = _tnsEntries.Select(t => t.Name).ToList();
+                if (_tnsEntries.Count > 0)
+                {
+                    SfcTnsComboBox.SelectedIndex = 0;
+                    // TNS가 로드되면 연결 테스트 버튼 활성화
+                    if (TestSfcConnectionButton != null)
+                    {
+                        TestSfcConnectionButton.IsEnabled = true;
+                    }
+                }
+            }
+        }
+
+        private void InitializeSfcFilterComboBoxes()
+        {
+            // 상태 필터 초기화 (ON, OFF)
+            _statusFilterItems.Add(new CheckableComboBoxItem { Text = "전체", IsChecked = true });
+            _statusFilterItems.Add(new CheckableComboBoxItem { Text = "ON", IsChecked = false });
+            _statusFilterItems.Add(new CheckableComboBoxItem { Text = "OFF", IsChecked = false });
+            FilterStatusComboBox.ItemsSource = _statusFilterItems;
+
+            // BIZACTOR 필터 초기화 (SQL, WIP, RPT)
+            _bizActorFilterItems.Add(new CheckableComboBoxItem { Text = "전체", IsChecked = true });
+            _bizActorFilterItems.Add(new CheckableComboBoxItem { Text = "SQL", IsChecked = false });
+            _bizActorFilterItems.Add(new CheckableComboBoxItem { Text = "WIP", IsChecked = false });
+            _bizActorFilterItems.Add(new CheckableComboBoxItem { Text = "RPT", IsChecked = false });
+            FilterBizActorComboBox.ItemsSource = _bizActorFilterItems;
+
+            // 콤보박스 텍스트 초기화
+            UpdateFilterComboBoxText();
+        }
+
+        private void UpdateFilterComboBoxText()
+        {
+            // 상태 필터 텍스트 업데이트
+            var checkedStatusItems = _statusFilterItems.Where(i => i.IsChecked && i.Text != "전체").ToList();
+            if (checkedStatusItems.Count == 0 || _statusFilterItems.First(i => i.Text == "전체").IsChecked)
+            {
+                FilterStatusComboBox.Text = "전체";
+            }
+            else
+            {
+                FilterStatusComboBox.Text = string.Join(", ", checkedStatusItems.Select(i => i.Text));
+            }
+
+            // BIZACTOR 필터 텍스트 업데이트
+            var checkedBizActorItems = _bizActorFilterItems.Where(i => i.IsChecked && i.Text != "전체").ToList();
+            if (checkedBizActorItems.Count == 0 || _bizActorFilterItems.First(i => i.Text == "전체").IsChecked)
+            {
+                FilterBizActorComboBox.Text = "전체";
+            }
+            else
+            {
+                FilterBizActorComboBox.Text = string.Join(", ", checkedBizActorItems.Select(i => i.Text));
+            }
+        }
+
+        private void FilterCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            if (sender is CheckBox checkBox && checkBox.DataContext is CheckableComboBoxItem item)
+            {
+                // "전체"를 선택하면 다른 모든 항목 선택 해제
+                if (item.Text == "전체" && item.IsChecked)
+                {
+                    var collection = _statusFilterItems.Contains(item) ? _statusFilterItems : _bizActorFilterItems;
+                    foreach (var otherItem in collection.Where(i => i.Text != "전체"))
+                    {
+                        otherItem.IsChecked = false;
+                    }
+                }
+                // 다른 항목을 선택하면 "전체" 선택 해제
+                else if (item.Text != "전체" && item.IsChecked)
+                {
+                    var collection = _statusFilterItems.Contains(item) ? _statusFilterItems : _bizActorFilterItems;
+                    var allItem = collection.FirstOrDefault(i => i.Text == "전체");
+                    if (allItem != null)
+                    {
+                        allItem.IsChecked = false;
+                    }
+                }
+                // 모든 항목이 선택 해제되면 "전체" 선택
+                else if (!item.IsChecked)
+                {
+                    var collection = _statusFilterItems.Contains(item) ? _statusFilterItems : _bizActorFilterItems;
+                    if (!collection.Any(i => i.IsChecked))
+                    {
+                        var allItem = collection.FirstOrDefault(i => i.Text == "전체");
+                        if (allItem != null)
+                        {
+                            allItem.IsChecked = true;
+                        }
+                    }
+                }
+
+                UpdateFilterComboBoxText();
+            }
+        }
+
+        private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            // 주기적 쿼리 실행 중지
+            StopAutoQuery();
+
+            // 설정 저장
+            SaveSettings();
+        }
+
+        private void SaveSettings()
+        {
+            // Excel 파일 경로 저장
+            _settings.ExcelFilePath = ExcelFilePathTextBox.Text ?? string.Empty;
+
+            // SFC Excel 파일 경로 저장
+            _settings.SfcExcelFilePath = SfcExcelFilePathTextBox.Text ?? string.Empty;
+
+            // SFC 계정 정보 저장
+            _settings.SfcUserId = SfcUserIdTextBox.Text ?? string.Empty;
+            _settings.SfcPassword = SfcPasswordBox.Password ?? string.Empty;
+
+            // 쿼리 타이머 간격 저장
+            if (int.TryParse(QueryIntervalTextBox.Text, out int interval))
+            {
+                _settings.QueryIntervalSeconds = interval;
+            }
+
+            SettingsManager.SaveSettings(_settings);
+        }
+
+        private void LoadTnsEntries()
+        {
+            try
+            {
+                _tnsEntries = TnsParser.ParseTnsFile(_settings.TnsPath);
+
+                if (_tnsEntries.Count > 0)
+                {
+                    UpdateStatus($"TNS 엔트리 {_tnsEntries.Count}개 로드됨", Colors.Green);
+                    
+                    // 디버그: 로드된 TNS 이름들을 로그에 출력
+                    System.Diagnostics.Debug.WriteLine("=== 로드된 TNS 엔트리 목록 ===");
+                    foreach (var entry in _tnsEntries)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"  - {entry.Name} (Host: {entry.Host}, Port: {entry.Port}, Service: {entry.ServiceName})");
+                    }
+                }
+                else
+                {
+                    UpdateStatus("TNS 엔트리를 찾을 수 없습니다. 설정 탭에서 경로를 확인하세요.", Colors.Orange);
+                    
+                    // 디버그: 파일 내용 확인
+                    if (File.Exists(_settings.TnsPath))
+                    {
+                        var allNames = TnsParser.GetAllEntryNames(_settings.TnsPath);
+                        System.Diagnostics.Debug.WriteLine($"TNS 파일에서 발견된 엔트리 이름들: {string.Join(", ", allNames)}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"TNS 로드 실패: {ex.Message}", Colors.Red);
+                System.Diagnostics.Debug.WriteLine($"TNS 로드 오류: {ex}");
+            }
+        }
+
+        // Excel 관련 메서드
+
+        private void BrowseExcelButton_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Filter = "Excel Files (*.xlsx;*.xls)|*.xlsx;*.xls|All Files (*.*)|*.*",
+                Title = "Excel 쿼리 파일 선택"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                ExcelFilePathTextBox.Text = openFileDialog.FileName;
+                LoadQueriesButton.IsEnabled = true;
+
+                // 시트 목록 로드
+                try
+                {
+                    var sheets = ExcelQueryReader.GetSheetNames(openFileDialog.FileName);
+                    SheetComboBox.ItemsSource = sheets;
+                    if (sheets.Count > 0)
+                    {
+                        SheetComboBox.SelectedIndex = 0;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Excel 파일 읽기 실패:\n{ex.Message}", "오류", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+
+                // Excel 파일 경로 저장
+                SaveSettings();
+            }
+        }
+
+        private void LoadQueriesButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string filePath = ExcelFilePathTextBox.Text;
+                string? sheetName = SheetComboBox.SelectedItem?.ToString();
+
+                // 시작 행 검증
+                if (!int.TryParse(StartRowTextBox.Text, out int startRow) || startRow < 1)
+                {
+                    MessageBox.Show("시작 행 번호는 1 이상이어야 합니다.", "오류", 
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // 쿼리 로드 - 열 고정: TNS=A, UserID=B, Password=C, 탭이름=D, 쿼리=F
+                // 추가 열: G(실행여부), H(알림여부), I(이상), J(같음), K(이하), L(컬럼명), M(컬럼값), N(제외여부)
+                _loadedQueries = ExcelQueryReader.ReadQueriesFromExcel(
+                    filePath, 
+                    sheetName, 
+                    "F",     // 쿼리 (고정)
+                    "D",     // 탭 이름 (고정)
+                    "",      // 설명 열 사용 안 함
+                    "A",     // TNS (고정)
+                    "B",     // User ID (고정)
+                    "C",     // Password (고정)
+                    startRow,
+                    "G",  // 실행 여부
+                    "H",  // 알림 여부
+                    "I",  // 이상
+                    "J",  // 같음
+                    "K",  // 이하
+                    "L",  // 컬럼명
+                    "M",  // 컬럼값
+                    "N"); // 제외 여부
+
+                // N열이 'N'인 쿼리는 제외
+                _loadedQueries = _loadedQueries.Where(q => q.ExcludeFlag != "N").ToList();
+
+                LoadedQueriesTextBlock.Text = $"{_loadedQueries.Count}개";
+                ExecuteAllButton.IsEnabled = _loadedQueries.Count > 0;
+                StartAutoQueryButton.IsEnabled = _loadedQueries.Count > 0;
+
+                UpdateStatus($"{_loadedQueries.Count}개의 쿼리를 로드했습니다.", Colors.Green);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"쿼리 로드 실패:\n{ex.Message}", "오류", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                UpdateStatus($"쿼리 로드 실패: {ex.Message}", Colors.Red);
+            }
+        }
+
+        private async void ExecuteAllButton_Click(object sender, RoutedEventArgs e)
+        {
+            await ExecuteQueries();
+        }
+
+        private async System.Threading.Tasks.Task ExecuteQueries()
+        {
+            if (_loadedQueries.Count == 0)
+            {
+                MessageBox.Show("먼저 Excel에서 쿼리를 로드하세요.", "알림", 
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // TNS 엔트리가 로드되지 않았으면 로드 시도
+            if (_tnsEntries.Count == 0)
+            {
+                LoadTnsEntries();
+                if (_tnsEntries.Count == 0)
+                {
+                    MessageBox.Show("TNS 엔트리를 로드할 수 없습니다. 설정 탭에서 tnsnames.ora 경로를 확인하세요.", 
+                        "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+            }
+
+            // UI 비활성화
+            ExecuteAllButton.IsEnabled = false;
+            LoadQueriesButton.IsEnabled = false;
+            BrowseExcelButton.IsEnabled = false;
+
+            // 기존 결과 탭 초기화
+            ResultTabControl.Items.Clear();
+
+            var totalStartTime = DateTime.Now;
+            int successCount = 0;
+            int failCount = 0;
+            List<string> notifications = new List<string>();
+            List<string> executionLogs = new List<string>();
+
+            // 작업 로그 헤더 추가
+            executionLogs.Add($"작업 시작 시간: {totalStartTime:yyyy-MM-dd HH:mm:ss}");
+            executionLogs.Add($"로드된 쿼리 수: {_loadedQueries.Count}개");
+            executionLogs.Add(new string('=', 80));
+            executionLogs.Add("");
+
+            // G열이 'Y'인 쿼리만 필터링
+            var queriesToExecute = _loadedQueries.Where(q => 
+                string.IsNullOrWhiteSpace(q.EnabledFlag) || q.EnabledFlag == "Y").ToList();
+
+            executionLogs.Add($"실행 대상 쿼리: {queriesToExecute.Count}개");
+            executionLogs.Add("");
+
+            for (int i = 0; i < queriesToExecute.Count; i++)
+            {
+                var queryItem = queriesToExecute[i];
+                
+                UpdateStatus($"쿼리 실행 중... ({i + 1}/{queriesToExecute.Count}) - {queryItem.QueryName}", Colors.Blue);
+
+                var logEntry = new StringBuilder();
+                logEntry.AppendLine($"[{i + 1}/{queriesToExecute.Count}] {queryItem.QueryName}");
+                logEntry.AppendLine($"  시작 시간: {DateTime.Now:HH:mm:ss}");
+
+                try
+                {
+                    string connectionString;
+                    
+                    // 직접 연결 정보가 있는지 확인 (Host:Port:ServiceName 형식)
+                    if (!string.IsNullOrWhiteSpace(queryItem.Host) && 
+                        !string.IsNullOrWhiteSpace(queryItem.Port) && 
+                        !string.IsNullOrWhiteSpace(queryItem.ServiceName))
+                    {
+                        // 직접 연결 문자열 생성
+                        connectionString = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={queryItem.Host})(PORT={queryItem.Port}))(CONNECT_DATA=(SERVICE_NAME={queryItem.ServiceName})));";
+                        
+                        logEntry.AppendLine($"  연결: {queryItem.Host}:{queryItem.Port}/{queryItem.ServiceName}");
+                        System.Diagnostics.Debug.WriteLine($"직접 연결 사용: {queryItem.Host}:{queryItem.Port}:{queryItem.ServiceName}");
+                    }
+                    else
+                    {
+                        // TNS 정보 찾기
+                        TnsEntry? selectedTns = null;
+                        if (!string.IsNullOrWhiteSpace(queryItem.TnsName))
+                        {
+                            selectedTns = _tnsEntries.FirstOrDefault(t => 
+                                t.Name.Equals(queryItem.TnsName, StringComparison.OrdinalIgnoreCase));
+                        }
+
+                        if (selectedTns == null)
+                        {
+                            // 사용 가능한 TNS 목록 표시
+                            var availableTns = string.Join(", ", _tnsEntries.Select(t => t.Name));
+                            throw new Exception($"TNS '{queryItem.TnsName}'를 찾을 수 없습니다.\n\n" +
+                                $"💡 해결 방법:\n" +
+                                $"1. Excel A열에 정확한 TNS 이름 입력\n" +
+                                $"2. 또는 Host:Port:ServiceName 형식으로 입력\n" +
+                                $"   예) 192.168.1.10:1521:ORCL\n\n" +
+                                $"사용 가능한 TNS 목록:\n{availableTns}\n\n" +
+                                $"tnsnames.ora 파일 경로:\n{_settings.TnsPath}");
+                        }
+                        
+                        connectionString = selectedTns.ConnectionString;
+                        logEntry.AppendLine($"  TNS: {queryItem.TnsName}");
+                    }
+
+                    // User ID와 Password 검증
+                    if (string.IsNullOrWhiteSpace(queryItem.UserId))
+                    {
+                        throw new Exception("User ID가 지정되지 않았습니다.");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(queryItem.Password))
+                    {
+                        throw new Exception("Password가 지정되지 않았습니다.");
+                    }
+
+                    logEntry.AppendLine($"  사용자: {queryItem.UserId}");
+
+                    var startTime = DateTime.Now;
+
+                    // 쿼리 실행
+                    DataTable result = await OracleDatabase.ExecuteQueryAsync(
+                        connectionString,
+                        queryItem.UserId,
+                        queryItem.Password,
+                        queryItem.Query);
+
+                    var endTime = DateTime.Now;
+                    var duration = (endTime - startTime).TotalSeconds;
+
+                    logEntry.AppendLine($"  완료 시간: {endTime:HH:mm:ss}");
+                    logEntry.AppendLine($"  소요 시간: {duration:F2}초");
+                    logEntry.AppendLine($"  결과: {result.Rows.Count}행 × {result.Columns.Count}열");
+
+                    // 결과 건수 체크 및 알림
+                    var itemNotifications = new List<string>();
+                    CheckResultCountAndNotify(queryItem, result.Rows.Count, itemNotifications);
+
+                    // 특정 컬럼 값 체크 및 알림
+                    CheckColumnValuesAndNotify(queryItem, result, itemNotifications);
+
+                    if (itemNotifications.Count > 0)
+                    {
+                        notifications.AddRange(itemNotifications);
+                        logEntry.AppendLine($"  🔔 알림: {itemNotifications.Count}개");
+                        foreach (var notif in itemNotifications)
+                        {
+                            logEntry.AppendLine($"    - {notif.Replace($"[{queryItem.QueryName}] ", "")}");
+                        }
+                    }
+
+                    logEntry.AppendLine($"  ✅ 성공");
+
+                    // 결과 탭 생성
+                    CreateResultTab(queryItem, result, duration, null);
+
+                    successCount++;
+                }
+                catch (Exception ex)
+                {
+                    logEntry.AppendLine($"  ❌ 실패: {ex.Message}");
+                    
+                    // 오류 탭 생성
+                    CreateResultTab(queryItem, null, 0, ex.Message);
+                    failCount++;
+                }
+
+                executionLogs.Add(logEntry.ToString());
+            }
+
+            var totalDuration = (DateTime.Now - totalStartTime).TotalSeconds;
+
+            // 작업 요약 추가
+            executionLogs.Add(new string('=', 80));
+            executionLogs.Add("");
+            executionLogs.Add("📊 작업 요약");
+            executionLogs.Add($"  총 실행 시간: {totalDuration:F2}초");
+            executionLogs.Add($"  성공: {successCount}개");
+            executionLogs.Add($"  실패: {failCount}개");
+            executionLogs.Add($"  알림: {notifications.Count}개");
+            executionLogs.Add("");
+            executionLogs.Add($"작업 완료 시간: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+
+            // UI 활성화
+            ExecuteAllButton.IsEnabled = true;
+            LoadQueriesButton.IsEnabled = true;
+            BrowseExcelButton.IsEnabled = true;
+
+            UpdateStatus($"전체 완료: 성공 {successCount}개, 실패 {failCount}개 (소요시간: {totalDuration:F2}초)", 
+                failCount > 0 ? Colors.Orange : Colors.Green);
+
+            // 작업 로그 탭을 맨 앞에 추가
+            CreateExecutionLogTab(executionLogs, totalStartTime, totalDuration, successCount, failCount, notifications.Count);
+
+            // 첫 번째 탭(작업 로그) 선택
+            if (ResultTabControl.Items.Count > 0)
+            {
+                ResultTabControl.SelectedIndex = 0;
+            }
+
+            // 알림이 있으면 팝업 표시
+            if (notifications.Count > 0)
+            {
+                ShowNotificationsPopup(notifications);
+            }
+        }
+
+        private void CheckResultCountAndNotify(QueryItem queryItem, int rowCount, List<string> notifications)
+        {
+            // H열이 'Y'가 아니면 알림을 추가하지 않음
+            if (queryItem.NotifyFlag != "Y")
+                return;
+
+            // I열: 이상일 때
+            if (!string.IsNullOrWhiteSpace(queryItem.CountGreaterThan) && 
+                int.TryParse(queryItem.CountGreaterThan, out int greaterThan))
+            {
+                if (rowCount >= greaterThan)
+                {
+                    notifications.Add($"[{queryItem.QueryName}] 조회 결과 {rowCount}건 (기준: {greaterThan}건 이상)");
+                }
+            }
+
+            // J열: 같을 때
+            if (!string.IsNullOrWhiteSpace(queryItem.CountEquals) && 
+                int.TryParse(queryItem.CountEquals, out int equals))
+            {
+                if (rowCount == equals)
+                {
+                    notifications.Add($"[{queryItem.QueryName}] 조회 결과 {rowCount}건 (기준: {equals}건과 같음)");
+                }
+            }
+
+            // K열: 이하일 때
+            if (!string.IsNullOrWhiteSpace(queryItem.CountLessThan) && 
+                int.TryParse(queryItem.CountLessThan, out int lessThan))
+            {
+                if (rowCount <= lessThan)
+                {
+                    notifications.Add($"[{queryItem.QueryName}] 조회 결과 {rowCount}건 (기준: {lessThan}건 이하)");
+                }
+            }
+        }
+
+        private void CheckColumnValuesAndNotify(QueryItem queryItem, DataTable result, List<string> notifications)
+        {
+            // H열이 'Y'가 아니면 알림을 추가하지 않음
+            if (queryItem.NotifyFlag != "Y")
+                return;
+
+            // L열과 M열 체크
+            if (string.IsNullOrWhiteSpace(queryItem.ColumnNames) || 
+                string.IsNullOrWhiteSpace(queryItem.ColumnValues))
+            {
+                return;
+            }
+
+            // 컬럼명과 값을 쉼표로 분리
+            var columnNames = queryItem.ColumnNames.Split(',').Select(c => c.Trim()).ToList();
+            var columnValues = queryItem.ColumnValues.Split(',').Select(v => v.Trim()).ToList();
+
+            // 개수가 다르면 처리 안 함
+            if (columnNames.Count != columnValues.Count)
+            {
+                return;
+            }
+
+            // 각 행을 검사
+            for (int i = 0; i < result.Rows.Count; i++)
+            {
+                var row = result.Rows[i];
+                bool allMatch = true;
+
+                for (int j = 0; j < columnNames.Count; j++)
+                {
+                    string columnName = columnNames[j];
+                    string expectedValue = columnValues[j];
+
+                    // 컬럼이 존재하는지 확인
+                    if (!result.Columns.Contains(columnName))
+                    {
+                        allMatch = false;
+                        break;
+                    }
+
+                    var actualValue = row[columnName]?.ToString()?.Trim() ?? "";
+                    if (actualValue != expectedValue)
+                    {
+                        allMatch = false;
+                        break;
+                    }
+                }
+
+                if (allMatch)
+                {
+                    var matchInfo = string.Join(", ", columnNames.Zip(columnValues, (n, v) => $"{n}={v}"));
+                    notifications.Add($"[{queryItem.QueryName}] 조건 일치 발견 (행 {i + 1}): {matchInfo}");
+                }
+            }
+        }
+
+        private void ShowNotificationsPopup(List<string> notifications)
+        {
+            // 팝업이 뜨면 자동 조회 타이머 중지
+            if (_isAutoQueryRunning)
+            {
+                StopAutoQuery();
+            }
+
+            var message = new StringBuilder();
+            message.AppendLine("알림이 있습니다:");
+            message.AppendLine();
+
+            foreach (var notification in notifications)
+            {
+                message.AppendLine($"• {notification}");
+            }
+
+            MessageBox.Show(message.ToString(), "조회 결과 알림", 
+                MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        // SFC 모니터링 관련 메서드
+        private void BrowseSfcExcelButton_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Filter = "Excel Files (*.xlsx;*.xls)|*.xlsx;*.xls|All Files (*.*)|*.*",
+                Title = "SFC 설비 목록 Excel 파일 선택"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                SfcExcelFilePathTextBox.Text = openFileDialog.FileName;
+                LoadSfcExcelButton.IsEnabled = true;
+
+                // SFC Excel 파일 경로 저장
+                SaveSettings();
+            }
+        }
+
+        private void LoadSfcExcelButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string filePath = SfcExcelFilePathTextBox.Text;
+
+                if (!File.Exists(filePath))
+                {
+                    MessageBox.Show("Excel 파일을 찾을 수 없습니다.", "오류",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                _sfcEquipmentList.Clear();
+
+                using (var package = new ExcelPackage(new FileInfo(filePath)))
+                {
+                    var worksheet = package.Workbook.Worksheets[0];
+                    int rowCount = worksheet.Dimension?.End.Row ?? 0;
+
+                    // 2행부터 데이터 읽기 (1행은 헤더)
+                    for (int row = 2; row <= rowCount; row++)
+                    {
+                        var ipAddress = worksheet.Cells[row, 1].Text?.Trim();
+                        var equipmentId = worksheet.Cells[row, 2].Text?.Trim();
+                        var equipmentName = worksheet.Cells[row, 3].Text?.Trim();
+
+                        if (!string.IsNullOrWhiteSpace(ipAddress))
+                        {
+                            _sfcEquipmentList.Add(new SfcEquipmentInfo
+                            {
+                                IpAddress = ipAddress,
+                                EquipmentId = equipmentId ?? "",
+                                EquipmentName = equipmentName ?? "",
+                                Status = ""
+                            });
+                        }
+                    }
+                }
+
+                ExecuteSfcQueryButton.IsEnabled = _sfcEquipmentList.Count > 0;
+                
+                // 필터 적용
+                ApplySfcFilter();
+                
+                MessageBox.Show($"{_sfcEquipmentList.Count}개의 설비 정보를 로드했습니다.", "완료",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Excel 파일 로드 실패:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void ExecuteSfcQueryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_sfcEquipmentList.Count == 0)
+            {
+                MessageBox.Show("먼저 Excel 파일을 로드하세요.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (SfcTnsComboBox.SelectedItem == null)
+            {
+                MessageBox.Show("TNS를 선택하세요.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (ConfigDatePicker.SelectedDate == null)
+            {
+                MessageBox.Show("조회 날짜를 선택하세요.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // User ID와 Password 검증
+            string userId = SfcUserIdTextBox.Text?.Trim() ?? "";
+            string password = SfcPasswordBox.Password ?? "";
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                MessageBox.Show("User ID를 입력하세요.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                SfcUserIdTextBox.Focus();
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                MessageBox.Show("Password를 입력하세요.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                SfcPasswordBox.Focus();
+                return;
+            }
+
+            try
+            {
+                ExecuteSfcQueryButton.IsEnabled = false;
+
+                // TNS 정보 가져오기
+                string selectedTnsName = SfcTnsComboBox.SelectedItem.ToString() ?? "";
+                var selectedTns = _tnsEntries.FirstOrDefault(t => t.Name == selectedTnsName);
+
+                if (selectedTns == null)
+                {
+                    MessageBox.Show("선택한 TNS 정보를 찾을 수 없습니다.", "오류",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // 계정 정보 저장
+                SaveSettings();
+
+                // 쿼리 준비
+                string query = SfcQueryTextBox.Text;
+                string configDate = ConfigDatePicker.SelectedDate.Value.ToString("yyyyMMdd");
+                
+                // IP 주소 목록 생성 ('1.1.1.1','2.2.2.2' 형식)
+                var ipList = string.Join(",", _sfcEquipmentList.Select(e => $"'{e.IpAddress}'"));
+
+                // 파라미터 치환
+                query = query.Replace("@CONFIG_REGISTER_YMD", configDate);
+                query = query.Replace("@PC_IP_ADDR", ipList);
+
+                // 쿼리 실행
+                DataTable result = await OracleDatabase.ExecuteQueryAsync(
+                    selectedTns.ConnectionString,
+                    userId,
+                    password,
+                    query);
+
+                // 결과를 Dictionary로 변환 (IP -> CONFIG_JSON)
+                var registeredData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (DataRow row in result.Rows)
+                {
+                    if (row["PC_IP_ADDR"] != null && row["PC_IP_ADDR"] != DBNull.Value)
+                    {
+                        string ip = row["PC_IP_ADDR"].ToString()?.Trim() ?? "";
+                        string configJson = row["CONFIG_JSON"]?.ToString() ?? "";
+                        registeredData[ip] = configJson;
+                    }
+                }
+
+                // 상태 및 BIZACTOR 업데이트
+                foreach (var equipment in _sfcEquipmentList)
+                {
+                    if (registeredData.ContainsKey(equipment.IpAddress))
+                    {
+                        equipment.Status = "ON";
+                        equipment.BizActor = ExtractBizActor(registeredData[equipment.IpAddress]);
+                    }
+                    else
+                    {
+                        equipment.Status = "OFF";
+                        equipment.BizActor = "";
+                    }
+                }
+
+                // DataGrid 새로고침 및 스타일 적용
+                SfcMonitorDataGrid.Items.Refresh();
+                ApplySfcDataGridRowStyle();
+
+                // 필터 적용
+                ApplySfcFilter();
+
+                MessageBox.Show($"조회 완료\n\nON: {_sfcEquipmentList.Count(e => e.Status == "ON")}개\nOFF: {_sfcEquipmentList.Count(e => e.Status == "OFF")}개",
+                    "완료", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"쿼리 실행 실패:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                ExecuteSfcQueryButton.IsEnabled = true;
+            }
+        }
+
+        private string ExtractBizActor(string configJson)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(configJson))
+                    return "";
+
+                using (JsonDocument doc = JsonDocument.Parse(configJson))
+                {
+                    // MWCONFIG_INFO.SQL_QUEUE에서 BIZACTOR 추출
+                    if (doc.RootElement.TryGetProperty("MWCONFIG_INFO", out JsonElement mwConfig))
+                    {
+                        if (mwConfig.TryGetProperty("SQL_QUEUE", out JsonElement sqlQueue))
+                        {
+                            string sqlQueueValue = sqlQueue.GetString() ?? "";
+                            
+                            // "PROC_TYPE/LGE_MES_PRD/BIZACTOR_SQL/RS" 형식에서 BIZACTOR 추출
+                            if (sqlQueueValue.Contains("BIZACTOR_"))
+                            {
+                                int startIndex = sqlQueueValue.IndexOf("BIZACTOR_") + 9;
+                                int endIndex = sqlQueueValue.IndexOf("/", startIndex);
+                                
+                                if (endIndex > startIndex)
+                                {
+                                    return sqlQueueValue.Substring(startIndex, endIndex - startIndex);
+                                }
+                                else
+                                {
+                                    return sqlQueueValue.Substring(startIndex);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"JSON 파싱 오류: {ex.Message}");
+            }
+
+            return "";
+        }
+
+        // 주기적 쿼리 실행 관련 메서드
+        private void StartAutoQueryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_loadedQueries.Count == 0)
+            {
+                MessageBox.Show("먼저 Excel에서 쿼리를 로드하세요.", "알림", 
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (!int.TryParse(QueryIntervalTextBox.Text, out int interval) || interval < 5)
+            {
+                MessageBox.Show("쿼리 실행 주기는 5초 이상이어야 합니다.", "오류", 
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 타이머 간격 저장
+            SaveSettings();
+
+            StartAutoQuery(interval);
+        }
+
+        private void StopAutoQueryButton_Click(object sender, RoutedEventArgs e)
+        {
+            StopAutoQuery();
+        }
+
+        private void StartAutoQuery(int intervalSeconds)
+        {
+            _isAutoQueryRunning = true;
+            
+            _queryTimer = new DispatcherTimer();
+            _queryTimer.Interval = TimeSpan.FromSeconds(intervalSeconds);
+            _queryTimer.Tick += async (s, e) => await ExecuteQueries();
+            _queryTimer.Start();
+
+            // 즉시 한 번 실행
+            _ = ExecuteQueries();
+
+            StartAutoQueryButton.IsEnabled = false;
+            StopAutoQueryButton.IsEnabled = true;
+            QueryIntervalTextBox.IsEnabled = false;
+            LoadQueriesButton.IsEnabled = false;
+            BrowseExcelButton.IsEnabled = false;
+
+            UpdateStatus($"자동 쿼리 실행 시작 (주기: {intervalSeconds}초)", Colors.Green);
+        }
+
+        private void StopAutoQuery()
+        {
+            if (_queryTimer != null)
+            {
+                _queryTimer.Stop();
+                _queryTimer = null;
+            }
+
+            _isAutoQueryRunning = false;
+
+            StartAutoQueryButton.IsEnabled = _loadedQueries.Count > 0;
+            StopAutoQueryButton.IsEnabled = false;
+            QueryIntervalTextBox.IsEnabled = true;
+            LoadQueriesButton.IsEnabled = true;
+            BrowseExcelButton.IsEnabled = true;
+
+            UpdateStatus("자동 쿼리 실행 중지", Colors.Orange);
+        }
+
+        private void CreateResultTab(QueryItem queryItem, DataTable? result, double duration, string? errorMessage)
+        {
+            var tabItem = new TabItem
+            {
+                Header = queryItem.QueryName
+            };
+
+            var grid = new Grid();
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+            if (result != null && errorMessage == null)
+            {
+                // 성공 - 데이터 그리드 생성
+                var dataGrid = new DataGrid
+                {
+                    AutoGenerateColumns = true,
+                    IsReadOnly = true,
+                    AlternatingRowBackground = new SolidColorBrush(Color.FromRgb(240, 240, 240)),
+                    GridLinesVisibility = DataGridGridLinesVisibility.All,
+                    HeadersVisibility = DataGridHeadersVisibility.All,
+                    ItemsSource = result.DefaultView,
+                    CanUserSortColumns = true,
+                    CanUserResizeColumns = true,
+                    CanUserReorderColumns = true,
+                    SelectionMode = DataGridSelectionMode.Extended,
+                    SelectionUnit = DataGridSelectionUnit.Cell,  // 셀 단위 선택 가능
+                    ClipboardCopyMode = DataGridClipboardCopyMode.IncludeHeader  // 헤더 포함 복사
+                };
+
+                // 컨텍스트 메뉴 추가 (마우스 우클릭)
+                var contextMenu = new ContextMenu();
+                
+                var copyMenuItem = new MenuItem
+                {
+                    Header = "복사 (Ctrl+C)"
+                };
+                copyMenuItem.Click += (s, e) =>
+                {
+                    try
+                    {
+                        if (dataGrid.SelectedCells.Count > 0)
+                        {
+                            // 선택된 셀들의 내용을 클립보드에 복사
+                            dataGrid.ClipboardCopyMode = DataGridClipboardCopyMode.ExcludeHeader;
+                            ApplicationCommands.Copy.Execute(null, dataGrid);
+                            dataGrid.UnselectAllCells();
+                            UpdateStatus("선택한 셀이 복사되었습니다.", Colors.Green);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"복사 실패:\n{ex.Message}", "오류",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                };
+                contextMenu.Items.Add(copyMenuItem);
+
+                var copyWithHeaderMenuItem = new MenuItem
+                {
+                    Header = "헤더 포함 복사"
+                };
+                copyWithHeaderMenuItem.Click += (s, e) =>
+                {
+                    try
+                    {
+                        if (dataGrid.SelectedCells.Count > 0)
+                        {
+                            // 헤더 포함하여 복사
+                            dataGrid.ClipboardCopyMode = DataGridClipboardCopyMode.IncludeHeader;
+                            ApplicationCommands.Copy.Execute(null, dataGrid);
+                            dataGrid.UnselectAllCells();
+                            UpdateStatus("헤더 포함하여 복사되었습니다.", Colors.Green);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"복사 실패:\n{ex.Message}", "오류",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                };
+                contextMenu.Items.Add(copyWithHeaderMenuItem);
+
+                contextMenu.Items.Add(new Separator());
+
+                var selectAllMenuItem = new MenuItem
+                {
+                    Header = "모두 선택 (Ctrl+A)"
+                };
+                selectAllMenuItem.Click += (s, e) =>
+                {
+                    dataGrid.SelectAllCells();
+                };
+                contextMenu.Items.Add(selectAllMenuItem);
+
+                dataGrid.ContextMenu = contextMenu;
+
+                // Ctrl+C 키보드 단축키 지원
+                dataGrid.PreviewKeyDown += (s, e) =>
+                {
+                    if (e.Key == Key.C && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                    {
+                        try
+                        {
+                            if (dataGrid.SelectedCells.Count > 0)
+                            {
+                                dataGrid.ClipboardCopyMode = DataGridClipboardCopyMode.ExcludeHeader;
+                                ApplicationCommands.Copy.Execute(null, dataGrid);
+                                e.Handled = true;
+                            }
+                        }
+                        catch { }
+                    }
+                };
+
+                Grid.SetRow(dataGrid, 0);
+                grid.Children.Add(dataGrid);
+
+                // 상태 표시
+                var statusPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Margin = new Thickness(5)
+                };
+
+                statusPanel.Children.Add(new TextBlock
+                {
+                    Text = $"✓ {result.Rows.Count}개 행 | {result.Columns.Count}개 열 | 소요시간: {duration:F2}초",
+                    FontSize = 11,
+                    Foreground = new SolidColorBrush(Colors.Green),
+                    VerticalAlignment = VerticalAlignment.Center
+                });
+
+                // DB 연결 정보 표시
+                if (!string.IsNullOrEmpty(queryItem.TnsName))
+                {
+                    statusPanel.Children.Add(new TextBlock
+                    {
+                        Text = $" | TNS: {queryItem.TnsName}, User: {queryItem.UserId}",
+                        FontSize = 11,
+                        Foreground = new SolidColorBrush(Colors.Blue),
+                        Margin = new Thickness(5, 0, 0, 0),
+                        VerticalAlignment = VerticalAlignment.Center
+                    });
+                }
+                else if (!string.IsNullOrEmpty(queryItem.Host))
+                {
+                    statusPanel.Children.Add(new TextBlock
+                    {
+                        Text = $" | DB: {queryItem.Host}:{queryItem.Port}/{queryItem.ServiceName}, User: {queryItem.UserId}",
+                        FontSize = 11,
+                        Foreground = new SolidColorBrush(Colors.Blue),
+                        Margin = new Thickness(5, 0, 0, 0),
+                        VerticalAlignment = VerticalAlignment.Center
+                    });
+                }
+
+                Grid.SetRow(statusPanel, 1);
+                grid.Children.Add(statusPanel);
+            }
+            else
+            {
+                // 오류 - 오류 메시지 표시
+                var errorInfo = new StringBuilder();
+                errorInfo.AppendLine("쿼리 실행 실패");
+                errorInfo.AppendLine();
+                errorInfo.AppendLine($"오류: {errorMessage}");
+                errorInfo.AppendLine();
+                
+                if (!string.IsNullOrEmpty(queryItem.TnsName))
+                {
+                    errorInfo.AppendLine($"TNS: {queryItem.TnsName}");
+                }
+                else if (!string.IsNullOrEmpty(queryItem.Host))
+                {
+                    errorInfo.AppendLine($"DB: {queryItem.Host}:{queryItem.Port}/{queryItem.ServiceName}");
+                }
+                
+                errorInfo.AppendLine($"User ID: {queryItem.UserId}");
+                errorInfo.AppendLine();
+                errorInfo.AppendLine("쿼리:");
+                errorInfo.AppendLine(queryItem.Query);
+
+                var errorTextBox = new TextBox
+                {
+                    Text = errorInfo.ToString(),
+                    IsReadOnly = true,
+                    Background = new SolidColorBrush(Color.FromRgb(255, 240, 240)),
+                    Foreground = new SolidColorBrush(Colors.Red),
+                    TextWrapping = TextWrapping.Wrap,
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                    FontFamily = new FontFamily("Consolas"),
+                    Padding = new Thickness(10)
+                };
+
+                Grid.SetRow(errorTextBox, 0);
+                grid.Children.Add(errorTextBox);
+
+                var statusText = new TextBlock
+                {
+                    Text = "✗ 실행 실패",
+                    FontSize = 11,
+                    Foreground = new SolidColorBrush(Colors.Red),
+                    Margin = new Thickness(5)
+                };
+
+                Grid.SetRow(statusText, 1);
+                grid.Children.Add(statusText);
+
+                // 탭 헤더를 빨간색으로 표시
+                tabItem.Foreground = new SolidColorBrush(Colors.Red);
+            }
+
+            tabItem.Content = grid;
+            ResultTabControl.Items.Add(tabItem);
+        }
+
+        private void CreateExecutionLogTab(List<string> logs, DateTime startTime, double totalDuration, int successCount, int failCount, int notificationCount)
+        {
+            var tabItem = new TabItem
+            {
+                Header = "📋 작업 로그",
+                FontWeight = FontWeights.Bold
+            };
+
+            var grid = new Grid();
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+            // 상단 요약 패널
+            var summaryBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(240, 248, 255)),
+                Padding = new Thickness(15, 10, 15, 10),
+                Margin = new Thickness(0, 0, 0, 10)
+            };
+
+            var summaryPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal
+            };
+
+            // 시작 시간
+            summaryPanel.Children.Add(new TextBlock
+            {
+                Text = $"⏰ 시작: {startTime:HH:mm:ss}",
+                FontSize = 12,
+                Margin = new Thickness(0, 0, 20, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            });
+
+            // 소요 시간
+            summaryPanel.Children.Add(new TextBlock
+            {
+                Text = $"⏱️ 소요시간: {totalDuration:F2}초",
+                FontSize = 12,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush(Colors.Blue),
+                Margin = new Thickness(0, 0, 20, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            });
+
+            // 성공
+            summaryPanel.Children.Add(new TextBlock
+            {
+                Text = $"✅ 성공: {successCount}개",
+                FontSize = 12,
+                Foreground = new SolidColorBrush(Colors.Green),
+                Margin = new Thickness(0, 0, 20, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            });
+
+            // 실패
+            if (failCount > 0)
+            {
+                summaryPanel.Children.Add(new TextBlock
+                {
+                    Text = $"❌ 실패: {failCount}개",
+                    FontSize = 12,
+                    Foreground = new SolidColorBrush(Colors.Red),
+                    Margin = new Thickness(0, 0, 20, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                });
+            }
+
+            // 알림
+            if (notificationCount > 0)
+            {
+                summaryPanel.Children.Add(new TextBlock
+                {
+                    Text = $"🔔 알림: {notificationCount}개",
+                    FontSize = 12,
+                    Foreground = new SolidColorBrush(Colors.Orange),
+                    Margin = new Thickness(0, 0, 20, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                });
+            }
+
+            summaryBorder.Child = summaryPanel;
+            Grid.SetRow(summaryBorder, 0);
+            grid.Children.Add(summaryBorder);
+
+            // 로그 내용
+            var logTextBox = new TextBox
+            {
+                Text = string.Join(Environment.NewLine, logs),
+                IsReadOnly = true,
+                FontFamily = new FontFamily("Consolas"),
+                FontSize = 11,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                TextWrapping = TextWrapping.NoWrap,
+                Padding = new Thickness(10),
+                Background = new SolidColorBrush(Color.FromRgb(250, 250, 250))
+            };
+
+            Grid.SetRow(logTextBox, 1);
+            grid.Children.Add(logTextBox);
+
+            tabItem.Content = grid;
+            
+            // 맨 앞에 삽입
+            ResultTabControl.Items.Insert(0, tabItem);
+        }
+
+        private void ClearResultsButton_Click(object sender, RoutedEventArgs e)
+        {
+            // 결과 탭만 초기화
+            ResultTabControl.Items.Clear();
+            UpdateStatus("결과 탭이 초기화되었습니다.", Colors.Gray);
+        }
+
+        private void ApplySfcDataGridRowStyle()
+        {
+            // DataGrid 새로고침을 위한 이벤트 핸들러 등록
+            SfcMonitorDataGrid.LoadingRow -= SfcMonitorDataGrid_LoadingRow;
+            SfcMonitorDataGrid.LoadingRow += SfcMonitorDataGrid_LoadingRow;
+        }
+
+        private void SfcMonitorDataGrid_LoadingRow(object? sender, DataGridRowEventArgs e)
+        {
+            var item = e.Row.Item as SfcEquipmentInfo;
+            if (item != null && item.Status == "OFF")
+            {
+                e.Row.Background = new SolidColorBrush(Colors.LightCoral);
+            }
+            else
+            {
+                e.Row.Background = new SolidColorBrush(Colors.White);
+            }
+        }
+
+        // SFC 필터링 관련 메서드
+        private void ApplyFilter(object sender, EventArgs e)
+        {
+            ApplySfcFilter();
+        }
+
+        private void ApplySfcFilter()
+        {
+            // UI 컨트롤이 초기화되지 않았으면 리턴
+            if (FilterStatusComboBox == null || FilterBizActorComboBox == null ||
+                FilterIpTextBox == null || FilterEquipmentIdTextBox == null || FilterEquipmentNameTextBox == null)
+                return;
+
+            // 콤보박스 텍스트 업데이트
+            UpdateFilterComboBoxText();
+
+            // 필터 조건 가져오기
+            string ipFilter = FilterIpTextBox.Text?.Trim().ToLower() ?? "";
+            string equipmentIdFilter = FilterEquipmentIdTextBox.Text?.Trim().ToLower() ?? "";
+            string equipmentNameFilter = FilterEquipmentNameTextBox.Text?.Trim().ToLower() ?? "";
+            
+            // 선택된 상태 목록
+            var selectedStatuses = _statusFilterItems
+                .Where(i => i.IsChecked && i.Text != "전체")
+                .Select(i => i.Text)
+                .ToList();
+            bool isAllStatusSelected = _statusFilterItems.First(i => i.Text == "전체").IsChecked;
+
+            // 선택된 BIZACTOR 목록
+            var selectedBizActors = _bizActorFilterItems
+                .Where(i => i.IsChecked && i.Text != "전체")
+                .Select(i => i.Text)
+                .ToList();
+            bool isAllBizActorSelected = _bizActorFilterItems.First(i => i.Text == "전체").IsChecked;
+
+            // 필터링 수행
+            var filtered = _sfcEquipmentList.Where(item =>
+            {
+                // IP 주소 필터
+                if (!string.IsNullOrEmpty(ipFilter) && !item.IpAddress.ToLower().Contains(ipFilter))
+                    return false;
+
+                // 설비 ID 필터
+                if (!string.IsNullOrEmpty(equipmentIdFilter) && !item.EquipmentId.ToLower().Contains(equipmentIdFilter))
+                    return false;
+
+                // 설비명 필터
+                if (!string.IsNullOrEmpty(equipmentNameFilter) && !item.EquipmentName.ToLower().Contains(equipmentNameFilter))
+                    return false;
+
+                // 상태 필터 (멀티셀렉트)
+                if (!isAllStatusSelected && selectedStatuses.Count > 0)
+                {
+                    if (!selectedStatuses.Contains(item.Status))
+                        return false;
+                }
+
+                // BIZACTOR 필터 (멀티셀렉트)
+                if (!isAllBizActorSelected && selectedBizActors.Count > 0)
+                {
+                    if (!selectedBizActors.Contains(item.BizActor))
+                        return false;
+                }
+
+                return true;
+            }).ToList();
+
+            // 필터링된 리스트 업데이트
+            _sfcFilteredList.Clear();
+            foreach (var item in filtered)
+            {
+                _sfcFilteredList.Add(item);
+            }
+
+            // 필터 상태 업데이트
+            UpdateFilterStatus(filtered.Count, _sfcEquipmentList.Count);
+        }
+
+        private void UpdateFilterStatus(int filteredCount, int totalCount)
+        {
+            // FilterStatusTextBlock이 초기화되지 않았으면 리턴
+            if (FilterStatusTextBlock == null)
+                return;
+
+            if (filteredCount == totalCount)
+            {
+                FilterStatusTextBlock.Text = $"전체 {totalCount}개";
+                FilterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Gray);
+            }
+            else
+            {
+                FilterStatusTextBlock.Text = $"필터링: {filteredCount}개 / 전체: {totalCount}개";
+                FilterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Blue);
+            }
+        }
+
+        private void ClearFilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            // 필터 초기화
+            FilterIpTextBox.Text = "";
+            FilterEquipmentIdTextBox.Text = "";
+            FilterEquipmentNameTextBox.Text = "";
+            
+            // 상태 필터 초기화 (전체만 선택)
+            foreach (var item in _statusFilterItems)
+            {
+                item.IsChecked = item.Text == "전체";
+            }
+
+            // BIZACTOR 필터 초기화 (전체만 선택)
+            foreach (var item in _bizActorFilterItems)
+            {
+                item.IsChecked = item.Text == "전체";
+            }
+
+            // 콤보박스 텍스트 업데이트
+            UpdateFilterComboBoxText();
+
+            // 필터 적용
+            ApplySfcFilter();
+        }
+
+        private void UpdateStatus(string message, Color color)
+        {
+            StatusTextBlock.Text = message;
+            StatusTextBlock.Foreground = new SolidColorBrush(color);
+        }
+
+        private void BrowseButton_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Filter = "TNS Names File (tnsnames.ora)|tnsnames.ora|All Files (*.*)|*.*",
+                Title = "tnsnames.ora 파일 선택",
+                InitialDirectory = System.IO.Path.GetDirectoryName(_settings.TnsPath)
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                TnsPathTextBox.Text = openFileDialog.FileName;
+            }
+        }
+
+        private void ResetButton_Click(object sender, RoutedEventArgs e)
+        {
+            TnsPathTextBox.Text = SettingsManager.GetDefaultTnsPath();
+        }
+
+        private void SaveSettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(TnsPathTextBox.Text))
+            {
+                MessageBox.Show("TNS 파일 경로를 입력하세요.", "오류", 
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (!File.Exists(TnsPathTextBox.Text))
+            {
+                var result = MessageBox.Show(
+                    "지정한 파일이 존재하지 않습니다.\n그래도 저장하시겠습니까?", 
+                    "확인", 
+                    MessageBoxButton.YesNo, 
+                    MessageBoxImage.Question);
+                
+                if (result != MessageBoxResult.Yes)
+                    return;
+            }
+
+            _settings.TnsPath = TnsPathTextBox.Text;
+            SettingsManager.SaveSettings(_settings);
+
+            LoadTnsEntries();
+
+            MessageBox.Show("설정이 저장되었습니다.", "완료", 
+                MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private async void TestSfcConnectionButton_Click(object sender, RoutedEventArgs e)
+        {
+            // TNS 선택 확인
+            if (SfcTnsComboBox.SelectedItem == null)
+            {
+                MessageBox.Show("TNS를 선택하세요.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // User ID와 Password 확인
+            string userId = SfcUserIdTextBox.Text?.Trim() ?? "";
+            string password = SfcPasswordBox.Password ?? "";
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                MessageBox.Show("User ID를 입력하세요.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                SfcUserIdTextBox.Focus();
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                MessageBox.Show("Password를 입력하세요.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                SfcPasswordBox.Focus();
+                return;
+            }
+
+            try
+            {
+                TestSfcConnectionButton.IsEnabled = false;
+                TestSfcConnectionButton.Content = "테스트 중...";
+
+                // TNS 정보 가져오기
+                string selectedTnsName = SfcTnsComboBox.SelectedItem.ToString() ?? "";
+                var selectedTns = _tnsEntries.FirstOrDefault(t => t.Name == selectedTnsName);
+
+                if (selectedTns == null)
+                {
+                    MessageBox.Show("선택한 TNS 정보를 찾을 수 없습니다.", "오류",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // 연결 테스트
+                bool isConnected = await OracleDatabase.TestConnectionAsync(
+                    selectedTns.ConnectionString,
+                    userId,
+                    password);
+
+                if (isConnected)
+                {
+                    MessageBox.Show(
+                        $"연결 성공!\n\n" +
+                        $"TNS: {selectedTnsName}\n" +
+                        $"User ID: {userId}\n" +
+                        $"Host: {selectedTns.Host}:{selectedTns.Port}\n" +
+                        $"Service: {selectedTns.ServiceName}",
+                        "연결 테스트 성공",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "연결 실패!\n\n" +
+                        "사용자 ID 또는 비밀번호를 확인하세요.\n" +
+                        "자세한 내용은 출력 창을 확인하세요.",
+                        "연결 테스트 실패",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"연결 테스트 중 오류 발생:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                TestSfcConnectionButton.IsEnabled = true;
+                TestSfcConnectionButton.Content = "연결 테스트";
+            }
+        }
+    }
+}

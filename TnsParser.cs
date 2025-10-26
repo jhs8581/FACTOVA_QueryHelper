@@ -1,0 +1,170 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.RegularExpressions;
+
+namespace FACTOVA_Palletizing_Analysis
+{
+    public class TnsEntry
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Host { get; set; } = string.Empty;
+        public int Port { get; set; }
+        public string ServiceName { get; set; } = string.Empty;
+        public string ConnectionString { get; set; } = string.Empty;
+
+        public override string ToString() => Name;
+    }
+
+    public class TnsParser
+    {
+        public static List<TnsEntry> ParseTnsFile(string filePath)
+        {
+            var entries = new List<TnsEntry>();
+
+            if (!File.Exists(filePath))
+            {
+                return entries;
+            }
+
+            try
+            {
+                // UTF-8, UTF-8 BOM, ANSI 등 여러 인코딩으로 시도
+                string content = ReadFileWithEncoding(filePath);
+                
+                // TNS 엔트리 파싱 (이름 = 으로 시작하는 각 블록)
+                // 공백, 탭 등을 허용하고 대소문자 구분 없이 매칭
+                var matches = Regex.Matches(content, @"^[\s]*([^\s=]+)[\s]*=[\s]*\(DESCRIPTION", 
+                    RegexOptions.IgnoreCase | RegexOptions.Multiline);
+
+                foreach (Match match in matches)
+                {
+                    string tnsName = match.Groups[1].Value.Trim();
+                    
+                    // 해당 TNS 블록 추출
+                    int startIndex = match.Index;
+                    int endIndex = FindMatchingParenthesis(content, startIndex);
+                    
+                    if (endIndex > startIndex)
+                    {
+                        string block = content.Substring(startIndex, endIndex - startIndex + 1);
+                        
+                        var entry = new TnsEntry { Name = tnsName };
+                        
+                        // HOST 추출
+                        var hostMatch = Regex.Match(block, @"HOST[\s]*=[\s]*([^\)]+)", RegexOptions.IgnoreCase);
+                        if (hostMatch.Success)
+                        {
+                            entry.Host = hostMatch.Groups[1].Value.Trim();
+                        }
+                        
+                        // PORT 추출
+                        var portMatch = Regex.Match(block, @"PORT[\s]*=[\s]*(\d+)", RegexOptions.IgnoreCase);
+                        if (portMatch.Success)
+                        {
+                            int.TryParse(portMatch.Groups[1].Value, out int port);
+                            entry.Port = port;
+                        }
+                        
+                        // SERVICE_NAME 또는 SID 추출
+                        var serviceMatch = Regex.Match(block, @"SERVICE_NAME[\s]*=[\s]*([^\)]+)", RegexOptions.IgnoreCase);
+                        if (serviceMatch.Success)
+                        {
+                            entry.ServiceName = serviceMatch.Groups[1].Value.Trim();
+                        }
+                        else
+                        {
+                            // SID로도 시도
+                            var sidMatch = Regex.Match(block, @"SID[\s]*=[\s]*([^\)]+)", RegexOptions.IgnoreCase);
+                            if (sidMatch.Success)
+                            {
+                                entry.ServiceName = sidMatch.Groups[1].Value.Trim();
+                            }
+                        }
+                        
+                        // 연결 문자열 생성
+                        entry.ConnectionString = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={entry.Host})(PORT={entry.Port}))(CONNECT_DATA=(SERVICE_NAME={entry.ServiceName})));";
+                        
+                        entries.Add(entry);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // 파싱 실패 시 빈 리스트 반환
+            }
+
+            return entries;
+        }
+
+        private static string ReadFileWithEncoding(string filePath)
+        {
+            try
+            {
+                // 먼저 UTF-8로 시도
+                return File.ReadAllText(filePath, System.Text.Encoding.UTF8);
+            }
+            catch
+            {
+                try
+                {
+                    // ANSI (Default)로 시도
+                    return File.ReadAllText(filePath, System.Text.Encoding.Default);
+                }
+                catch
+                {
+                    // ASCII로 시도
+                    return File.ReadAllText(filePath, System.Text.Encoding.ASCII);
+                }
+            }
+        }
+
+        private static int FindMatchingParenthesis(string content, int startIndex)
+        {
+            int openCount = 0;
+            for (int i = startIndex; i < content.Length; i++)
+            {
+                if (content[i] == '(')
+                    openCount++;
+                else if (content[i] == ')')
+                {
+                    openCount--;
+                    if (openCount == 0)
+                        return i;
+                }
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// TNS 파일의 모든 엔트리 이름만 추출 (디버깅용)
+        /// </summary>
+        public static List<string> GetAllEntryNames(string filePath)
+        {
+            var names = new List<string>();
+
+            if (!File.Exists(filePath))
+            {
+                return names;
+            }
+
+            try
+            {
+                string content = ReadFileWithEncoding(filePath);
+                var matches = Regex.Matches(content, @"^[\s]*([^\s=]+)[\s]*=[\s]*\(DESCRIPTION", 
+                    RegexOptions.IgnoreCase | RegexOptions.Multiline);
+
+                foreach (Match match in matches)
+                {
+                    names.Add(match.Groups[1].Value.Trim());
+                }
+            }
+            catch
+            {
+                // 실패 시 빈 리스트 반환
+            }
+
+            return names;
+        }
+    }
+}
