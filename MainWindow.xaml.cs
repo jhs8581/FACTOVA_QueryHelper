@@ -98,6 +98,11 @@ namespace FACTOVA_Palletizing_Analysis
                 LoadSfcExcelButton.IsEnabled = true;
             }
 
+            //쿼리 로드
+            //string strQuery = "SELECT* FROM TB_SFC_MAINFRAME_CONFIG_N A WHERE A.TRANSACTION_TYPE_CODE = 'LOGIN_AUTO' AND SFC_MODE = 'PROD' AND A.CONFIG_REGISTER_YMD = @CONFIG_REGISTER_YMD AND PC_IP_ADDR IN(@PC_IP_ADDR)";
+            string strQuery = "SELECT* FROM TB_SFC_MAINFRAME_CONFIG_N A WHERE A.TRANSACTION_TYPE_CODE = 'LOGIN_AUTO' AND SFC_MODE = 'PROD' AND PC_IP_ADDR IN(@PC_IP_ADDR)";
+            SfcQueryTextBox.Text = strQuery;
+
             // SFC 계정 정보 로드
             SfcUserIdTextBox.Text = _settings.SfcUserId;
             SfcPasswordBox.Password = _settings.SfcPassword;
@@ -129,11 +134,6 @@ namespace FACTOVA_Palletizing_Analysis
                 if (_tnsEntries.Count > 0)
                 {
                     SfcTnsComboBox.SelectedIndex = 0;
-                    // TNS가 로드되면 연결 테스트 버튼 활성화
-                    if (TestSfcConnectionButton != null)
-                    {
-                        TestSfcConnectionButton.IsEnabled = true;
-                    }
                 }
             }
         }
@@ -1542,91 +1542,10 @@ namespace FACTOVA_Palletizing_Analysis
                 MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private async void TestSfcConnectionButton_Click(object sender, RoutedEventArgs e)
+        private void ResetSfcQueryButton_Click(object sender, RoutedEventArgs e)
         {
-            // TNS 선택 확인
-            if (SfcTnsComboBox.SelectedItem == null)
-            {
-                MessageBox.Show("TNS를 선택하세요.", "알림",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            // User ID와 Password 확인
-            string userId = SfcUserIdTextBox.Text?.Trim() ?? "";
-            string password = SfcPasswordBox.Password ?? "";
-
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                MessageBox.Show("User ID를 입력하세요.", "알림",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                SfcUserIdTextBox.Focus();
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(password))
-            {
-                MessageBox.Show("Password를 입력하세요.", "알림",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                SfcPasswordBox.Focus();
-                return;
-            }
-
-            try
-            {
-                TestSfcConnectionButton.IsEnabled = false;
-                TestSfcConnectionButton.Content = "테스트 중...";
-
-                // TNS 정보 가져오기
-                string selectedTnsName = SfcTnsComboBox.SelectedItem.ToString() ?? "";
-                var selectedTns = _tnsEntries.FirstOrDefault(t => t.Name == selectedTnsName);
-
-                if (selectedTns == null)
-                {
-                    MessageBox.Show("선택한 TNS 정보를 찾을 수 없습니다.", "오류",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-
-                // 연결 테스트
-                bool isConnected = await OracleDatabase.TestConnectionAsync(
-                    selectedTns.ConnectionString,
-                    userId,
-                    password);
-
-                if (isConnected)
-                {
-                    MessageBox.Show(
-                        $"연결 성공!\n\n" +
-                        $"TNS: {selectedTnsName}\n" +
-                        $"User ID: {userId}\n" +
-                        $"Host: {selectedTns.Host}:{selectedTns.Port}\n" +
-                        $"Service: {selectedTns.ServiceName}",
-                        "연결 테스트 성공",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "연결 실패!\n\n" +
-                        "사용자 ID 또는 비밀번호를 확인하세요.\n" +
-                        "자세한 내용은 출력 창을 확인하세요.",
-                        "연결 테스트 실패",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"연결 테스트 중 오류 발생:\n{ex.Message}", "오류",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                TestSfcConnectionButton.IsEnabled = true;
-                TestSfcConnectionButton.Content = "연결 테스트";
-            }
+            string strQuery = "SELECT* FROM TB_SFC_MAINFRAME_CONFIG_N A WHERE A.TRANSACTION_TYPE_CODE = 'LOGIN_AUTO' AND SFC_MODE = 'PROD' AND A.CONFIG_REGISTER_YMD = @CONFIG_REGISTER_YMD AND PC_IP_ADDR IN(@PC_IP_ADDR)";
+            SfcQueryTextBox.Text = strQuery;
         }
     }
 }
