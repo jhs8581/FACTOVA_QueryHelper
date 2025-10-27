@@ -44,6 +44,7 @@ namespace FACTOVA_Palletizing_Analysis
         private ObservableCollection<SfcEquipmentInfo> _sfcFilteredList;
         private ObservableCollection<CheckableComboBoxItem> _statusFilterItems;
         private ObservableCollection<CheckableComboBoxItem> _bizActorFilterItems;
+        private SfcFilterManager? _sfcFilterManager;
 
         public MainWindow()
         {
@@ -151,72 +152,34 @@ namespace FACTOVA_Palletizing_Analysis
             _bizActorFilterItems.Add(new CheckableComboBoxItem { Text = "RPT", IsChecked = false });
             FilterBizActorComboBox.ItemsSource = _bizActorFilterItems;
 
+            // SFC 필터 매니저 초기화
+            _sfcFilterManager = new SfcFilterManager(
+                _sfcEquipmentList,
+                _sfcFilteredList,
+                _statusFilterItems,
+                _bizActorFilterItems);
+
             // 콤보박스 텍스트 초기화
             UpdateFilterComboBoxText();
         }
 
         private void UpdateFilterComboBoxText()
         {
-            // 상태 필터 텍스트 업데이트
-            var checkedStatusItems = _statusFilterItems.Where(i => i.IsChecked && i.Text != "전체").ToList();
-            if (checkedStatusItems.Count == 0 || _statusFilterItems.First(i => i.Text == "전체").IsChecked)
-            {
-                FilterStatusComboBox.Text = "전체";
-            }
-            else
-            {
-                FilterStatusComboBox.Text = string.Join(", ", checkedStatusItems.Select(i => i.Text));
-            }
+            if (_sfcFilterManager == null)
+                return;
 
-            // BIZACTOR 필터 텍스트 업데이트
-            var checkedBizActorItems = _bizActorFilterItems.Where(i => i.IsChecked && i.Text != "전체").ToList();
-            if (checkedBizActorItems.Count == 0 || _bizActorFilterItems.First(i => i.Text == "전체").IsChecked)
-            {
-                FilterBizActorComboBox.Text = "전체";
-            }
-            else
-            {
-                FilterBizActorComboBox.Text = string.Join(", ", checkedBizActorItems.Select(i => i.Text));
-            }
+            var filterText = _sfcFilterManager.GetFilterComboBoxText();
+            FilterStatusComboBox.Text = filterText.StatusText;
+            FilterBizActorComboBox.Text = filterText.BizActorText;
         }
 
         private void FilterCheckBox_Changed(object sender, RoutedEventArgs e)
         {
-            if (sender is CheckBox checkBox && checkBox.DataContext is CheckableComboBoxItem item)
+            if (sender is CheckBox checkBox && 
+                checkBox.DataContext is CheckableComboBoxItem item &&
+                _sfcFilterManager != null)
             {
-                // "전체"를 선택하면 다른 모든 항목 선택 해제
-                if (item.Text == "전체" && item.IsChecked)
-                {
-                    var collection = _statusFilterItems.Contains(item) ? _statusFilterItems : _bizActorFilterItems;
-                    foreach (var otherItem in collection.Where(i => i.Text != "전체"))
-                    {
-                        otherItem.IsChecked = false;
-                    }
-                }
-                // 다른 항목을 선택하면 "전체" 선택 해제
-                else if (item.Text != "전체" && item.IsChecked)
-                {
-                    var collection = _statusFilterItems.Contains(item) ? _statusFilterItems : _bizActorFilterItems;
-                    var allItem = collection.FirstOrDefault(i => i.Text == "전체");
-                    if (allItem != null)
-                    {
-                        allItem.IsChecked = false;
-                    }
-                }
-                // 모든 항목이 선택 해제되면 "전체" 선택
-                else if (!item.IsChecked)
-                {
-                    var collection = _statusFilterItems.Contains(item) ? _statusFilterItems : _bizActorFilterItems;
-                    if (!collection.Any(i => i.IsChecked))
-                    {
-                        var allItem = collection.FirstOrDefault(i => i.Text == "전체");
-                        if (allItem != null)
-                        {
-                            allItem.IsChecked = true;
-                        }
-                    }
-                }
-
+                _sfcFilterManager.HandleCheckBoxChanged(item);
                 UpdateFilterComboBoxText();
             }
         }
@@ -1416,24 +1379,19 @@ namespace FACTOVA_Palletizing_Analysis
 
         private void ClearFilterButton_Click(object sender, RoutedEventArgs e)
         {
+            if (_sfcFilterManager == null)
+                return;
+
             // 텍스트 필터 초기화
             FilterIpTextBox.Text = "";
             FilterEquipmentIdTextBox.Text = "";
             FilterEquipmentNameTextBox.Text = "";
 
-            // 상태 필터 초기화
-            foreach (var item in _statusFilterItems)
-            {
-                item.IsChecked = item.Text == "전체";
-            }
-
-            // BIZACTOR 필터 초기화
-            foreach (var item in _bizActorFilterItems)
-            {
-                item.IsChecked = item.Text == "전체";
-            }
-
+            // 필터 매니저를 사용하여 초기화
+            _sfcFilterManager.ClearAllFilters();
             UpdateFilterComboBoxText();
+
+            // 필터 적용
             ApplySfcFilter();
             UpdateStatus("필터가 초기화되었습니다.", Colors.Green);
         }
@@ -1519,94 +1477,42 @@ namespace FACTOVA_Palletizing_Analysis
         private void ApplySfcFilter()
         {
             // UI 컨트롤이 초기화되지 않았으면 리턴
-            if (FilterStatusComboBox == null || FilterBizActorComboBox == null ||
-                FilterIpTextBox == null || FilterEquipmentIdTextBox == null || FilterEquipmentNameTextBox == null)
+            if (_sfcFilterManager == null ||
+                FilterIpTextBox == null || 
+                FilterEquipmentIdTextBox == null || 
+                FilterEquipmentNameTextBox == null)
                 return;
 
             // 콤보박스 텍스트 업데이트
             UpdateFilterComboBoxText();
 
-            // 필터 조건 가져오기
-            string ipFilter = FilterIpTextBox.Text?.Trim().ToLower() ?? "";
-            string equipmentIdFilter = FilterEquipmentIdTextBox.Text?.Trim().ToLower() ?? "";
-            string equipmentNameFilter = FilterEquipmentNameTextBox.Text?.Trim().ToLower() ?? "";
-            
-            // 선택된 상태 목록
-            var selectedStatuses = _statusFilterItems
-                .Where(i => i.IsChecked && i.Text != "전체")
-                .Select(i => i.Text)
-                .ToList();
-            bool isAllStatusSelected = _statusFilterItems.First(i => i.Text == "전체").IsChecked;
-
-            // 선택된 BIZACTOR 목록
-            var selectedBizActors = _bizActorFilterItems
-                .Where(i => i.IsChecked && i.Text != "전체")
-                .Select(i => i.Text)
-                .ToList();
-            bool isAllBizActorSelected = _bizActorFilterItems.First(i => i.Text == "전체").IsChecked;
-
-            // 필터링 수행
-            var filtered = _sfcEquipmentList.Where(item =>
+            // 필터 조건 생성
+            var criteria = new SfcFilterManager.FilterCriteria
             {
-                // IP 주소 필터
-                if (!string.IsNullOrEmpty(ipFilter) && !item.IpAddress.ToLower().Contains(ipFilter))
-                    return false;
+                IpAddress = FilterIpTextBox.Text,
+                EquipmentId = FilterEquipmentIdTextBox.Text,
+                EquipmentName = FilterEquipmentNameTextBox.Text
+            };
 
-                // 설비 ID 필터
-                if (!string.IsNullOrEmpty(equipmentIdFilter) && !item.EquipmentId.ToLower().Contains(equipmentIdFilter))
-                    return false;
-
-                // 설비명 필터
-                if (!string.IsNullOrEmpty(equipmentNameFilter) && !item.EquipmentName.ToLower().Contains(equipmentNameFilter))
-                    return false;
-
-                // 상태 필터 (멀티셀렉트)
-                if (!isAllStatusSelected && selectedStatuses.Count > 0)
-                {
-                    if (!selectedStatuses.Contains(item.Status))
-                        return false;
-                }
-
-                // BIZACTOR 필터 (멀티셀렉트)
-                if (!isAllBizActorSelected && selectedBizActors.Count > 0)
-                {
-                    if (!selectedBizActors.Contains(item.BizActor))
-                        return false;
-                }
-
-                return true;
-            }).ToList();
-
-            // 필터링된 리스트 업데이트
-            _sfcFilteredList.Clear();
-            foreach (var item in filtered)
-            {
-                _sfcFilteredList.Add(item);
-            }
+            // 필터 적용
+            var result = _sfcFilterManager.ApplyFilter(criteria);
 
             // 필터 상태 업데이트
-            UpdateFilterStatus(filtered.Count, _sfcEquipmentList.Count);
+            UpdateFilterStatus(result);
         }
 
         /// <summary>
         /// 필터 상태 메시지를 업데이트합니다.
         /// </summary>
-        private void UpdateFilterStatus(int filteredCount, int totalCount)
+        private void UpdateFilterStatus(FilterResult result)
         {
             // FilterStatusTextBlock이 초기화되지 않았으면 리턴
-            if (FilterStatusTextBlock == null)
+            if (FilterStatusTextBlock == null || result == null)
                 return;
 
-            if (filteredCount == totalCount)
-            {
-                FilterStatusTextBlock.Text = $"전체 {totalCount}개";
-                FilterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Gray);
-            }
-            else
-            {
-                FilterStatusTextBlock.Text = $"필터링: {filteredCount}개 / 전체: {totalCount}개";
-                FilterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Blue);
-            }
+            FilterStatusTextBlock.Text = result.GetStatusMessage();
+            FilterStatusTextBlock.Foreground = new SolidColorBrush(
+                result.IsFiltered ? Colors.Blue : Colors.Gray);
         }
 
         /// <summary>
