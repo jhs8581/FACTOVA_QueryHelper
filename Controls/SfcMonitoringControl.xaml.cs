@@ -14,7 +14,7 @@ namespace FACTOVA_QueryHelper.Controls
     /// </summary>
     public partial class SfcMonitoringControl : UserControl
     {
-        private const string DEFAULT_SFC_QUERY = "SELECT * FROM TB_SFC_MAINFRAME_CONFIG_N A WHERE A.TRANSACTION_TYPE_CODE = 'LOGIN_AUTO' AND SFC_MODE = 'PROD' AND A.CONFIG_REGISTER_YMD = @CONFIG_REGISTER_YMD AND PC_IP_ADDR IN (@PC_IP_ADDR)";
+        private const string DEFAULT_SFC_QUERY = "SELECT * FROM TB_SFC_MAINFRAME_CONFIG_N A WHERE A.TRANSACTION_TYPE_CODE = 'LOGIN_AUTO' AND SFC_MODE = 'PROD' AND PC_IP_ADDR IN (@PC_IP_ADDR)" + "\r\n" + "/*AND A.CONFIG_REGISTER_YMD = @CONFIG_REGISTER_YMD */";
         
         private SharedDataContext? _sharedData;
         private ObservableCollection<SfcEquipmentInfo> _sfcEquipmentList;
