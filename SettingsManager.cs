@@ -16,6 +16,7 @@ namespace FACTOVA_Palletizing_Analysis
         public string SfcExcelFilePath { get; set; } = string.Empty;
         public string SfcUserId { get; set; } = string.Empty;
         public string SfcPassword { get; set; } = string.Empty;
+        public string SfcTnsName { get; set; } = string.Empty; // SFC TNS 선택값 저장
     }
 
     public class SettingsManager
