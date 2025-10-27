@@ -275,12 +275,12 @@ namespace FACTOVA_QueryHelper.Controls
             if (offEquipments.Count > 0)
             {
                 var message = new StringBuilder();
-                message.AppendLine($"?? OFF 상태 설비 {offEquipments.Count}개 발견");
+                message.AppendLine($"OFF 상태 설비 {offEquipments.Count}개 발견");
                 message.AppendLine();
 
                 foreach (var equipment in offEquipments)
                 {
-                    message.AppendLine($"? {equipment.EquipmentName} ({equipment.IpAddress})");
+                    message.AppendLine($"{equipment.EquipmentName} ({equipment.IpAddress})");
                 }
 
                 MessageBox.Show(message.ToString(), "SFC 설비 상태 알림",

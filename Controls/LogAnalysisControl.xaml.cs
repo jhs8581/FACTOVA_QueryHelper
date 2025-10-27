@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
@@ -14,7 +14,7 @@ using System.Windows.Threading;
 namespace FACTOVA_QueryHelper.Controls
 {
     /// <summary>
-    /// LogAnalysisControl.xaml¿¡ ´ëÇÑ »óÈ£ ÀÛ¿ë ³í¸®
+    /// LogAnalysisControl.xamlì— ëŒ€í•œ ìƒí˜¸ ì‘ìš© ë…¼ë¦¬
     /// </summary>
     public partial class LogAnalysisControl : UserControl
     {
@@ -31,14 +31,14 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         /// <summary>
-        /// °øÀ¯ µ¥ÀÌÅÍ ÄÁÅØ½ºÆ®¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        /// ê³µìœ  ë°ì´í„° ì»¨í…ìŠ¤íŠ¸ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         /// </summary>
         public void Initialize(SharedDataContext sharedData)
         {
             _sharedData = sharedData;
             
-            // QueryExecutionManager¸¦ LogAnalysisControl¿¡¼­ ÃÊ±âÈ­
-            // (ResultTabControl°ú CreateResultTabÀº ÀÌ ÄÁÆ®·Ñ¿¡¸¸ ÀÖÀ½)
+            // QueryExecutionManagerë¥¼ LogAnalysisControlì—ì„œ ì´ˆê¸°í™”
+            // (ResultTabControlê³¼ CreateResultTabì€ ì´ ì»¨íŠ¸ë¡¤ì—ë§Œ ìˆìŒ)
             _sharedData.QueryExecutionManager = new QueryExecutionManager(
                 UpdateStatus,
                 ResultTabControl,
@@ -50,20 +50,20 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         /// <summary>
-        /// ¼³Á¤À» ·ÎµåÇÕ´Ï´Ù.
+        /// ì„¤ì •ì„ ë¡œë“œí•©ë‹ˆë‹¤.
         /// </summary>
         private void LoadSettings()
         {
             if (_sharedData == null) return;
 
-            // Excel ÆÄÀÏ °æ·Î ·Îµå
+            // Excel íŒŒì¼ ê²½ë¡œ ë¡œë“œ
             if (!string.IsNullOrWhiteSpace(_sharedData.Settings.ExcelFilePath) && 
                 File.Exists(_sharedData.Settings.ExcelFilePath))
             {
                 ExcelFilePathTextBox.Text = _sharedData.Settings.ExcelFilePath;
                 LoadQueriesButton.IsEnabled = true;
 
-                // ½ÃÆ® ¸ñ·Ï ·Îµå
+                // ì‹œíŠ¸ ëª©ë¡ ë¡œë“œ
                 try
                 {
                     var sheets = ExcelQueryReader.GetSheetNames(_sharedData.Settings.ExcelFilePath);
@@ -75,19 +75,19 @@ namespace FACTOVA_QueryHelper.Controls
                 }
                 catch
                 {
-                    // ½ÃÆ® ·Îµå ½ÇÆĞ ¹«½Ã
+                    // ì‹œíŠ¸ ë¡œë“œ ì‹¤íŒ¨ ë¬´ì‹œ
                 }
             }
 
-            // Äõ¸® Å¸ÀÌ¸Ó °£°İ ·Îµå
+            // ì¿¼ë¦¬ íƒ€ì´ë¨¸ ê°„ê²© ë¡œë“œ
             QueryIntervalTextBox.Text = _sharedData.Settings.QueryIntervalSeconds.ToString();
 
-            // ¾Ë¸² ½Ã ÀÚµ¿ ½ÇÇà ÁßÁö ¼³Á¤ ·Îµå
+            // ì•Œë¦¼ ì‹œ ìë™ ì‹¤í–‰ ì¤‘ì§€ ì„¤ì • ë¡œë“œ
             StopOnNotificationCheckBox.IsChecked = _sharedData.Settings.StopOnNotification;
         }
 
         /// <summary>
-        /// ÀÚµ¿ ½ÇÇà Å¸ÀÌ¸Ó¸¦ ÁßÁöÇÕ´Ï´Ù.
+        /// ìë™ ì‹¤í–‰ íƒ€ì´ë¨¸ë¥¼ ì¤‘ì§€í•©ë‹ˆë‹¤.
         /// </summary>
         public void StopAutoQuery()
         {
@@ -106,7 +106,7 @@ namespace FACTOVA_QueryHelper.Controls
             _isAutoQueryRunning = false;
             _remainingSeconds = 0;
 
-            // Ä«¿îÆ®´Ù¿î ÅØ½ºÆ® ÃÊ±âÈ­ ¹× ¼û±â±â
+            // ì¹´ìš´íŠ¸ë‹¤ìš´ í…ìŠ¤íŠ¸ ì´ˆê¸°í™” ë° ìˆ¨ê¸°ê¸°
             AutoQueryCountdownTextBlock.Text = "";
             AutoQueryCountdownBorder.Visibility = Visibility.Collapsed;
 
@@ -119,16 +119,16 @@ namespace FACTOVA_QueryHelper.Controls
             LoadQueriesButton.IsEnabled = true;
             BrowseExcelButton.IsEnabled = true;
 
-            UpdateStatus("ÀÚµ¿ Äõ¸® ½ÇÇà ÁßÁö", Colors.Orange);
+            UpdateStatus("ìë™ ì¿¼ë¦¬ ì‹¤í–‰ ì¤‘ì§€", Colors.Orange);
         }
 
-        #region Excel ÆÄÀÏ °ü·Ã ÀÌº¥Æ® ÇÚµé·¯
+        #region Excel íŒŒì¼ ê´€ë ¨ ì´ë²¤íŠ¸ í•¸ë“¤ëŸ¬
 
         private void BrowseExcelButton_Click(object sender, RoutedEventArgs e)
         {
             if (_sharedData == null) return;
 
-            string? filePath = FileDialogManager.OpenExcelFileDialog("Excel Äõ¸® ÆÄÀÏ ¼±ÅÃ");
+            string? filePath = FileDialogManager.OpenExcelFileDialog("Excel ì¿¼ë¦¬ íŒŒì¼ ì„ íƒ");
 
             if (filePath != null)
             {
@@ -146,11 +146,11 @@ namespace FACTOVA_QueryHelper.Controls
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Excel ÆÄÀÏ ÀĞ±â ½ÇÆĞ:\n{ex.Message}", "¿À·ù",
+                    MessageBox.Show($"Excel íŒŒì¼ ì½ê¸° ì‹¤íŒ¨:\n{ex.Message}", "ì˜¤ë¥˜",
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
 
-                // ¼³Á¤ ÀúÀå
+                // ì„¤ì • ì €ì¥
                 _sharedData.Settings.ExcelFilePath = filePath;
                 _sharedData.SaveSettingsCallback?.Invoke();
             }
@@ -160,67 +160,67 @@ namespace FACTOVA_QueryHelper.Controls
         {
             if (_sharedData == null) return;
 
-            System.Diagnostics.Debug.WriteLine("=== Äõ¸® ·Îµå ½ÃÀÛ ===");
-            System.Diagnostics.Debug.WriteLine($"Excel ÆÄÀÏ °æ·Î: {ExcelFilePathTextBox.Text}");
-            System.Diagnostics.Debug.WriteLine($"½ÃÀÛ Çà: {StartRowTextBox.Text}");
-            System.Diagnostics.Debug.WriteLine($"¼±ÅÃµÈ ½ÃÆ®: {SheetComboBox.SelectedItem?.ToString()}");
+            System.Diagnostics.Debug.WriteLine("=== ì¿¼ë¦¬ ë¡œë“œ ì‹œì‘ ===");
+            System.Diagnostics.Debug.WriteLine($"Excel íŒŒì¼ ê²½ë¡œ: {ExcelFilePathTextBox.Text}");
+            System.Diagnostics.Debug.WriteLine($"ì‹œì‘ í–‰: {StartRowTextBox.Text}");
+            System.Diagnostics.Debug.WriteLine($"ì„ íƒëœ ì‹œíŠ¸: {SheetComboBox.SelectedItem?.ToString()}");
 
             if (!ValidationHelper.ValidateStartRow(StartRowTextBox.Text, out int startRow))
             {
-                System.Diagnostics.Debug.WriteLine("½ÃÀÛ Çà °ËÁõ ½ÇÆĞ");
+                System.Diagnostics.Debug.WriteLine("ì‹œì‘ í–‰ ê²€ì¦ ì‹¤íŒ¨");
                 return;
             }
 
             try
             {
-                System.Diagnostics.Debug.WriteLine($"Excel ÆÄÀÏ¿¡¼­ Äõ¸® ·Îµå ½ÃÀÛ... (½ÃÀÛ Çà: {startRow})");
+                System.Diagnostics.Debug.WriteLine($"Excel íŒŒì¼ì—ì„œ ì¿¼ë¦¬ ë¡œë“œ ì‹œì‘... (ì‹œì‘ í–‰: {startRow})");
                 
                 _sharedData.LoadedQueries = ExcelManager.LoadQueries(
                     ExcelFilePathTextBox.Text,
                     SheetComboBox.SelectedItem?.ToString(),
                     startRow);
 
-                System.Diagnostics.Debug.WriteLine($"·ÎµåµÈ Äõ¸® ¼ö: {_sharedData.LoadedQueries.Count}°³");
+                System.Diagnostics.Debug.WriteLine($"ë¡œë“œëœ ì¿¼ë¦¬ ìˆ˜: {_sharedData.LoadedQueries.Count}ê°œ");
                 
-                // Äõ¸® ÇÊÅÍ ÄŞº¸¹Ú½º ÃÊ±âÈ­
+                // ì¿¼ë¦¬ í•„í„° ì½¤ë³´ë°•ìŠ¤ ì´ˆê¸°í™”
                 InitializeQueryFilterComboBox();
 
-                LoadedQueriesTextBlock.Text = $"{_sharedData.LoadedQueries.Count}°³";
+                LoadedQueriesTextBlock.Text = $"{_sharedData.LoadedQueries.Count}ê°œ";
                 ExecuteAllButton.IsEnabled = _sharedData.LoadedQueries.Count > 0;
                 StartAutoQueryButton.IsEnabled = _sharedData.LoadedQueries.Count > 0;
 
-                UpdateStatus($"{_sharedData.LoadedQueries.Count}°³ÀÇ Äõ¸®¸¦ ·ÎµåÇß½À´Ï´Ù.", Colors.Green);
-                System.Diagnostics.Debug.WriteLine("=== Äõ¸® ·Îµå ¿Ï·á ===");
+                UpdateStatus($"{_sharedData.LoadedQueries.Count}ê°œì˜ ì¿¼ë¦¬ë¥¼ ë¡œë“œí–ˆìŠµë‹ˆë‹¤.", Colors.Green);
+                System.Diagnostics.Debug.WriteLine("=== ì¿¼ë¦¬ ë¡œë“œ ì™„ë£Œ ===");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"=== Äõ¸® ·Îµå ½ÇÆĞ ===");
-                System.Diagnostics.Debug.WriteLine($"¿À·ù ¸Ş½ÃÁö: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"½ºÅÃ Æ®·¹ÀÌ½º:\n{ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine($"=== ì¿¼ë¦¬ ë¡œë“œ ì‹¤íŒ¨ ===");
+                System.Diagnostics.Debug.WriteLine($"ì˜¤ë¥˜ ë©”ì‹œì§€: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"ìŠ¤íƒ íŠ¸ë ˆì´ìŠ¤:\n{ex.StackTrace}");
                 
                 var errorMessage = new StringBuilder();
-                errorMessage.AppendLine($"Äõ¸® ·Îµå ½ÇÆĞ: {ex.Message}");
+                errorMessage.AppendLine($"ì¿¼ë¦¬ ë¡œë“œ ì‹¤íŒ¨: {ex.Message}");
                 errorMessage.AppendLine();
-                errorMessage.AppendLine("»ó¼¼ Á¤º¸:");
-                errorMessage.AppendLine($"- Excel ÆÄÀÏ: {ExcelFilePathTextBox.Text}");
-                errorMessage.AppendLine($"- ½ÃÆ®: {SheetComboBox.SelectedItem?.ToString() ?? "(¼±ÅÃµÇÁö ¾ÊÀ½)"}");
-                errorMessage.AppendLine($"- ½ÃÀÛ Çà: {startRow}");
+                errorMessage.AppendLine("ìƒì„¸ ì •ë³´:");
+                errorMessage.AppendLine($"- Excel íŒŒì¼: {ExcelFilePathTextBox.Text}");
+                errorMessage.AppendLine($"- ì‹œíŠ¸: {SheetComboBox.SelectedItem?.ToString() ?? "(ì„ íƒë˜ì§€ ì•ŠìŒ)"}");
+                errorMessage.AppendLine($"- ì‹œì‘ í–‰: {startRow}");
                 errorMessage.AppendLine();
-                errorMessage.AppendLine($"¿À·ù »ó¼¼:");
+                errorMessage.AppendLine($"ì˜¤ë¥˜ ìƒì„¸:");
                 errorMessage.AppendLine(ex.ToString());
 
-                MessageBox.Show(errorMessage.ToString(), "Äõ¸® ·Îµå ¿À·ù",
+                MessageBox.Show(errorMessage.ToString(), "ì¿¼ë¦¬ ë¡œë“œ ì˜¤ë¥˜",
                     MessageBoxButton.OK, MessageBoxImage.Error);
-                UpdateStatus($"Äõ¸® ·Îµå ½ÇÆĞ: {ex.Message}", Colors.Red);
+                UpdateStatus($"ì¿¼ë¦¬ ë¡œë“œ ì‹¤íŒ¨: {ex.Message}", Colors.Red);
             }
         }
 
         #endregion
 
-        #region Äõ¸® ÇÊÅÍ °ü·Ã ¸Ş¼­µå
+        #region ì¿¼ë¦¬ í•„í„° ê´€ë ¨ ë©”ì„œë“œ
 
         /// <summary>
-        /// Äõ¸® ÇÊÅÍ ÄŞº¸¹Ú½º¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        /// ì¿¼ë¦¬ í•„í„° ì½¤ë³´ë°•ìŠ¤ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         /// </summary>
         private void InitializeQueryFilterComboBox()
         {
@@ -228,17 +228,17 @@ namespace FACTOVA_QueryHelper.Controls
 
             _sharedData.QueryFilterItems.Clear();
 
-            // "ÀüÃ¼" Ç×¸ñ Ãß°¡ (±âº»°ª: Ã¼Å© ÇØÁ¦)
+            // "ì „ì²´" í•­ëª© ì¶”ê°€ (ê¸°ë³¸ê°’: ì²´í¬ í•´ì œ)
             _sharedData.QueryFilterItems.Add(new CheckableComboBoxItem 
             { 
-                Text = "ÀüÃ¼", 
+                Text = "ì „ì²´", 
                 IsChecked = false 
             });
 
-            // °¢ Äõ¸®¸¦ Ç×¸ñÀ¸·Î Ãß°¡
+            // ê° ì¿¼ë¦¬ë¥¼ í•­ëª©ìœ¼ë¡œ ì¶”ê°€
             foreach (var query in _sharedData.LoadedQueries)
             {
-                // ExcludeFlag°¡ 'Y'ÀÌ¸é ±âº» Ã¼Å©
+                // ExcludeFlagê°€ 'Y'ì´ë©´ ê¸°ë³¸ ì²´í¬
                 bool isChecked = string.Equals(query.ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase);
                 
                 _sharedData.QueryFilterItems.Add(new CheckableComboBoxItem
@@ -253,7 +253,7 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         /// <summary>
-        /// Äõ¸® ÇÊÅÍ ÄŞº¸¹Ú½ºÀÇ Ç¥½Ã ÅØ½ºÆ®¸¦ ¾÷µ¥ÀÌÆ®ÇÕ´Ï´Ù.
+        /// ì¿¼ë¦¬ í•„í„° ì½¤ë³´ë°•ìŠ¤ì˜ í‘œì‹œ í…ìŠ¤íŠ¸ë¥¼ ì—…ë°ì´íŠ¸í•©ë‹ˆë‹¤.
         /// </summary>
         private void UpdateQueryFilterComboBoxText()
         {
@@ -263,13 +263,13 @@ namespace FACTOVA_QueryHelper.Controls
                 return;
             }
 
-            var checkedItems = _sharedData.QueryFilterItems.Where(item => item.IsChecked && item.Text != "ÀüÃ¼").ToList();
+            var checkedItems = _sharedData.QueryFilterItems.Where(item => item.IsChecked && item.Text != "ì „ì²´").ToList();
             int totalQueries = _sharedData.QueryFilterItems.Count - 1;
             
             if (checkedItems.Count == 0)
             {
-                QueryFilterComboBox.Text = "¼±ÅÃ ¾È µÊ";
-                var allItem = _sharedData.QueryFilterItems.FirstOrDefault(item => item.Text == "ÀüÃ¼");
+                QueryFilterComboBox.Text = "ì„ íƒ ì•ˆ ë¨";
+                var allItem = _sharedData.QueryFilterItems.FirstOrDefault(item => item.Text == "ì „ì²´");
                 if (allItem != null && allItem.IsChecked)
                 {
                     allItem.IsChecked = false;
@@ -277,8 +277,8 @@ namespace FACTOVA_QueryHelper.Controls
             }
             else if (checkedItems.Count == totalQueries)
             {
-                QueryFilterComboBox.Text = "ÀüÃ¼";
-                var allItem = _sharedData.QueryFilterItems.FirstOrDefault(item => item.Text == "ÀüÃ¼");
+                QueryFilterComboBox.Text = "ì „ì²´";
+                var allItem = _sharedData.QueryFilterItems.FirstOrDefault(item => item.Text == "ì „ì²´");
                 if (allItem != null && !allItem.IsChecked)
                 {
                     allItem.IsChecked = true;
@@ -287,7 +287,7 @@ namespace FACTOVA_QueryHelper.Controls
             else
             {
                 QueryFilterComboBox.Text = string.Join(", ", checkedItems.Select(item => item.Text));
-                var allItem = _sharedData.QueryFilterItems.FirstOrDefault(item => item.Text == "ÀüÃ¼");
+                var allItem = _sharedData.QueryFilterItems.FirstOrDefault(item => item.Text == "ì „ì²´");
                 if (allItem != null && allItem.IsChecked)
                 {
                     allItem.IsChecked = false;
@@ -313,20 +313,20 @@ namespace FACTOVA_QueryHelper.Controls
         {
             if (_sharedData == null) return;
 
-            if (changedItem.Text == "ÀüÃ¼")
+            if (changedItem.Text == "ì „ì²´")
             {
-                foreach (var item in _sharedData.QueryFilterItems.Where(i => i.Text != "ÀüÃ¼"))
+                foreach (var item in _sharedData.QueryFilterItems.Where(i => i.Text != "ì „ì²´"))
                 {
                     item.IsChecked = changedItem.IsChecked;
                 }
             }
             else
             {
-                var allItem = _sharedData.QueryFilterItems.FirstOrDefault(item => item.Text == "ÀüÃ¼");
+                var allItem = _sharedData.QueryFilterItems.FirstOrDefault(item => item.Text == "ì „ì²´");
                 if (allItem != null)
                 {
                     int totalItems = _sharedData.QueryFilterItems.Count - 1;
-                    int checkedItems = _sharedData.QueryFilterItems.Count(item => item.IsChecked && item.Text != "ÀüÃ¼");
+                    int checkedItems = _sharedData.QueryFilterItems.Count(item => item.IsChecked && item.Text != "ì „ì²´");
                     
                     if (checkedItems == totalItems && !allItem.IsChecked)
                     {
@@ -343,7 +343,7 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         /// <summary>
-        /// ¼±ÅÃµÈ Äõ¸® ¸ñ·ÏÀ» ¹İÈ¯ÇÕ´Ï´Ù.
+        /// ì„ íƒëœ ì¿¼ë¦¬ ëª©ë¡ì„ ë°˜í™˜í•©ë‹ˆë‹¤.
         /// </summary>
         private List<QueryItem> GetSelectedQueries()
         {
@@ -353,7 +353,7 @@ namespace FACTOVA_QueryHelper.Controls
             }
 
             var selectedQueryNames = _sharedData.QueryFilterItems
-                .Where(item => item.IsChecked && item.Text != "ÀüÃ¼")
+                .Where(item => item.IsChecked && item.Text != "ì „ì²´")
                 .Select(item => item.Text)
                 .ToList();
 
@@ -369,7 +369,7 @@ namespace FACTOVA_QueryHelper.Controls
 
         #endregion
 
-        #region Äõ¸® ½ÇÇà °ü·Ã ¸Ş¼­µå
+        #region ì¿¼ë¦¬ ì‹¤í–‰ ê´€ë ¨ ë©”ì„œë“œ
 
         private async void ExecuteAllButton_Click(object sender, RoutedEventArgs e)
         {
@@ -382,17 +382,17 @@ namespace FACTOVA_QueryHelper.Controls
 
             var selectedQueries = GetSelectedQueries();
             
-            if (!ValidationHelper.ValidateListNotEmpty(selectedQueries, "¼±ÅÃµÈ Äõ¸® ¸ñ·Ï"))
+            if (!ValidationHelper.ValidateListNotEmpty(selectedQueries, "ì„ íƒëœ ì¿¼ë¦¬ ëª©ë¡"))
                 return;
 
             if (_sharedData.QueryExecutionManager == null)
             {
-                MessageBox.Show("Äõ¸® ½ÇÇà ¸Å´ÏÀú°¡ ÃÊ±âÈ­µÇÁö ¾Ê¾Ò½À´Ï´Ù.", "¿À·ù",
+                MessageBox.Show("ì¿¼ë¦¬ ì‹¤í–‰ ë§¤ë‹ˆì €ê°€ ì´ˆê¸°í™”ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.", "ì˜¤ë¥˜",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            // UI ºñÈ°¼ºÈ­
+            // UI ë¹„í™œì„±í™”
             SetQueryExecutionUIEnabled(false);
 
             try
@@ -400,10 +400,10 @@ namespace FACTOVA_QueryHelper.Controls
                 var result = await _sharedData.QueryExecutionManager.ExecuteQueriesAsync(selectedQueries);
 
                 UpdateStatus(
-                    $"ÀüÃ¼ ¿Ï·á: ¼º°ø {result.SuccessCount}°³, ½ÇÆĞ {result.FailCount}°³ (¼Ò¿ä½Ã°£: {result.TotalDuration:F2}ÃÊ)",
+                    $"ì „ì²´ ì™„ë£Œ: ì„±ê³µ {result.SuccessCount}ê°œ, ì‹¤íŒ¨ {result.FailCount}ê°œ (ì†Œìš”ì‹œê°„: {result.TotalDuration:F2}ì´ˆ)",
                     result.FailCount > 0 ? Colors.Orange : Colors.Green);
 
-                // ÀÛ¾÷ ·Î±× ÅÇ »ı¼º
+                // ì‘ì—… ë¡œê·¸ íƒ­ ìƒì„±
                 CreateExecutionLogTab(
                     result.ExecutionLogs,
                     result.StartTime,
@@ -412,13 +412,13 @@ namespace FACTOVA_QueryHelper.Controls
                     result.FailCount,
                     result.Notifications.Count);
 
-                // Ã¹ ¹øÂ° ÅÇ ¼±ÅÃ
+                // ì²« ë²ˆì§¸ íƒ­ ì„ íƒ
                 if (ResultTabControl.Items.Count > 0)
                 {
                     ResultTabControl.SelectedIndex = 0;
                 }
 
-                // ¾Ë¸² Ç¥½Ã
+                // ì•Œë¦¼ í‘œì‹œ
                 if (result.Notifications.Count > 0)
                 {
                     ShowNotificationsPopup(result.Notifications);
@@ -439,41 +439,41 @@ namespace FACTOVA_QueryHelper.Controls
 
         private void ShowNotificationsPopup(List<string> notifications)
         {
-            // ÆË¾÷ÀÌ ¶ß¸é Ã¼Å©¹Ú½º ¼³Á¤¿¡ µû¶ó ÀÚµ¿ Á¶È¸ Å¸ÀÌ¸Ó ÁßÁö
+            // íŒì—…ì´ ëœ¨ë©´ ì²´í¬ë°•ìŠ¤ ì„¤ì •ì— ë”°ë¼ ìë™ ì¡°íšŒ íƒ€ì´ë¨¸ ì¤‘ì§€
             if (_isAutoQueryRunning && StopOnNotificationCheckBox.IsChecked == true)
             {
                 StopAutoQuery();
             }
 
             var message = new StringBuilder();
-            message.AppendLine("¾Ë¸²ÀÌ ÀÖ½À´Ï´Ù:");
+            message.AppendLine("ì•Œë¦¼ì´ ìˆìŠµë‹ˆë‹¤:");
             message.AppendLine();
 
             foreach (var notification in notifications)
             {
-                message.AppendLine($"? {notification}");
+                message.AppendLine($"â€¢ {notification}");
             }
 
-            MessageBox.Show(message.ToString(), "Á¶È¸ °á°ú ¾Ë¸²", 
+            MessageBox.Show(message.ToString(), "ì¡°íšŒ ê²°ê³¼ ì•Œë¦¼", 
                 MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         #endregion
 
-        #region ÀÚµ¿ ½ÇÇà °ü·Ã ¸Ş¼­µå
+        #region ìë™ ì‹¤í–‰ ê´€ë ¨ ë©”ì„œë“œ
 
         private void StartAutoQueryButton_Click(object sender, RoutedEventArgs e)
         {
             if (_sharedData == null) return;
 
             var selectedQueries = GetSelectedQueries();
-            if (!ValidationHelper.ValidateListNotEmpty(selectedQueries, "¼±ÅÃµÈ Äõ¸® ¸ñ·Ï"))
+            if (!ValidationHelper.ValidateListNotEmpty(selectedQueries, "ì„ íƒëœ ì¿¼ë¦¬ ëª©ë¡"))
                 return;
 
             if (!ValidationHelper.ValidateQueryInterval(QueryIntervalTextBox.Text, out int interval))
                 return;
 
-            // ¼³Á¤ ÀúÀå
+            // ì„¤ì • ì €ì¥
             _sharedData.Settings.QueryIntervalSeconds = interval;
             _sharedData.SaveSettingsCallback?.Invoke();
 
@@ -491,7 +491,7 @@ namespace FACTOVA_QueryHelper.Controls
             _totalIntervalSeconds = intervalSeconds;
             _remainingSeconds = intervalSeconds;
             
-            // Äõ¸® ½ÇÇà Å¸ÀÌ¸Ó ¼³Á¤
+            // ì¿¼ë¦¬ ì‹¤í–‰ íƒ€ì´ë¨¸ ì„¤ì •
             _queryTimer = new DispatcherTimer();
             _queryTimer.Interval = TimeSpan.FromSeconds(intervalSeconds);
             _queryTimer.Tick += async (s, e) =>
@@ -501,13 +501,13 @@ namespace FACTOVA_QueryHelper.Controls
             };
             _queryTimer.Start();
 
-            // Ä«¿îÆ®´Ù¿î Å¸ÀÌ¸Ó ¼³Á¤
+            // ì¹´ìš´íŠ¸ë‹¤ìš´ íƒ€ì´ë¨¸ ì„¤ì •
             _countdownTimer = new DispatcherTimer();
             _countdownTimer.Interval = TimeSpan.FromSeconds(1);
             _countdownTimer.Tick += CountdownTimer_Tick;
             _countdownTimer.Start();
 
-            // Áï½Ã ÇÑ ¹ø ½ÇÇà
+            // ì¦‰ì‹œ í•œ ë²ˆ ì‹¤í–‰
             _ = ExecuteQueries();
 
             StartAutoQueryButton.IsEnabled = false;
@@ -519,7 +519,7 @@ namespace FACTOVA_QueryHelper.Controls
             AutoQueryCountdownBorder.Visibility = Visibility.Visible;
             UpdateCountdownDisplay();
 
-            UpdateStatus($"ÀÚµ¿ Äõ¸® ½ÇÇà ½ÃÀÛ (ÁÖ±â: {intervalSeconds}ÃÊ)", Colors.Green);
+            UpdateStatus($"ìë™ ì¿¼ë¦¬ ì‹¤í–‰ ì‹œì‘ (ì£¼ê¸°: {intervalSeconds}ì´ˆ)", Colors.Green);
         }
 
         private void CountdownTimer_Tick(object? sender, EventArgs e)
@@ -540,31 +540,31 @@ namespace FACTOVA_QueryHelper.Controls
                 
                 if (minutes > 0)
                 {
-                    AutoQueryCountdownTextBlock.Text = $"{minutes}ºĞ {seconds}ÃÊ";
+                    AutoQueryCountdownTextBlock.Text = $"{minutes}ë¶„ {seconds}ì´ˆ";
                 }
                 else
                 {
-                    AutoQueryCountdownTextBlock.Text = $"{seconds}ÃÊ";
+                    AutoQueryCountdownTextBlock.Text = $"{seconds}ì´ˆ";
                 }
             }
             else
             {
-                AutoQueryCountdownTextBlock.Text = "½ÇÇà Áß...";
+                AutoQueryCountdownTextBlock.Text = "ì‹¤í–‰ ì¤‘...";
             }
         }
 
         #endregion
 
-        #region °á°ú ÅÇ °ü·Ã ¸Ş¼­µå
+        #region ê²°ê³¼ íƒ­ ê´€ë ¨ ë©”ì„œë“œ
 
         private void ClearResultsButton_Click(object sender, RoutedEventArgs e)
         {
             ResultTabControl.Items.Clear();
-            UpdateStatus("°á°ú ÅÇÀÌ ÃÊ±âÈ­µÇ¾ú½À´Ï´Ù.", Colors.Gray);
+            UpdateStatus("ê²°ê³¼ íƒ­ì´ ì´ˆê¸°í™”ë˜ì—ˆìŠµë‹ˆë‹¤.", Colors.Gray);
         }
 
         /// <summary>
-        /// Äõ¸® °á°ú ÅÇÀ» »ı¼ºÇÕ´Ï´Ù.
+        /// ì¿¼ë¦¬ ê²°ê³¼ íƒ­ì„ ìƒì„±í•©ë‹ˆë‹¤.
         /// </summary>
         private void CreateResultTab(QueryItem queryItem, System.Data.DataTable? result, double duration, string? errorMessage)
         {
@@ -579,7 +579,7 @@ namespace FACTOVA_QueryHelper.Controls
 
             if (result != null && errorMessage == null)
             {
-                // ¼º°ø - µ¥ÀÌÅÍ ±×¸®µå »ı¼º
+                // ì„±ê³µ - ë°ì´í„° ê·¸ë¦¬ë“œ ìƒì„±
                 var dataGrid = new DataGrid
                 {
                     AutoGenerateColumns = true,
@@ -596,10 +596,10 @@ namespace FACTOVA_QueryHelper.Controls
                     ClipboardCopyMode = DataGridClipboardCopyMode.IncludeHeader
                 };
 
-                // ÄÁÅØ½ºÆ® ¸Ş´º Ãß°¡
+                // ì»¨í…ìŠ¤íŠ¸ ë©”ë‰´ ì¶”ê°€
                 var contextMenu = new ContextMenu();
                 
-                var copyMenuItem = new MenuItem { Header = "º¹»ç (Ctrl+C)" };
+                var copyMenuItem = new MenuItem { Header = "ë³µì‚¬ (Ctrl+C)" };
                 copyMenuItem.Click += (s, e) =>
                 {
                     try
@@ -609,17 +609,17 @@ namespace FACTOVA_QueryHelper.Controls
                             dataGrid.ClipboardCopyMode = DataGridClipboardCopyMode.ExcludeHeader;
                             ApplicationCommands.Copy.Execute(null, dataGrid);
                             dataGrid.UnselectAllCells();
-                            UpdateStatus("¼±ÅÃÇÑ ¼¿ÀÌ º¹»çµÇ¾ú½À´Ï´Ù.", Colors.Green);
+                            UpdateStatus("ì„ íƒí•œ ì…€ì´ ë³µì‚¬ë˜ì—ˆìŠµë‹ˆë‹¤.", Colors.Green);
                         }
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"º¹»ç ½ÇÆĞ:\n{ex.Message}", "¿À·ù", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"ë³µì‚¬ ì‹¤íŒ¨:\n{ex.Message}", "ì˜¤ë¥˜", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 };
                 contextMenu.Items.Add(copyMenuItem);
 
-                var copyWithHeaderMenuItem = new MenuItem { Header = "Çì´õ Æ÷ÇÔ º¹»ç" };
+                var copyWithHeaderMenuItem = new MenuItem { Header = "í—¤ë” í¬í•¨ ë³µì‚¬" };
                 copyWithHeaderMenuItem.Click += (s, e) =>
                 {
                     try
@@ -629,25 +629,25 @@ namespace FACTOVA_QueryHelper.Controls
                             dataGrid.ClipboardCopyMode = DataGridClipboardCopyMode.IncludeHeader;
                             ApplicationCommands.Copy.Execute(null, dataGrid);
                             dataGrid.UnselectAllCells();
-                            UpdateStatus("Çì´õ Æ÷ÇÔÇÏ¿© º¹»çµÇ¾ú½À´Ï´Ù.", Colors.Green);
+                            UpdateStatus("í—¤ë” í¬í•¨í•˜ì—¬ ë³µì‚¬ë˜ì—ˆìŠµë‹ˆë‹¤.", Colors.Green);
                         }
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"º¹»ç ½ÇÆĞ:\n{ex.Message}", "¿À·ù", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"ë³µì‚¬ ì‹¤íŒ¨:\n{ex.Message}", "ì˜¤ë¥˜", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 };
                 contextMenu.Items.Add(copyWithHeaderMenuItem);
 
                 contextMenu.Items.Add(new Separator());
 
-                var selectAllMenuItem = new MenuItem { Header = "¸ğµÎ ¼±ÅÃ (Ctrl+A)" };
+                var selectAllMenuItem = new MenuItem { Header = "ëª¨ë‘ ì„ íƒ (Ctrl+A)" };
                 selectAllMenuItem.Click += (s, e) => dataGrid.SelectAllCells();
                 contextMenu.Items.Add(selectAllMenuItem);
 
                 dataGrid.ContextMenu = contextMenu;
 
-                // Ctrl+C Å°º¸µå ´ÜÃàÅ° Áö¿ø
+                // Ctrl+C í‚¤ë³´ë“œ ë‹¨ì¶•í‚¤ ì§€ì›
                 dataGrid.PreviewKeyDown += (s, e) =>
                 {
                     if (e.Key == Key.C && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
@@ -668,7 +668,7 @@ namespace FACTOVA_QueryHelper.Controls
                 Grid.SetRow(dataGrid, 0);
                 grid.Children.Add(dataGrid);
 
-                // »óÅÂ Ç¥½Ã
+                // ìƒíƒœ í‘œì‹œ
                 var statusPanel = new StackPanel
                 {
                     Orientation = Orientation.Horizontal,
@@ -677,13 +677,13 @@ namespace FACTOVA_QueryHelper.Controls
 
                 statusPanel.Children.Add(new TextBlock
                 {
-                    Text = $"? {result.Rows.Count}°³ Çà | {result.Columns.Count}°³ ¿­ | ¼Ò¿ä½Ã°£: {duration:F2}ÃÊ",
+                    Text = $"âœ“ {result.Rows.Count}ê°œ í–‰ | {result.Columns.Count}ê°œ ì—´ | ì†Œìš”ì‹œê°„: {duration:F2}ì´ˆ",
                     FontSize = 11,
                     Foreground = new SolidColorBrush(Colors.Green),
                     VerticalAlignment = VerticalAlignment.Center
                 });
 
-                // DB ¿¬°á Á¤º¸ Ç¥½Ã
+                // DB ì—°ê²° ì •ë³´ í‘œì‹œ
                 if (!string.IsNullOrEmpty(queryItem.TnsName))
                 {
                     statusPanel.Children.Add(new TextBlock
@@ -712,11 +712,11 @@ namespace FACTOVA_QueryHelper.Controls
             }
             else
             {
-                // ¿À·ù - ¿À·ù ¸Ş½ÃÁö Ç¥½Ã
+                // ì˜¤ë¥˜ - ì˜¤ë¥˜ ë©”ì‹œì§€ í‘œì‹œ
                 var errorInfo = new StringBuilder();
-                errorInfo.AppendLine("Äõ¸® ½ÇÇà ½ÇÆĞ");
+                errorInfo.AppendLine("ì¿¼ë¦¬ ì‹¤í–‰ ì‹¤íŒ¨");
                 errorInfo.AppendLine();
-                errorInfo.AppendLine($"¿À·ù: {errorMessage}");
+                errorInfo.AppendLine($"ì˜¤ë¥˜: {errorMessage}");
                 errorInfo.AppendLine();
                 
                 if (!string.IsNullOrEmpty(queryItem.TnsName))
@@ -730,7 +730,7 @@ namespace FACTOVA_QueryHelper.Controls
                 
                 errorInfo.AppendLine($"User ID: {queryItem.UserId}");
                 errorInfo.AppendLine();
-                errorInfo.AppendLine("Äõ¸®:");
+                errorInfo.AppendLine("ì¿¼ë¦¬:");
                 errorInfo.AppendLine(queryItem.Query);
 
                 var errorTextBox = new TextBox
@@ -750,7 +750,7 @@ namespace FACTOVA_QueryHelper.Controls
 
                 var statusText = new TextBlock
                 {
-                    Text = "? ½ÇÇà ½ÇÆĞ",
+                    Text = "âœ— ì‹¤í–‰ ì‹¤íŒ¨",
                     FontSize = 11,
                     Foreground = new SolidColorBrush(Colors.Red),
                     Margin = new Thickness(5)
@@ -759,7 +759,7 @@ namespace FACTOVA_QueryHelper.Controls
                 Grid.SetRow(statusText, 1);
                 grid.Children.Add(statusText);
 
-                // ÅÇ Çì´õ¸¦ »¡°£»öÀ¸·Î Ç¥½Ã
+                // íƒ­ í—¤ë”ë¥¼ ë¹¨ê°„ìƒ‰ìœ¼ë¡œ í‘œì‹œ
                 tabItem.Foreground = new SolidColorBrush(Colors.Red);
             }
 
@@ -772,7 +772,7 @@ namespace FACTOVA_QueryHelper.Controls
         {
             var tabItem = new TabItem
             {
-                Header = "?? ÀÛ¾÷ ·Î±×",
+                Header = "ì‘ì—… ë¡œê·¸",
                 FontWeight = FontWeights.Bold
             };
 
@@ -780,7 +780,7 @@ namespace FACTOVA_QueryHelper.Controls
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
-            // »ó´Ü ¿ä¾à ÆĞ³Î
+            // ìƒë‹¨ ìš”ì•½ íŒ¨ë„
             var summaryBorder = new Border
             {
                 Background = new SolidColorBrush(Color.FromRgb(240, 248, 255)),
@@ -795,7 +795,7 @@ namespace FACTOVA_QueryHelper.Controls
 
             summaryPanel.Children.Add(new TextBlock
             {
-                Text = $"? ½ÃÀÛ: {startTime:HH:mm:ss}",
+                Text = $"ì‹œì‘: {startTime:HH:mm:ss}",
                 FontSize = 12,
                 Margin = new Thickness(0, 0, 20, 0),
                 VerticalAlignment = VerticalAlignment.Center
@@ -803,7 +803,7 @@ namespace FACTOVA_QueryHelper.Controls
 
             summaryPanel.Children.Add(new TextBlock
             {
-                Text = $"?? ¼Ò¿ä½Ã°£: {totalDuration:F2}ÃÊ",
+                Text = $"ì†Œìš”ì‹œê°„: {totalDuration:F2}ì´ˆ",
                 FontSize = 12,
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(Colors.Blue),
@@ -813,7 +813,7 @@ namespace FACTOVA_QueryHelper.Controls
 
             summaryPanel.Children.Add(new TextBlock
             {
-                Text = $"? ¼º°ø: {successCount}°³",
+                Text = $"ì„±ê³µ: {successCount}ê°œ",
                 FontSize = 12,
                 Foreground = new SolidColorBrush(Colors.Green),
                 Margin = new Thickness(0, 0, 20, 0),
@@ -824,7 +824,7 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 summaryPanel.Children.Add(new TextBlock
                 {
-                    Text = $"? ½ÇÆĞ: {failCount}°³",
+                    Text = $"ì‹¤íŒ¨: {failCount}ê°œ",
                     FontSize = 12,
                     Foreground = new SolidColorBrush(Colors.Red),
                     Margin = new Thickness(0, 0, 20, 0),
@@ -836,7 +836,7 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 summaryPanel.Children.Add(new TextBlock
                 {
-                    Text = $"?? ¾Ë¸²: {notificationCount}°³",
+                    Text = $"ì•Œë¦¼: {notificationCount}ê°œ",
                     FontSize = 12,
                     Foreground = new SolidColorBrush(Colors.Orange),
                     Margin = new Thickness(0, 0, 20, 0),
@@ -848,7 +848,7 @@ namespace FACTOVA_QueryHelper.Controls
             Grid.SetRow(summaryBorder, 0);
             grid.Children.Add(summaryBorder);
 
-            // ·Î±× ³»¿ë
+            // ë¡œê·¸ ë‚´ìš©
             var logTextBox = new TextBox
             {
                 Text = string.Join(Environment.NewLine, logs),
@@ -871,14 +871,14 @@ namespace FACTOVA_QueryHelper.Controls
 
         #endregion
 
-        #region À¯Æ¿¸®Æ¼ ¸Ş¼­µå
+        #region ìœ í‹¸ë¦¬í‹° ë©”ì„œë“œ
 
         private void UpdateStatus(string message, Color color)
         {
             StatusTextBlock.Text = message;
             StatusTextBlock.Foreground = new SolidColorBrush(color);
             
-            // ¸ŞÀÎ À©µµ¿ì »óÅÂ¹Ùµµ ¾÷µ¥ÀÌÆ®
+            // ë©”ì¸ ìœˆë„ìš° ìƒíƒœë°”ë„ ì—…ë°ì´íŠ¸
             _sharedData?.UpdateStatusCallback?.Invoke(message, color);
         }
 

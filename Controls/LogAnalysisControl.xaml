@@ -1,4 +1,4 @@
-<UserControl x:Class="FACTOVA_QueryHelper.Controls.LogAnalysisControl"
+﻿<UserControl x:Class="FACTOVA_QueryHelper.Controls.LogAnalysisControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -11,7 +11,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <GroupBox Header="Excel Query File Settings" Grid.Row="0" Padding="10" Margin="0,0,0,10">
+        <GroupBox Header="Excel 쿼리 파일 설정" Grid.Row="0" Padding="10" Margin="0,0,0,10">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -27,10 +27,10 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="Excel File:" VerticalAlignment="Center" Grid.Column="0" Margin="0,0,10,0"/>
+                    <TextBlock Text="Excel 파일:" VerticalAlignment="Center" Grid.Column="0" Margin="0,0,10,0"/>
                     <TextBox x:Name="ExcelFilePathTextBox" Grid.Column="1" Margin="5" 
                              IsReadOnly="True" VerticalAlignment="Center"/>
-                    <Button x:Name="BrowseExcelButton" Grid.Column="2" Content="Browse..." 
+                    <Button x:Name="BrowseExcelButton" Grid.Column="2" Content="찾아보기..." 
                             Width="100" Height="30" Margin="5"
                             Click="BrowseExcelButton_Click"/>
                 </Grid>
@@ -45,13 +45,14 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="Sheet:" VerticalAlignment="Center" Grid.Column="0" Margin="0,0,10,0"/>
+                    <TextBlock Text="시트:" VerticalAlignment="Center" Grid.Column="0" Margin="0,0,10,0"/>
                     <ComboBox x:Name="SheetComboBox" Grid.Column="1" Margin="5" VerticalAlignment="Center"/>
 
-                    <TextBlock Text="Start Row:" VerticalAlignment="Center" Grid.Column="2" Margin="20,0,10,0"/>
-                    <TextBox x:Name="StartRowTextBox" Grid.Column="3" Margin="5" Text="2" VerticalAlignment="Center"/>
+                    <TextBlock Text="시작 행:" VerticalAlignment="Center" Grid.Column="2" Margin="20,0,10,0"/>
+                    <TextBox x:Name="StartRowTextBox" Grid.Column="3" Margin="5" Text="2" VerticalAlignment="Center"
+                             ToolTip="데이터 시작 행 번호 (헤더 제외)"/>
 
-                    <TextBlock Text="(Excluding header row)" VerticalAlignment="Center" Grid.Column="4" Margin="10,0,10,0" 
+                    <TextBlock Text="(헤더 행 제외)" VerticalAlignment="Center" Grid.Column="4" Margin="10,0,10,0" 
                                FontSize="11" Foreground="Gray"/>
                 </Grid>
 
@@ -60,7 +61,7 @@
                           BorderBrush="#FF0078D7" 
                           BorderThickness="1">
                     <Expander.Header>
-                        <TextBlock Text="Excel Column Structure - Click to expand" 
+                        <TextBlock Text="Excel 열 구조 (고정) - 클릭하여 펼치기/접기" 
                                    FontWeight="Bold" 
                                    Foreground="#FF0078D7"/>
                     </Expander.Header>
@@ -68,7 +69,31 @@
                             Padding="15"
                             CornerRadius="0,0,5,5">
                         <TextBlock FontSize="11" LineHeight="18" TextWrapping="Wrap">
-                            A: TNS Name | B: User ID | C: Password | D: Tab Name | F: SQL Query | G: Execute Flag (Y/N) | H: Notify Flag (Y/N) | I: Greater Than Count | J: Equal Count | K: Less Than Count | L: Column Names | M: Column Values | N: Exclude Flag
+                            • A열: TNS 이름 (예: GM2MRSP)
+                            <LineBreak/>
+                            • B열: User ID (DB 계정)
+                            <LineBreak/>
+                            • C열: Password (DB 비밀번호)
+                            <LineBreak/>
+                            • D열: 탭 이름 (결과 탭에 표시될 이름)
+                            <LineBreak/>
+                            • F열: SQL 쿼리
+                            <LineBreak/>
+                            • G열: 실행 여부 (Y/N, 빈 값은 Y로 간주)
+                            <LineBreak/>
+                            • H열: 알림 여부 (Y/N)
+                            <LineBreak/>
+                            • I열: 이상 건수 (N건 이상일 때 알림)
+                            <LineBreak/>
+                            • J열: 같음 건수 (정확히 N건일 때 알림)
+                            <LineBreak/>
+                            • K열: 이하 건수 (N건 이하일 때 알림)
+                            <LineBreak/>
+                            • L열: 컬럼명 (쉼표로 구분)
+                            <LineBreak/>
+                            • M열: 컬럼값 (쉼표로 구분)
+                            <LineBreak/>
+                            • N열: 제외 여부 (N이면 로드 시 제외)
                         </TextBlock>
                     </Border>
                 </Expander>
@@ -80,11 +105,11 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,5">
-                        <TextBlock Text="Loaded Queries:" VerticalAlignment="Center" Margin="10,0,10,0"/>
-                        <TextBlock x:Name="LoadedQueriesTextBlock" Text="0" VerticalAlignment="Center" 
+                        <TextBlock Text="로드된 쿼리:" VerticalAlignment="Center" Margin="10,0,10,0"/>
+                        <TextBlock x:Name="LoadedQueriesTextBlock" Text="0개" VerticalAlignment="Center" 
                                    FontWeight="Bold" Foreground="#FF0078D7"/>
                         
-                        <TextBlock Text="Execute Queries:" VerticalAlignment="Center" Margin="20,0,10,0"/>
+                        <TextBlock Text="실행할 쿼리:" VerticalAlignment="Center" Margin="20,0,10,0"/>
                         <ComboBox x:Name="QueryFilterComboBox" Width="300" Margin="5,0,10,0" VerticalAlignment="Center"
                                   IsEditable="True"
                                   IsReadOnly="True"
@@ -99,14 +124,14 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
 
-                        <Button x:Name="LoadQueriesButton" Content="Load Queries" 
+                        <Button x:Name="LoadQueriesButton" Content="쿼리 로드" 
                                 Width="100" Height="30" Margin="5,0,10,0"
                                 Click="LoadQueriesButton_Click"
                                 Background="#FF0078D7" 
                                 Foreground="White"
                                 FontWeight="Bold"
                                 IsEnabled="False"/>
-                        <Button x:Name="ExecuteAllButton" Content="Execute Selected" 
+                        <Button x:Name="ExecuteAllButton" Content="선택한 쿼리 실행" 
                                 Width="130" Height="30" Margin="5,0,10,0"
                                 Click="ExecuteAllButton_Click"
                                 Background="#FF28A745" 
@@ -114,17 +139,18 @@
                                 FontWeight="Bold"
                                 IsEnabled="False"/>
                                 
-                        <Button x:Name="ClearResultsButton" Content="Clear Results" 
+                        <Button x:Name="ClearResultsButton" Content="결과 초기화" 
                                 Width="100" Height="30" Margin="5,0,10,0"
                                 Click="ClearResultsButton_Click"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Grid.Row="1">
-                        <TextBlock Text="Interval:" VerticalAlignment="Center" Margin="5,0,10,0"/>
-                        <TextBox x:Name="QueryIntervalTextBox" Width="60" Text="60" VerticalAlignment="Center"/>
-                        <TextBlock Text="seconds" VerticalAlignment="Center" Margin="5,0,10,0"/>
+                        <TextBlock Text="주기 실행:" VerticalAlignment="Center" Margin="5,0,10,0"/>
+                        <TextBox x:Name="QueryIntervalTextBox" Width="60" Text="60" VerticalAlignment="Center"
+                                 ToolTip="쿼리 실행 주기 (초)"/>
+                        <TextBlock Text="초" VerticalAlignment="Center" Margin="5,0,10,0"/>
                         
-                        <Button x:Name="StartAutoQueryButton" Content="Start Auto" 
+                        <Button x:Name="StartAutoQueryButton" Content="자동 실행 시작" 
                                 Width="120" Height="30" Margin="5,0,5,0"
                                 Click="StartAutoQueryButton_Click"
                                 Background="#FF0078D7" 
@@ -132,7 +158,7 @@
                                 FontWeight="Bold"
                                 IsEnabled="False"/>
                                 
-                        <Button x:Name="StopAutoQueryButton" Content="Stop Auto" 
+                        <Button x:Name="StopAutoQueryButton" Content="자동 실행 중지" 
                                 Width="120" Height="30" Margin="5,0,15,0"
                                 Click="StopAutoQueryButton_Click"
                                 Background="#FFDC3545" 
@@ -141,10 +167,11 @@
                                 IsEnabled="False"/>
                         
                         <CheckBox x:Name="StopOnNotificationCheckBox" 
-                                  Content="Stop on notification" 
+                                  Content="알림 시 자동 실행 중지" 
                                   VerticalAlignment="Center"
                                   Margin="0,0,15,0"
-                                  IsChecked="True"/>
+                                  IsChecked="True"
+                                  ToolTip="체크하면 알림 팝업이 표시될 때 자동 실행이 중지됩니다"/>
                         
                         <Border x:Name="AutoQueryCountdownBorder"
                                 Background="#FFF0F8FF" 
@@ -155,7 +182,7 @@
                                 VerticalAlignment="Center"
                                 Visibility="Collapsed">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Next execution: " 
+                                <TextBlock Text="다음 실행까지: " 
                                            FontSize="11" 
                                            VerticalAlignment="Center"/>
                                 <TextBlock x:Name="AutoQueryCountdownTextBlock" 
@@ -170,7 +197,7 @@
             </Grid>
         </GroupBox>
 
-        <GroupBox Header="Query Results" Grid.Row="1" Padding="10">
+        <GroupBox Header="쿼리 결과" Grid.Row="1" Padding="10">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
