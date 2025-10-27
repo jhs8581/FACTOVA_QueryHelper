@@ -17,6 +17,7 @@ namespace FACTOVA_Palletizing_Analysis
         public string SfcUserId { get; set; } = string.Empty;
         public string SfcPassword { get; set; } = string.Empty;
         public string SfcTnsName { get; set; } = string.Empty; // SFC TNS 선택값 저장
+        public bool StopOnNotification { get; set; } = true; // 알림 시 자동 실행 중지 (기본값: true)
     }
 
     public class SettingsManager

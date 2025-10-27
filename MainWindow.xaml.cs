@@ -39,6 +39,9 @@ namespace FACTOVA_Palletizing_Analysis
         private List<TnsEntry> _tnsEntries;
         private List<QueryItem> _loadedQueries;
         private DispatcherTimer? _queryTimer;
+        private DispatcherTimer? _countdownTimer;
+        private int _remainingSeconds;
+        private int _totalIntervalSeconds;
         private bool _isAutoQueryRunning = false;
         private ObservableCollection<SfcEquipmentInfo> _sfcEquipmentList;
         private ObservableCollection<SfcEquipmentInfo> _sfcFilteredList;
@@ -112,6 +115,9 @@ namespace FACTOVA_Palletizing_Analysis
 
             // 쿼리 타이머 간격 로드
             QueryIntervalTextBox.Text = _settings.QueryIntervalSeconds.ToString();
+
+            // 알림 시 자동 실행 중지 설정 로드
+            StopOnNotificationCheckBox.IsChecked = _settings.StopOnNotification;
 
             // SFC 조회 날짜를 오늘로 설정
             ConfigDatePicker.SelectedDate = DateTime.Today;
@@ -242,6 +248,9 @@ namespace FACTOVA_Palletizing_Analysis
             {
                 _settings.QueryIntervalSeconds = interval;
             }
+
+            // 알림 시 자동 실행 중지 설정 저장
+            _settings.StopOnNotification = StopOnNotificationCheckBox.IsChecked ?? true;
 
             SettingsManager.SaveSettings(_settings);
         }
@@ -412,7 +421,7 @@ namespace FACTOVA_Palletizing_Analysis
                 });
                 
                 // 디버그 로그
-                System.Diagnostics.Debug.WriteLine($"쿼리: {query.QueryName}, ExcludeFlag: '{query.ExcludeFlag}', IsChecked: {isChecked}");
+                System.Diagnostics.Debug.WriteLine($"쿼리: {query.QueryName}, ExcludeFlag: '|{query.ExcludeFlag}|', IsChecked: {isChecked}");
             }
 
             QueryFilterComboBox.ItemsSource = _queryFilterItems;
@@ -640,8 +649,8 @@ namespace FACTOVA_Palletizing_Analysis
 
         private void ShowNotificationsPopup(List<string> notifications)
         {
-            // 팝업이 뜨면 자동 조회 타이머 중지
-            if (_isAutoQueryRunning)
+            // 팝업이 뜨면 체크박스 설정에 따라 자동 조회 타이머 중지
+            if (_isAutoQueryRunning && StopOnNotificationCheckBox.IsChecked == true)
             {
                 StopAutoQuery();
             }
@@ -850,11 +859,24 @@ namespace FACTOVA_Palletizing_Analysis
         private void StartAutoQuery(int intervalSeconds)
         {
             _isAutoQueryRunning = true;
+            _totalIntervalSeconds = intervalSeconds;
+            _remainingSeconds = intervalSeconds;
             
+            // 쿼리 실행 타이머 설정
             _queryTimer = new DispatcherTimer();
             _queryTimer.Interval = TimeSpan.FromSeconds(intervalSeconds);
-            _queryTimer.Tick += async (s, e) => await ExecuteQueries();
+            _queryTimer.Tick += async (s, e) =>
+            {
+                _remainingSeconds = _totalIntervalSeconds; // 타이머 리셋
+                await ExecuteQueries();
+            };
             _queryTimer.Start();
+
+            // 카운트다운 타이머 설정 (1초마다 업데이트)
+            _countdownTimer = new DispatcherTimer();
+            _countdownTimer.Interval = TimeSpan.FromSeconds(1);
+            _countdownTimer.Tick += CountdownTimer_Tick;
+            _countdownTimer.Start();
 
             // 즉시 한 번 실행
             _ = ExecuteQueries();
@@ -865,7 +887,42 @@ namespace FACTOVA_Palletizing_Analysis
             LoadQueriesButton.IsEnabled = false;
             BrowseExcelButton.IsEnabled = false;
 
+            // 카운트다운 표시 활성화
+            AutoQueryCountdownBorder.Visibility = Visibility.Visible;
+            UpdateCountdownDisplay();
+
             UpdateStatus($"자동 쿼리 실행 시작 (주기: {intervalSeconds}초)", Colors.Green);
+        }
+
+        private void CountdownTimer_Tick(object? sender, EventArgs e)
+        {
+            if (_remainingSeconds > 0)
+            {
+                _remainingSeconds--;
+                UpdateCountdownDisplay();
+            }
+        }
+
+        private void UpdateCountdownDisplay()
+        {
+            if (_remainingSeconds > 0)
+            {
+                int minutes = _remainingSeconds / 60;
+                int seconds = _remainingSeconds % 60;
+                
+                if (minutes > 0)
+                {
+                    AutoQueryCountdownTextBlock.Text = $"{minutes}분 {seconds}초";
+                }
+                else
+                {
+                    AutoQueryCountdownTextBlock.Text = $"{seconds}초";
+                }
+            }
+            else
+            {
+                AutoQueryCountdownTextBlock.Text = "실행 중...";
+            }
         }
 
         private void StopAutoQuery()
@@ -876,7 +933,18 @@ namespace FACTOVA_Palletizing_Analysis
                 _queryTimer = null;
             }
 
+            if (_countdownTimer != null)
+            {
+                _countdownTimer.Stop();
+                _countdownTimer = null;
+            }
+
             _isAutoQueryRunning = false;
+            _remainingSeconds = 0;
+
+            // 카운트다운 텍스트 초기화 및 숨기기
+            AutoQueryCountdownTextBlock.Text = "";
+            AutoQueryCountdownBorder.Visibility = Visibility.Collapsed;
 
             StartAutoQueryButton.IsEnabled = _loadedQueries.Count > 0;
             StopAutoQueryButton.IsEnabled = false;
@@ -1374,5 +1442,6 @@ namespace FACTOVA_Palletizing_Analysis
                 e.Row.Background = new SolidColorBrush(Colors.White);
             }
         }
+
     }
 }

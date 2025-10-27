@@ -161,12 +161,39 @@
                                             IsEnabled="False"/>
                                             
                                     <Button x:Name="StopAutoQueryButton" Content="자동 실행 중지" 
-                                            Width="120" Height="30" Margin="5,0,0,0"
+                                            Width="120" Height="30" Margin="5,0,15,0"
                                             Click="StopAutoQueryButton_Click"
                                             Background="#FFDC3545" 
                                             Foreground="White"
                                             FontWeight="Bold"
                                             IsEnabled="False"/>
+                                    
+                                    <CheckBox x:Name="StopOnNotificationCheckBox" 
+                                              Content="알림 시 자동 실행 중지" 
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"
+                                              IsChecked="True"
+                                              ToolTip="체크하면 알림 팝업이 표시될 때 자동 실행이 중지됩니다"/>
+                                    
+                                    <Border x:Name="AutoQueryCountdownBorder"
+                                            Background="#FFF0F8FF" 
+                                            BorderBrush="#FF0078D7" 
+                                            BorderThickness="1" 
+                                            CornerRadius="3" 
+                                            Padding="8,4"
+                                            VerticalAlignment="Center"
+                                            Visibility="Collapsed">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="⏱️ 다음 실행까지: " 
+                                                       FontSize="11" 
+                                                       VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="AutoQueryCountdownTextBlock" 
+                                                       FontSize="11" 
+                                                       FontWeight="Bold" 
+                                                       Foreground="#FF0078D7"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
                                 </StackPanel>
                             </Grid>
                         </Grid>
