@@ -84,13 +84,12 @@ namespace FACTOVA_Palletizing_Analysis
 
             // 작업 로그 헤더 추가
             result.ExecutionLogs.Add($"작업 시작 시간: {result.StartTime:yyyy-MM-dd HH:mm:ss}");
-            result.ExecutionLogs.Add($"로드된 쿼리 수: {queries.Count}개");
+            result.ExecutionLogs.Add($"선택된 쿼리 수: {queries.Count}개");
             result.ExecutionLogs.Add(new string('=', 80));
             result.ExecutionLogs.Add("");
 
-            // G열이 'Y'인 쿼리만 필터링
-            var queriesToExecute = queries.Where(q =>
-                string.IsNullOrWhiteSpace(q.EnabledFlag) || q.EnabledFlag == "Y").ToList();
+            // 전달받은 쿼리를 그대로 실행 (필터링은 MainWindow에서 처리됨)
+            var queriesToExecute = queries;
 
             result.ExecutionLogs.Add($"실행 대상 쿼리: {queriesToExecute.Count}개");
             result.ExecutionLogs.Add("");

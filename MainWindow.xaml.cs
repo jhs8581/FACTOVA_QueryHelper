@@ -44,6 +44,7 @@ namespace FACTOVA_Palletizing_Analysis
         private ObservableCollection<SfcEquipmentInfo> _sfcFilteredList;
         private ObservableCollection<CheckableComboBoxItem> _statusFilterItems;
         private ObservableCollection<CheckableComboBoxItem> _bizActorFilterItems;
+        private ObservableCollection<CheckableComboBoxItem> _queryFilterItems;
         private SfcFilterManager? _sfcFilterManager;
         private SfcQueryManager? _sfcQueryManager;
         private QueryExecutionManager? _queryExecutionManager;
@@ -58,6 +59,7 @@ namespace FACTOVA_Palletizing_Analysis
             _sfcFilteredList = new ObservableCollection<SfcEquipmentInfo>();
             _statusFilterItems = new ObservableCollection<CheckableComboBoxItem>();
             _bizActorFilterItems = new ObservableCollection<CheckableComboBoxItem>();
+            _queryFilterItems = new ObservableCollection<CheckableComboBoxItem>();
             
             Loaded += MainWindow_Loaded;
             Closing += MainWindow_Closing;
@@ -349,6 +351,9 @@ namespace FACTOVA_Palletizing_Analysis
                     System.Diagnostics.Debug.WriteLine($"      NotifyFlag: {q.NotifyFlag}");
                 }
 
+                // 쿼리 필터 콤보박스 초기화
+                InitializeQueryFilterComboBox();
+
                 LoadedQueriesTextBlock.Text = $"{_loadedQueries.Count}개";
                 ExecuteAllButton.IsEnabled = _loadedQueries.Count > 0;
                 StartAutoQueryButton.IsEnabled = _loadedQueries.Count > 0;
@@ -379,6 +384,180 @@ namespace FACTOVA_Palletizing_Analysis
             }
         }
 
+        /// <summary>
+        /// 쿼리 필터 콤보박스를 초기화합니다.
+        /// </summary>
+        private void InitializeQueryFilterComboBox()
+        {
+            _queryFilterItems.Clear();
+
+            // "전체" 항목 추가 (기본값: 체크 해제)
+            _queryFilterItems.Add(new CheckableComboBoxItem 
+            { 
+                Text = "전체", 
+                IsChecked = false 
+            });
+
+            // 각 쿼리를 항목으로 추가 (D열: QueryName, N열: ExcludeFlag)
+            // N열이 'Y'인 쿼리만 기본 체크
+            foreach (var query in _loadedQueries)
+            {
+                // ExcludeFlag가 'Y'이면 기본 체크 (즉, N열에 Y가 입력된 경우)
+                bool isChecked = string.Equals(query.ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase);
+                
+                _queryFilterItems.Add(new CheckableComboBoxItem
+                {
+                    Text = query.QueryName,
+                    IsChecked = isChecked
+                });
+                
+                // 디버그 로그
+                System.Diagnostics.Debug.WriteLine($"쿼리: {query.QueryName}, ExcludeFlag: '{query.ExcludeFlag}', IsChecked: {isChecked}");
+            }
+
+            QueryFilterComboBox.ItemsSource = _queryFilterItems;
+            
+            // 콤보박스 텍스트 업데이트 (전체 체크 여부 확인)
+            UpdateQueryFilterComboBoxText();
+        }
+
+        /// <summary>
+        /// 쿼리 필터 콤보박스의 표시 텍스트를 업데이트합니다.
+        /// </summary>
+        private void UpdateQueryFilterComboBoxText()
+        {
+            if (_queryFilterItems == null || _queryFilterItems.Count == 0)
+            {
+                QueryFilterComboBox.Text = "";
+                return;
+            }
+
+            // "전체" 항목 제외하고 체크된 항목만 가져오기
+            var checkedItems = _queryFilterItems.Where(item => item.IsChecked && item.Text != "전체").ToList();
+            
+            // 총 쿼리 개수 (전체 항목 제외)
+            int totalQueries = _queryFilterItems.Count - 1;
+            
+            if (checkedItems.Count == 0)
+            {
+                // 선택된 항목이 없을 때
+                QueryFilterComboBox.Text = "선택 안 됨";
+                
+                // "전체" 항목 체크 해제
+                var allItem = _queryFilterItems.FirstOrDefault(item => item.Text == "전체");
+                if (allItem != null && allItem.IsChecked)
+                {
+                    allItem.IsChecked = false;
+                }
+            }
+            else if (checkedItems.Count == totalQueries)
+            {
+                // 모든 쿼리가 선택되었을 때
+                QueryFilterComboBox.Text = "전체";
+                
+                // "전체" 항목도 체크
+                var allItem = _queryFilterItems.FirstOrDefault(item => item.Text == "전체");
+                if (allItem != null && !allItem.IsChecked)
+                {
+                    allItem.IsChecked = true;
+                }
+            }
+            else
+            {
+                // 일부 쿼리만 선택되었을 때 - 쉼표로 연결하여 표시
+                QueryFilterComboBox.Text = string.Join(", ", checkedItems.Select(item => item.Text));
+                
+                // "전체" 항목 체크 해제
+                var allItem = _queryFilterItems.FirstOrDefault(item => item.Text == "전체");
+                if (allItem != null && allItem.IsChecked)
+                {
+                    allItem.IsChecked = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 쿼리 필터 체크박스 변경 이벤트 핸들러
+        /// </summary>
+        private void QueryFilterCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            if (sender is CheckBox checkBox && 
+                checkBox.DataContext is CheckableComboBoxItem item)
+            {
+                HandleQueryFilterCheckBoxChanged(item);
+            }
+        }
+
+        /// <summary>
+        /// 쿼리 필터 콤보박스 닫힘 이벤트 핸들러
+        /// </summary>
+        private void QueryFilterComboBox_DropDownClosed(object sender, EventArgs e)
+        {
+            UpdateQueryFilterComboBoxText();
+        }
+
+        /// <summary>
+        /// 쿼리 필터 체크박스 변경 처리
+        /// </summary>
+        private void HandleQueryFilterCheckBoxChanged(CheckableComboBoxItem changedItem)
+        {
+            if (changedItem.Text == "전체")
+            {
+                // "전체"가 체크되면 모든 항목 체크, 해제되면 모든 항목 해제
+                foreach (var item in _queryFilterItems.Where(i => i.Text != "전체"))
+                {
+                    item.IsChecked = changedItem.IsChecked;
+                }
+            }
+            else
+            {
+                // 개별 항목이 변경된 경우
+                var allItem = _queryFilterItems.FirstOrDefault(item => item.Text == "전체");
+                if (allItem != null)
+                {
+                    // 모든 개별 항목이 체크되면 "전체"도 체크
+                    int totalItems = _queryFilterItems.Count - 1; // "전체" 제외
+                    int checkedItems = _queryFilterItems.Count(item => item.IsChecked && item.Text != "전체");
+                    
+                    if (checkedItems == totalItems && !allItem.IsChecked)
+                    {
+                        allItem.IsChecked = true;
+                    }
+                    else if (checkedItems < totalItems && allItem.IsChecked)
+                    {
+                        allItem.IsChecked = false;
+                    }
+                }
+            }
+
+            UpdateQueryFilterComboBoxText();
+        }
+
+        /// <summary>
+        /// 선택된 쿼리 목록을 반환합니다.
+        /// </summary>
+        private List<QueryItem> GetSelectedQueries()
+        {
+            if (_queryFilterItems == null || _queryFilterItems.Count == 0)
+            {
+                return _loadedQueries;
+            }
+
+            var selectedQueryNames = _queryFilterItems
+                .Where(item => item.IsChecked && item.Text != "전체")
+                .Select(item => item.Text)
+                .ToList();
+
+            if (selectedQueryNames.Count == 0)
+            {
+                return new List<QueryItem>();
+            }
+
+            return _loadedQueries
+                .Where(q => selectedQueryNames.Contains(q.QueryName))
+                .ToList();
+        }
+        
         private async void ExecuteAllButton_Click(object sender, RoutedEventArgs e)
         {
             await ExecuteQueries();
@@ -386,7 +565,10 @@ namespace FACTOVA_Palletizing_Analysis
 
         private async System.Threading.Tasks.Task ExecuteQueries()
         {
-            if (!ValidationHelper.ValidateListNotEmpty(_loadedQueries, "쿼리 목록"))
+            // 선택된 쿼리 가져오기
+            var selectedQueries = GetSelectedQueries();
+            
+            if (!ValidationHelper.ValidateListNotEmpty(selectedQueries, "선택된 쿼리 목록"))
                 return;
 
             // TNS 엔트리가 로드되지 않았으면 로드 시도
@@ -413,8 +595,8 @@ namespace FACTOVA_Palletizing_Analysis
 
             try
             {
-                // Manager를 사용하여 쿼리 실행
-                var result = await _queryExecutionManager.ExecuteQueriesAsync(_loadedQueries);
+                // Manager를 사용하여 선택된 쿼리만 실행
+                var result = await _queryExecutionManager.ExecuteQueriesAsync(selectedQueries);
 
                 // 상태 업데이트
                 UpdateStatus(
@@ -649,7 +831,8 @@ namespace FACTOVA_Palletizing_Analysis
 
         private void StartAutoQueryButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!ValidationHelper.ValidateListNotEmpty(_loadedQueries, "쿼리 목록"))
+            var selectedQueries = GetSelectedQueries();
+            if (!ValidationHelper.ValidateListNotEmpty(selectedQueries, "선택된 쿼리 목록"))
                 return;
 
             if (!ValidationHelper.ValidateQueryInterval(QueryIntervalTextBox.Text, out int interval))
@@ -1104,7 +1287,7 @@ namespace FACTOVA_Palletizing_Analysis
                 MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private const string DEFAULT_SFC_QUERY = "SELECT * FROM TB_SFC_MAINFRAME_CONFIG_N A WHERE A.TRANSACTION_TYPE_CODE = 'LOGIN_AUTO' AND SFC_MODE = 'PROD' AND A.CONFIG_REGISTER_YMD = @CONFIG_REGISTER_YMD AND PC_IP_ADDR IN (@PC_IP_ADDR)";
+        private const string DEFAULT_SFC_QUERY = "SELECT * FROM TB_SFC_MAINFRAME_CONFIG_N A WHERE A.TRANSACTION_TYPE_CODE = 'LOGIN_AUTO' AND SFC_MODE = 'PROD' AND PC_IP_ADDR IN (@PC_IP_ADDR) /*AND A.CONFIG_REGISTER_YMD = @CONFIG_REGISTER_YMD*/";
         
         private void ResetSfcQueryButton_Click(object sender, RoutedEventArgs e)
         {
