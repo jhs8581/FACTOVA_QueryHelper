@@ -316,25 +316,64 @@ namespace FACTOVA_Palletizing_Analysis
 
         private void LoadQueriesButton_Click(object sender, RoutedEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine("=== 쿼리 로드 시작 ===");
+            System.Diagnostics.Debug.WriteLine($"Excel 파일 경로: {ExcelFilePathTextBox.Text}");
+            System.Diagnostics.Debug.WriteLine($"시작 행: {StartRowTextBox.Text}");
+            System.Diagnostics.Debug.WriteLine($"선택된 시트: {SheetComboBox.SelectedItem?.ToString()}");
+
             if (!ValidationHelper.ValidateStartRow(StartRowTextBox.Text, out int startRow))
+            {
+                System.Diagnostics.Debug.WriteLine("시작 행 검증 실패");
                 return;
+            }
 
             try
             {
+                System.Diagnostics.Debug.WriteLine($"Excel 파일에서 쿼리 로드 시작... (시작 행: {startRow})");
+                
                 _loadedQueries = ExcelManager.LoadQueries(
                     ExcelFilePathTextBox.Text,
                     SheetComboBox.SelectedItem?.ToString(),
                     startRow);
+
+                System.Diagnostics.Debug.WriteLine($"로드된 쿼리 수: {_loadedQueries.Count}개");
+                
+                // 디버그: 로드된 쿼리 목록 출력
+                for (int i = 0; i < Math.Min(_loadedQueries.Count, 5); i++)
+                {
+                    var q = _loadedQueries[i];
+                    System.Diagnostics.Debug.WriteLine($"  [{i + 1}] {q.QueryName} (행: {q.RowNumber})");
+                    System.Diagnostics.Debug.WriteLine($"      TNS/Host: {q.TnsName}{q.Host}");
+                    System.Diagnostics.Debug.WriteLine($"      UserID: {q.UserId}");
+                    System.Diagnostics.Debug.WriteLine($"      EnabledFlag: {q.EnabledFlag}");
+                    System.Diagnostics.Debug.WriteLine($"      NotifyFlag: {q.NotifyFlag}");
+                }
 
                 LoadedQueriesTextBlock.Text = $"{_loadedQueries.Count}개";
                 ExecuteAllButton.IsEnabled = _loadedQueries.Count > 0;
                 StartAutoQueryButton.IsEnabled = _loadedQueries.Count > 0;
 
                 UpdateStatus($"{_loadedQueries.Count}개의 쿼리를 로드했습니다.", Colors.Green);
+                System.Diagnostics.Debug.WriteLine("=== 쿼리 로드 완료 ===");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"쿼리 로드 실패:\n{ex.Message}", "오류",
+                System.Diagnostics.Debug.WriteLine($"=== 쿼리 로드 실패 ===");
+                System.Diagnostics.Debug.WriteLine($"오류 메시지: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"스택 트레이스:\n{ex.StackTrace}");
+                
+                var errorMessage = new StringBuilder();
+                errorMessage.AppendLine($"쿼리 로드 실패: {ex.Message}");
+                errorMessage.AppendLine();
+                errorMessage.AppendLine("상세 정보:");
+                errorMessage.AppendLine($"- Excel 파일: {ExcelFilePathTextBox.Text}");
+                errorMessage.AppendLine($"- 시트: {SheetComboBox.SelectedItem?.ToString() ?? "(선택되지 않음)"}");
+                errorMessage.AppendLine($"- 시작 행: {startRow}");
+                errorMessage.AppendLine();
+                errorMessage.AppendLine($"오류 상세:");
+                errorMessage.AppendLine(ex.ToString());
+
+                MessageBox.Show(errorMessage.ToString(), "쿼리 로드 오류",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 UpdateStatus($"쿼리 로드 실패: {ex.Message}", Colors.Red);
             }
@@ -454,10 +493,22 @@ namespace FACTOVA_Palletizing_Analysis
 
         private void LoadSfcExcelButton_Click(object sender, RoutedEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine("=== SFC Excel 로드 시작 ===");
+            System.Diagnostics.Debug.WriteLine($"Excel 파일 경로: {SfcExcelFilePathTextBox.Text}");
+
             try
             {
                 var equipmentList = ExcelManager.LoadSfcEquipmentList(SfcExcelFilePathTextBox.Text);
                 
+                System.Diagnostics.Debug.WriteLine($"로드된 설비 수: {equipmentList.Count}개");
+                
+                // 디버그: 처음 5개 설비 정보 출력
+                for (int i = 0; i < Math.Min(equipmentList.Count, 5); i++)
+                {
+                    var eq = equipmentList[i];
+                    System.Diagnostics.Debug.WriteLine($"  [{i + 1}] {eq.EquipmentName} ({eq.IpAddress})");
+                }
+
                 _sfcEquipmentList.Clear();
                 foreach (var item in equipmentList)
                 {
@@ -467,10 +518,26 @@ namespace FACTOVA_Palletizing_Analysis
                 ExecuteSfcQueryButton.IsEnabled = _sfcEquipmentList.Count > 0;
                 ApplySfcFilter();
                 UpdateStatus($"{_sfcEquipmentList.Count}개의 설비 정보를 로드했습니다.", Colors.Green);
+                
+                System.Diagnostics.Debug.WriteLine("=== SFC Excel 로드 완료 ===");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Excel 파일 로드 실패:\n{ex.Message}", "오류",
+                System.Diagnostics.Debug.WriteLine($"=== SFC Excel 로드 실패 ===");
+                System.Diagnostics.Debug.WriteLine($"오류 메시지: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"스택 트레이스:\n{ex.StackTrace}");
+
+                var errorMessage = new StringBuilder();
+                errorMessage.AppendLine($"Excel 파일 로드 실패: {ex.Message}");
+                errorMessage.AppendLine();
+                errorMessage.AppendLine("상세 정보:");
+                errorMessage.AppendLine($"- Excel 파일: {SfcExcelFilePathTextBox.Text}");
+                errorMessage.AppendLine($"- 파일 존재: {File.Exists(SfcExcelFilePathTextBox.Text)}");
+                errorMessage.AppendLine();
+                errorMessage.AppendLine($"오류 상세:");
+                errorMessage.AppendLine(ex.ToString());
+
+                MessageBox.Show(errorMessage.ToString(), "SFC Excel 로드 오류",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 UpdateStatus($"Excel 파일 로드 실패: {ex.Message}", Colors.Red);
             }

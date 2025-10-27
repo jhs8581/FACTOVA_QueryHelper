@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FACTOVA_Palletizing_Analysis"
         mc:Ignorable="d"
-        Title="FACTOVA Palletizing Analysis" Height="700" Width="1000">
+        Title="FACTOVA Palletizing Analysis" Height="700" Width="1200">
     <Grid>
         <TabControl x:Name="MainTabControl" Margin="10">
             <!-- 로그분석 탭 -->
