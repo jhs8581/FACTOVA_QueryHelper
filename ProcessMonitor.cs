@@ -6,7 +6,7 @@ using System.Management;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 
-namespace FACTOVA_Palletizing_Analysis
+namespace FACTOVA_QueryHelper
 {
     public class MonitorTarget
     {
@@ -23,7 +23,7 @@ namespace FACTOVA_Palletizing_Analysis
         public int ProcessId { get; set; }
         public string ExecutablePath { get; set; } = string.Empty;
         public DateTime StartTime { get; set; }
-        public long WorkingSetSize { get; set; } // ¸Þ¸ð¸® »ç¿ë·® (bytes)
+        public long WorkingSetSize { get; set; } // ï¿½Þ¸ï¿½ ï¿½ï¿½ë·® (bytes)
     }
 
     public class MonitorResult
@@ -69,41 +69,41 @@ namespace FACTOVA_Palletizing_Analysis
 
             try
             {
-                // ¸ÕÀú È£½ºÆ®°¡ »ì¾ÆÀÖ´ÂÁö È®ÀÎ
+                // ï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ï¿½ï¿½ È®ï¿½ï¿½
                 bool isHostAlive = await CheckHostAvailability(target.IpAddress);
                 if (!isHostAlive)
                 {
                     result.IsRunning = false;
-                    result.Status = "È£½ºÆ® ¿¬°á ºÒ°¡";
-                    result.ErrorMessage = "È£½ºÆ®¿¡ ¿¬°áÇÒ ¼ö ¾ø½À´Ï´Ù. ³×Æ®¿öÅ© ¿¬°áÀ» È®ÀÎÇÏ¼¼¿ä.";
+                    result.Status = "È£ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½Ò°ï¿½";
+                    result.ErrorMessage = "È£ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½. ï¿½ï¿½Æ®ï¿½ï¿½Å© ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½.";
                     return result;
                 }
 
-                // WMI¸¦ ÅëÇØ ¿ø°Ý ÇÁ·Î¼¼½º È®ÀÎ
+                // WMIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Î¼ï¿½ï¿½ï¿½ È®ï¿½ï¿½
                 var processes = await GetRemoteProcessesAsync(target);
                 result.Processes = processes;
 
                 if (processes.Count > 0)
                 {
                     result.IsRunning = true;
-                    result.Status = $"½ÇÇà Áß ({processes.Count}°³ ÇÁ·Î¼¼½º)";
+                    result.Status = $"ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ({processes.Count}ï¿½ï¿½ ï¿½ï¿½ï¿½Î¼ï¿½ï¿½ï¿½)";
                 }
                 else
                 {
                     result.IsRunning = false;
-                    result.Status = "½ÇÇà ÁßÀÌ ¾Æ´Ô";
+                    result.Status = "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Æ´ï¿½";
                 }
             }
             catch (UnauthorizedAccessException)
             {
                 result.IsRunning = false;
-                result.Status = "Á¢±Ù ±ÇÇÑ ¾øÀ½";
-                result.ErrorMessage = "´ë»ó ½Ã½ºÅÛ¿¡ Á¢±ÙÇÒ ±ÇÇÑÀÌ ¾ø½À´Ï´Ù. °ü¸®ÀÚ °èÁ¤À» È®ÀÎÇÏ¼¼¿ä.";
+                result.Status = "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½";
+                result.ErrorMessage = "ï¿½ï¿½ï¿½ ï¿½Ã½ï¿½ï¿½Û¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½.";
             }
             catch (Exception ex)
             {
                 result.IsRunning = false;
-                result.Status = "¿À·ù ¹ß»ý";
+                result.Status = "ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½";
                 result.ErrorMessage = ex.Message;
             }
 
@@ -130,7 +130,7 @@ namespace FACTOVA_Palletizing_Analysis
                     ManagementScope scope = new ManagementScope($"\\\\{target.IpAddress}\\root\\cimv2", options);
                     scope.Connect();
 
-                    // ÇÁ·Î¼¼½º¸í¿¡¼­ .exe È®ÀåÀÚ Á¦°Å
+                    // ï¿½ï¿½ï¿½Î¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ .exe È®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                     string processNameWithoutExt = target.ProcessName.Replace(".exe", "");
 
                     ObjectQuery query = new ObjectQuery($"SELECT * FROM Win32_Process WHERE Name = '{target.ProcessName}'");
@@ -148,7 +148,7 @@ namespace FACTOVA_Palletizing_Analysis
                                 WorkingSetSize = Convert.ToInt64(obj["WorkingSetSize"] ?? 0)
                             };
 
-                            // CreationDate ÆÄ½Ì
+                            // CreationDate ï¿½Ä½ï¿½
                             string creationDate = obj["CreationDate"]?.ToString() ?? "";
                             if (!string.IsNullOrEmpty(creationDate))
                             {
@@ -159,7 +159,7 @@ namespace FACTOVA_Palletizing_Analysis
                         }
                         catch
                         {
-                            // °³º° ÇÁ·Î¼¼½º Á¤º¸ ÆÄ½Ì ½ÇÆÐ ½Ã ¹«½Ã
+                            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Î¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ä½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                         }
                     }
                 }

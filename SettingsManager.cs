@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-namespace FACTOVA_Palletizing_Analysis
+namespace FACTOVA_QueryHelper
 {
     public class AppSettings
     {
@@ -16,8 +16,8 @@ namespace FACTOVA_Palletizing_Analysis
         public string SfcExcelFilePath { get; set; } = string.Empty;
         public string SfcUserId { get; set; } = string.Empty;
         public string SfcPassword { get; set; } = string.Empty;
-        public string SfcTnsName { get; set; } = string.Empty; // SFC TNS ¼±ÅÃ°ª ÀúÀå
-        public bool StopOnNotification { get; set; } = true; // ¾Ë¸² ½Ã ÀÚµ¿ ½ÇÇà ÁßÁö (±âº»°ª: true)
+        public string SfcTnsName { get; set; } = string.Empty; // SFC TNS ï¿½ï¿½ï¿½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½
+        public bool StopOnNotification { get; set; } = true; // ï¿½Ë¸ï¿½ ï¿½ï¿½ ï¿½Úµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½âº»ï¿½ï¿½: true)
     }
 
     public class SettingsManager
@@ -25,7 +25,7 @@ namespace FACTOVA_Palletizing_Analysis
         private const string SettingsFileName = "settings.json";
         private static readonly string SettingsFilePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "FACTOVA_Palletizing_Analysis",
+            "FACTOVA_QueryHelper",
             SettingsFileName
         );
 
@@ -50,7 +50,7 @@ namespace FACTOVA_Palletizing_Analysis
             }
             catch
             {
-                // ·Îµå ½ÇÆÐ ½Ã ±âº» ¼³Á¤ ¹ÝÈ¯
+                // ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½âº» ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
             }
 
             return new AppSettings { TnsPath = GetDefaultTnsPath() };
@@ -74,7 +74,7 @@ namespace FACTOVA_Palletizing_Analysis
             }
             catch
             {
-                // ÀúÀå ½ÇÆÐ ¹«½Ã
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             }
         }
     }

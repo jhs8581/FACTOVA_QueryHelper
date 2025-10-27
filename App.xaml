@@ -1,7 +1,7 @@
-﻿<Application x:Class="FACTOVA_Palletizing_Analysis.App"
+﻿<Application x:Class="FACTOVA_QueryHelper.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:FACTOVA_Palletizing_Analysis"
+             xmlns:local="clr-namespace:FACTOVA_QueryHelper"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          

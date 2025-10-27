@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace FACTOVA_Palletizing_Analysis
+namespace FACTOVA_QueryHelper
 {
     public class MonitorLog
     {
@@ -31,7 +31,7 @@ namespace FACTOVA_Palletizing_Analysis
     {
         private static readonly string LogDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "FACTOVA_Palletizing_Analysis",
+            "FACTOVA_QueryHelper",
             "Logs"
         );
 
@@ -53,7 +53,7 @@ namespace FACTOVA_Palletizing_Analysis
             }
             catch
             {
-                // ·Î±× ¾²±â ½ÇÆÐ ¹«½Ã
+                // ï¿½Î±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             }
         }
 
@@ -96,7 +96,7 @@ namespace FACTOVA_Palletizing_Analysis
             }
             catch
             {
-                // ·Î±× ·Îµå ½ÇÆÐ ¹«½Ã
+                // ï¿½Î±ï¿½ ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             }
 
             return logs;
@@ -106,11 +106,11 @@ namespace FACTOVA_Palletizing_Analysis
         {
             try
             {
-                // ·Î±× Çü½Ä: [2025-01-22 10:30:45] [Info] 192.168.1.100 - process.exe: ½ÇÇà Áß - ¸Þ½ÃÁö
+                // ï¿½Î±ï¿½ ï¿½ï¿½ï¿½ï¿½: [2025-01-22 10:30:45] [Info] 192.168.1.100 - process.exe: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ - ï¿½Þ½ï¿½ï¿½ï¿½
                 var parts = line.Split(new[] { "] [", "] ", " - " }, StringSplitOptions.None);
                 if (parts.Length >= 5)
                 {
-                    var timestampStr = parts[0].Substring(1); // [ Á¦°Å
+                    var timestampStr = parts[0].Substring(1); // [ ï¿½ï¿½ï¿½ï¿½
                     var levelStr = parts[1];
                     var ipAddress = parts[2];
                     var processName = parts[3];
@@ -130,7 +130,7 @@ namespace FACTOVA_Palletizing_Analysis
             }
             catch
             {
-                // ÆÄ½Ì ½ÇÆÐ ¹«½Ã
+                // ï¿½Ä½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             }
 
             return null;

@@ -2,17 +2,17 @@ using Microsoft.Win32;
 using System;
 using System.IO;
 
-namespace FACTOVA_Palletizing_Analysis
+namespace FACTOVA_QueryHelper
 {
     /// <summary>
-    /// ÆÄÀÏ ´ÙÀÌ¾ó·Î±× °ü·Ã ±â´ÉÀ» °ü¸®ÇÏ´Â Å¬·¡½º
+    /// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¾ï¿½Î±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     public class FileDialogManager
     {
         /// <summary>
-        /// Excel ÆÄÀÏ ¼±ÅÃ ´ÙÀÌ¾ó·Î±×¸¦ ¿±´Ï´Ù.
+        /// Excel ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¾ï¿½Î±×¸ï¿½ ï¿½ï¿½ï¿½Ï´ï¿½.
         /// </summary>
-        public static string? OpenExcelFileDialog(string title = "Excel ÆÄÀÏ ¼±ÅÃ")
+        public static string? OpenExcelFileDialog(string title = "Excel ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½")
         {
             return OpenFileDialog(
                 "Excel Files (*.xlsx;*.xls)|*.xlsx;*.xls|All Files (*.*)|*.*",
@@ -20,14 +20,14 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         /// <summary>
-        /// TNS ÆÄÀÏ ¼±ÅÃ ´ÙÀÌ¾ó·Î±×¸¦ ¿±´Ï´Ù.
+        /// TNS ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¾ï¿½Î±×¸ï¿½ ï¿½ï¿½ï¿½Ï´ï¿½.
         /// </summary>
         public static string? OpenTnsFileDialog(string initialDirectory)
         {
             var openFileDialog = new OpenFileDialog
             {
                 Filter = "TNS Names File (tnsnames.ora)|tnsnames.ora|All Files (*.*)|*.*",
-                Title = "tnsnames.ora ÆÄÀÏ ¼±ÅÃ",
+                Title = "tnsnames.ora ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½",
                 InitialDirectory = initialDirectory
             };
 
@@ -35,7 +35,7 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         /// <summary>
-        /// ÀÏ¹Ý ÆÄÀÏ ¼±ÅÃ ´ÙÀÌ¾ó·Î±×¸¦ ¿±´Ï´Ù.
+        /// ï¿½Ï¹ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¾ï¿½Î±×¸ï¿½ ï¿½ï¿½ï¿½Ï´ï¿½.
         /// </summary>
         public static string? OpenFileDialog(string filter, string title)
         {
@@ -49,7 +49,7 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         /// <summary>
-        /// ÆÄÀÏÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÕ´Ï´Ù.
+        /// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         /// </summary>
         public static bool FileExists(string? filePath)
         {

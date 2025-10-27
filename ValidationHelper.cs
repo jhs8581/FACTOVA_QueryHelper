@@ -1,15 +1,15 @@
 using System;
 using System.Windows;
 
-namespace FACTOVA_Palletizing_Analysis
+namespace FACTOVA_QueryHelper
 {
     /// <summary>
-    /// ÀÔ·Â°ª °ËÁõÀ» ´ã´çÇÏ´Â Å¬·¡½º
+    /// ï¿½Ô·Â°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     public static class ValidationHelper
     {
         /// <summary>
-        /// ½ÃÀÛ Çà ¹øÈ£¸¦ °ËÁõÇÕ´Ï´Ù.
+        /// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½È£ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         /// </summary>
         public static bool ValidateStartRow(string startRowText, out int startRow)
         {
@@ -17,7 +17,7 @@ namespace FACTOVA_Palletizing_Analysis
 
             if (!int.TryParse(startRowText, out startRow) || startRow < 1)
             {
-                MessageBox.Show("½ÃÀÛ Çà ¹øÈ£´Â 1 ÀÌ»óÀÌ¾î¾ß ÇÕ´Ï´Ù.", "¿À·ù",
+                MessageBox.Show("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½È£ï¿½ï¿½ 1 ï¿½Ì»ï¿½ï¿½Ì¾ï¿½ï¿½ ï¿½Õ´Ï´ï¿½.", "ï¿½ï¿½ï¿½ï¿½",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
@@ -26,7 +26,7 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         /// <summary>
-        /// Äõ¸® ½ÇÇà ÁÖ±â¸¦ °ËÁõÇÕ´Ï´Ù.
+        /// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö±â¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         /// </summary>
         public static bool ValidateQueryInterval(string intervalText, out int interval, int minimumSeconds = 5)
         {
@@ -34,7 +34,7 @@ namespace FACTOVA_Palletizing_Analysis
 
             if (!int.TryParse(intervalText, out interval) || interval < minimumSeconds)
             {
-                MessageBox.Show($"Äõ¸® ½ÇÇà ÁÖ±â´Â {minimumSeconds}ÃÊ ÀÌ»óÀÌ¾î¾ß ÇÕ´Ï´Ù.", "¿À·ù",
+                MessageBox.Show($"ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö±ï¿½ï¿½ {minimumSeconds}ï¿½ï¿½ ï¿½Ì»ï¿½ï¿½Ì¾ï¿½ï¿½ ï¿½Õ´Ï´ï¿½.", "ï¿½ï¿½ï¿½ï¿½",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
@@ -43,13 +43,13 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         /// <summary>
-        /// ¹®ÀÚ¿­ÀÌ ºñ¾îÀÖÁö ¾ÊÀºÁö °ËÁõÇÕ´Ï´Ù.
+        /// ï¿½ï¿½ï¿½Ú¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         /// </summary>
         public static bool ValidateNotEmpty(string? value, string fieldName)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                MessageBox.Show($"{fieldName}À»(¸¦) ÀÔ·ÂÇÏ¼¼¿ä.", "¾Ë¸²",
+                MessageBox.Show($"{fieldName}ï¿½ï¿½(ï¿½ï¿½) ï¿½Ô·ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½.", "ï¿½Ë¸ï¿½",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
@@ -58,13 +58,13 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         /// <summary>
-        /// ¸®½ºÆ®°¡ ºñ¾îÀÖÁö ¾ÊÀºÁö °ËÁõÇÕ´Ï´Ù.
+        /// ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         /// </summary>
         public static bool ValidateListNotEmpty<T>(System.Collections.Generic.List<T> list, string listName)
         {
             if (list == null || list.Count == 0)
             {
-                MessageBox.Show($"{listName}ÀÌ(°¡) ºñ¾îÀÖ½À´Ï´Ù.", "¾Ë¸²",
+                MessageBox.Show($"{listName}ï¿½ï¿½(ï¿½ï¿½) ï¿½ï¿½ï¿½ï¿½Ö½ï¿½ï¿½Ï´ï¿½.", "ï¿½Ë¸ï¿½",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return false;
             }
@@ -73,13 +73,13 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         /// <summary>
-        /// ¼±ÅÃµÈ Ç×¸ñÀÌ ÀÖ´ÂÁö °ËÁõÇÕ´Ï´Ù.
+        /// ï¿½ï¿½ï¿½Ãµï¿½ ï¿½×¸ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         /// </summary>
         public static bool ValidateSelection(object? selectedItem, string itemName)
         {
             if (selectedItem == null)
             {
-                MessageBox.Show($"{itemName}À»(¸¦) ¼±ÅÃÇÏ¼¼¿ä.", "¾Ë¸²",
+                MessageBox.Show($"{itemName}ï¿½ï¿½(ï¿½ï¿½) ï¿½ï¿½ï¿½ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½.", "ï¿½Ë¸ï¿½",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return false;
             }

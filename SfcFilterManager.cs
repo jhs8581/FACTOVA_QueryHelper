@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace FACTOVA_Palletizing_Analysis
+namespace FACTOVA_QueryHelper
 {
     /// <summary>
-    /// SFC ¼³ºñ ¸ñ·Ï ÇÊÅÍ¸µÀ» °ü¸®ÇÏ´Â Å¬·¡½º
+    /// SFC ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     public class SfcFilterManager
     {
@@ -28,7 +28,7 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         /// <summary>
-        /// ÇÊÅÍ Á¶°Ç
+        /// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         /// </summary>
         public class FilterCriteria
         {
@@ -38,58 +38,58 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         /// <summary>
-        /// ÇÊÅÍ¸¦ Àû¿ëÇÕ´Ï´Ù.
+        /// ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         /// </summary>
         public FilterResult ApplyFilter(FilterCriteria criteria)
         {
             if (criteria == null)
                 throw new ArgumentNullException(nameof(criteria));
 
-            // ÇÊÅÍ Á¶°Ç Á¤±ÔÈ­
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­
             string ipFilter = criteria.IpAddress?.Trim().ToLower() ?? "";
             string equipmentIdFilter = criteria.EquipmentId?.Trim().ToLower() ?? "";
             string equipmentNameFilter = criteria.EquipmentName?.Trim().ToLower() ?? "";
 
-            // ¼±ÅÃµÈ »óÅÂ ¸ñ·Ï
+            // ï¿½ï¿½ï¿½Ãµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
             var selectedStatuses = _statusFilterItems
-                .Where(i => i.IsChecked && i.Text != "ÀüÃ¼")
+                .Where(i => i.IsChecked && i.Text != "ï¿½ï¿½Ã¼")
                 .Select(i => i.Text)
                 .ToList();
-            bool isAllStatusSelected = _statusFilterItems.FirstOrDefault(i => i.Text == "ÀüÃ¼")?.IsChecked ?? true;
+            bool isAllStatusSelected = _statusFilterItems.FirstOrDefault(i => i.Text == "ï¿½ï¿½Ã¼")?.IsChecked ?? true;
 
-            // ¼±ÅÃµÈ BIZACTOR ¸ñ·Ï
+            // ï¿½ï¿½ï¿½Ãµï¿½ BIZACTOR ï¿½ï¿½ï¿½
             var selectedBizActors = _bizActorFilterItems
-                .Where(i => i.IsChecked && i.Text != "ÀüÃ¼")
+                .Where(i => i.IsChecked && i.Text != "ï¿½ï¿½Ã¼")
                 .Select(i => i.Text)
                 .ToList();
-            bool isAllBizActorSelected = _bizActorFilterItems.FirstOrDefault(i => i.Text == "ÀüÃ¼")?.IsChecked ?? true;
+            bool isAllBizActorSelected = _bizActorFilterItems.FirstOrDefault(i => i.Text == "ï¿½ï¿½Ã¼")?.IsChecked ?? true;
 
-            // ÇÊÅÍ¸µ ¼öÇà
+            // ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½
             var filtered = _sourceList.Where(item =>
             {
-                // IP ÁÖ¼Ò ÇÊÅÍ
+                // IP ï¿½Ö¼ï¿½ ï¿½ï¿½ï¿½ï¿½
                 if (!string.IsNullOrEmpty(ipFilter) && 
                     !item.IpAddress.ToLower().Contains(ipFilter))
                     return false;
 
-                // ¼³ºñ ID ÇÊÅÍ
+                // ï¿½ï¿½ï¿½ï¿½ ID ï¿½ï¿½ï¿½ï¿½
                 if (!string.IsNullOrEmpty(equipmentIdFilter) && 
                     !item.EquipmentId.ToLower().Contains(equipmentIdFilter))
                     return false;
 
-                // ¼³ºñ¸í ÇÊÅÍ
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                 if (!string.IsNullOrEmpty(equipmentNameFilter) && 
                     !item.EquipmentName.ToLower().Contains(equipmentNameFilter))
                     return false;
 
-                // »óÅÂ ÇÊÅÍ (¸ÖÆ¼¼¿·ºÆ®)
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½Æ¼ï¿½ï¿½ï¿½ï¿½Æ®)
                 if (!isAllStatusSelected && selectedStatuses.Count > 0)
                 {
                     if (!selectedStatuses.Contains(item.Status))
                         return false;
                 }
 
-                // BIZACTOR ÇÊÅÍ (¸ÖÆ¼¼¿·ºÆ®)
+                // BIZACTOR ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½Æ¼ï¿½ï¿½ï¿½ï¿½Æ®)
                 if (!isAllBizActorSelected && selectedBizActors.Count > 0)
                 {
                     if (!selectedBizActors.Contains(item.BizActor))
@@ -99,7 +99,7 @@ namespace FACTOVA_Palletizing_Analysis
                 return true;
             }).ToList();
 
-            // ÇÊÅÍ¸µµÈ ¸®½ºÆ® ¾÷µ¥ÀÌÆ®
+            // ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
             _filteredList.Clear();
             foreach (var item in filtered)
             {
@@ -115,48 +115,48 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         /// <summary>
-        /// ¸ðµç ÇÊÅÍ¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        /// ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½Ê±ï¿½È­ï¿½Õ´Ï´ï¿½.
         /// </summary>
         public void ClearAllFilters()
         {
-            // »óÅÂ ÇÊÅÍ ÃÊ±âÈ­
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
             foreach (var item in _statusFilterItems)
             {
-                item.IsChecked = item.Text == "ÀüÃ¼";
+                item.IsChecked = item.Text == "ï¿½ï¿½Ã¼";
             }
 
-            // BIZACTOR ÇÊÅÍ ÃÊ±âÈ­
+            // BIZACTOR ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
             foreach (var item in _bizActorFilterItems)
             {
-                item.IsChecked = item.Text == "ÀüÃ¼";
+                item.IsChecked = item.Text == "ï¿½ï¿½Ã¼";
             }
         }
 
         /// <summary>
-        /// ÇÊÅÍ ÄÞº¸¹Ú½º ÅØ½ºÆ®¸¦ ¾÷µ¥ÀÌÆ®ÇÕ´Ï´Ù.
+        /// ï¿½ï¿½ï¿½ï¿½ ï¿½Þºï¿½ï¿½Ú½ï¿½ ï¿½Ø½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½Õ´Ï´ï¿½.
         /// </summary>
         public FilterComboBoxText GetFilterComboBoxText()
         {
             var result = new FilterComboBoxText();
 
-            // »óÅÂ ÇÊÅÍ ÅØ½ºÆ®
-            var checkedStatusItems = _statusFilterItems.Where(i => i.IsChecked && i.Text != "ÀüÃ¼").ToList();
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Æ®
+            var checkedStatusItems = _statusFilterItems.Where(i => i.IsChecked && i.Text != "ï¿½ï¿½Ã¼").ToList();
             if (checkedStatusItems.Count == 0 || 
-                _statusFilterItems.FirstOrDefault(i => i.Text == "ÀüÃ¼")?.IsChecked == true)
+                _statusFilterItems.FirstOrDefault(i => i.Text == "ï¿½ï¿½Ã¼")?.IsChecked == true)
             {
-                result.StatusText = "ÀüÃ¼";
+                result.StatusText = "ï¿½ï¿½Ã¼";
             }
             else
             {
                 result.StatusText = string.Join(", ", checkedStatusItems.Select(i => i.Text));
             }
 
-            // BIZACTOR ÇÊÅÍ ÅØ½ºÆ®
-            var checkedBizActorItems = _bizActorFilterItems.Where(i => i.IsChecked && i.Text != "ÀüÃ¼").ToList();
+            // BIZACTOR ï¿½ï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Æ®
+            var checkedBizActorItems = _bizActorFilterItems.Where(i => i.IsChecked && i.Text != "ï¿½ï¿½Ã¼").ToList();
             if (checkedBizActorItems.Count == 0 || 
-                _bizActorFilterItems.FirstOrDefault(i => i.Text == "ÀüÃ¼")?.IsChecked == true)
+                _bizActorFilterItems.FirstOrDefault(i => i.Text == "ï¿½ï¿½Ã¼")?.IsChecked == true)
             {
-                result.BizActorText = "ÀüÃ¼";
+                result.BizActorText = "ï¿½ï¿½Ã¼";
             }
             else
             {
@@ -167,7 +167,7 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         /// <summary>
-        /// ÇÊÅÍ Ã¼Å©¹Ú½º º¯°æÀ» Ã³¸®ÇÕ´Ï´Ù.
+        /// ï¿½ï¿½ï¿½ï¿½ Ã¼Å©ï¿½Ú½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         /// </summary>
         public void HandleCheckBoxChanged(CheckableComboBoxItem changedItem)
         {
@@ -178,29 +178,29 @@ namespace FACTOVA_Palletizing_Analysis
                 ? _statusFilterItems 
                 : _bizActorFilterItems;
 
-            // "ÀüÃ¼"¸¦ ¼±ÅÃÇÏ¸é ´Ù¸¥ ¸ðµç Ç×¸ñ ¼±ÅÃ ÇØÁ¦
-            if (changedItem.Text == "ÀüÃ¼" && changedItem.IsChecked)
+            // "ï¿½ï¿½Ã¼"ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ ï¿½×¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+            if (changedItem.Text == "ï¿½ï¿½Ã¼" && changedItem.IsChecked)
             {
-                foreach (var otherItem in collection.Where(i => i.Text != "ÀüÃ¼"))
+                foreach (var otherItem in collection.Where(i => i.Text != "ï¿½ï¿½Ã¼"))
                 {
                     otherItem.IsChecked = false;
                 }
             }
-            // ´Ù¸¥ Ç×¸ñÀ» ¼±ÅÃÇÏ¸é "ÀüÃ¼" ¼±ÅÃ ÇØÁ¦
-            else if (changedItem.Text != "ÀüÃ¼" && changedItem.IsChecked)
+            // ï¿½Ù¸ï¿½ ï¿½×¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ "ï¿½ï¿½Ã¼" ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+            else if (changedItem.Text != "ï¿½ï¿½Ã¼" && changedItem.IsChecked)
             {
-                var allItem = collection.FirstOrDefault(i => i.Text == "ÀüÃ¼");
+                var allItem = collection.FirstOrDefault(i => i.Text == "ï¿½ï¿½Ã¼");
                 if (allItem != null)
                 {
                     allItem.IsChecked = false;
                 }
             }
-            // ¸ðµç Ç×¸ñÀÌ ¼±ÅÃ ÇØÁ¦µÇ¸é "ÀüÃ¼" ¼±ÅÃ
+            // ï¿½ï¿½ï¿½ ï¿½×¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¸ï¿½ "ï¿½ï¿½Ã¼" ï¿½ï¿½ï¿½ï¿½
             else if (!changedItem.IsChecked)
             {
                 if (!collection.Any(i => i.IsChecked))
                 {
-                    var allItem = collection.FirstOrDefault(i => i.Text == "ÀüÃ¼");
+                    var allItem = collection.FirstOrDefault(i => i.Text == "ï¿½ï¿½Ã¼");
                     if (allItem != null)
                     {
                         allItem.IsChecked = true;
@@ -211,7 +211,7 @@ namespace FACTOVA_Palletizing_Analysis
     }
 
     /// <summary>
-    /// ÇÊÅÍ Àû¿ë °á°ú
+    /// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
     /// </summary>
     public class FilterResult
     {
@@ -223,21 +223,21 @@ namespace FACTOVA_Palletizing_Analysis
         {
             if (!IsFiltered)
             {
-                return $"ÀüÃ¼ {TotalCount}°³";
+                return $"ï¿½ï¿½Ã¼ {TotalCount}ï¿½ï¿½";
             }
             else
             {
-                return $"ÇÊÅÍ¸µ: {FilteredCount}°³ / ÀüÃ¼: {TotalCount}°³";
+                return $"ï¿½ï¿½ï¿½Í¸ï¿½: {FilteredCount}ï¿½ï¿½ / ï¿½ï¿½Ã¼: {TotalCount}ï¿½ï¿½";
             }
         }
     }
 
     /// <summary>
-    /// ÇÊÅÍ ÄÞº¸¹Ú½º ÅØ½ºÆ®
+    /// ï¿½ï¿½ï¿½ï¿½ ï¿½Þºï¿½ï¿½Ú½ï¿½ ï¿½Ø½ï¿½Æ®
     /// </summary>
     public class FilterComboBoxText
     {
-        public string StatusText { get; set; } = "ÀüÃ¼";
-        public string BizActorText { get; set; } = "ÀüÃ¼";
+        public string StatusText { get; set; } = "ï¿½ï¿½Ã¼";
+        public string BizActorText { get; set; } = "ï¿½ï¿½Ã¼";
     }
 }

@@ -18,7 +18,7 @@ using System.Windows.Threading;
 using OfficeOpenXml;
 using System.Text.Json;
 
-namespace FACTOVA_Palletizing_Analysis
+namespace FACTOVA_QueryHelper
 {
     // SFC 모니터링 데이터 모델
     public class SfcEquipmentInfo

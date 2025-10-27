@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace FACTOVA_Palletizing_Analysis
+namespace FACTOVA_QueryHelper
 {
     public class TnsEntry
     {
@@ -29,11 +29,11 @@ namespace FACTOVA_Palletizing_Analysis
 
             try
             {
-                // UTF-8, UTF-8 BOM, ANSI µî ¿©·¯ ÀÎÄÚµùÀ¸·Î ½Ãµµ
+                // UTF-8, UTF-8 BOM, ANSI ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ãµï¿½
                 string content = ReadFileWithEncoding(filePath);
                 
-                // TNS ¿£Æ®¸® ÆÄ½Ì (ÀÌ¸§ = À¸·Î ½ÃÀÛÇÏ´Â °¢ ºí·Ï)
-                // °ø¹é, ÅÇ µîÀ» Çã¿ëÇÏ°í ´ë¼Ò¹®ÀÚ ±¸ºÐ ¾øÀÌ ¸ÅÄª
+                // TNS ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ä½ï¿½ (ï¿½Ì¸ï¿½ = ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
+                // ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½Ò¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Äª
                 var matches = Regex.Matches(content, @"^[\s]*([^\s=]+)[\s]*=[\s]*\(DESCRIPTION", 
                     RegexOptions.IgnoreCase | RegexOptions.Multiline);
 
@@ -41,7 +41,7 @@ namespace FACTOVA_Palletizing_Analysis
                 {
                     string tnsName = match.Groups[1].Value.Trim();
                     
-                    // ÇØ´ç TNS ºí·Ï ÃßÃâ
+                    // ï¿½Ø´ï¿½ TNS ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                     int startIndex = match.Index;
                     int endIndex = FindMatchingParenthesis(content, startIndex);
                     
@@ -51,14 +51,14 @@ namespace FACTOVA_Palletizing_Analysis
                         
                         var entry = new TnsEntry { Name = tnsName };
                         
-                        // HOST ÃßÃâ
+                        // HOST ï¿½ï¿½ï¿½ï¿½
                         var hostMatch = Regex.Match(block, @"HOST[\s]*=[\s]*([^\)]+)", RegexOptions.IgnoreCase);
                         if (hostMatch.Success)
                         {
                             entry.Host = hostMatch.Groups[1].Value.Trim();
                         }
                         
-                        // PORT ÃßÃâ
+                        // PORT ï¿½ï¿½ï¿½ï¿½
                         var portMatch = Regex.Match(block, @"PORT[\s]*=[\s]*(\d+)", RegexOptions.IgnoreCase);
                         if (portMatch.Success)
                         {
@@ -66,7 +66,7 @@ namespace FACTOVA_Palletizing_Analysis
                             entry.Port = port;
                         }
                         
-                        // SERVICE_NAME ¶Ç´Â SID ÃßÃâ
+                        // SERVICE_NAME ï¿½Ç´ï¿½ SID ï¿½ï¿½ï¿½ï¿½
                         var serviceMatch = Regex.Match(block, @"SERVICE_NAME[\s]*=[\s]*([^\)]+)", RegexOptions.IgnoreCase);
                         if (serviceMatch.Success)
                         {
@@ -74,7 +74,7 @@ namespace FACTOVA_Palletizing_Analysis
                         }
                         else
                         {
-                            // SID·Îµµ ½Ãµµ
+                            // SIDï¿½Îµï¿½ ï¿½Ãµï¿½
                             var sidMatch = Regex.Match(block, @"SID[\s]*=[\s]*([^\)]+)", RegexOptions.IgnoreCase);
                             if (sidMatch.Success)
                             {
@@ -82,7 +82,7 @@ namespace FACTOVA_Palletizing_Analysis
                             }
                         }
                         
-                        // ¿¬°á ¹®ÀÚ¿­ »ý¼º
+                        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ú¿ï¿½ ï¿½ï¿½ï¿½ï¿½
                         entry.ConnectionString = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={entry.Host})(PORT={entry.Port}))(CONNECT_DATA=(SERVICE_NAME={entry.ServiceName})));";
                         
                         entries.Add(entry);
@@ -91,7 +91,7 @@ namespace FACTOVA_Palletizing_Analysis
             }
             catch (Exception)
             {
-                // ÆÄ½Ì ½ÇÆÐ ½Ã ºó ¸®½ºÆ® ¹ÝÈ¯
+                // ï¿½Ä½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½È¯
             }
 
             return entries;
@@ -101,19 +101,19 @@ namespace FACTOVA_Palletizing_Analysis
         {
             try
             {
-                // ¸ÕÀú UTF-8·Î ½Ãµµ
+                // ï¿½ï¿½ï¿½ï¿½ UTF-8ï¿½ï¿½ ï¿½Ãµï¿½
                 return File.ReadAllText(filePath, System.Text.Encoding.UTF8);
             }
             catch
             {
                 try
                 {
-                    // ANSI (Default)·Î ½Ãµµ
+                    // ANSI (Default)ï¿½ï¿½ ï¿½Ãµï¿½
                     return File.ReadAllText(filePath, System.Text.Encoding.Default);
                 }
                 catch
                 {
-                    // ASCII·Î ½Ãµµ
+                    // ASCIIï¿½ï¿½ ï¿½Ãµï¿½
                     return File.ReadAllText(filePath, System.Text.Encoding.ASCII);
                 }
             }
@@ -137,7 +137,7 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         /// <summary>
-        /// TNS ÆÄÀÏÀÇ ¸ðµç ¿£Æ®¸® ÀÌ¸§¸¸ ÃßÃâ (µð¹ö±ë¿ë)
+        /// TNS ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ì¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
         /// </summary>
         public static List<string> GetAllEntryNames(string filePath)
         {
@@ -161,7 +161,7 @@ namespace FACTOVA_Palletizing_Analysis
             }
             catch
             {
-                // ½ÇÆÐ ½Ã ºó ¸®½ºÆ® ¹ÝÈ¯
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½È¯
             }
 
             return names;

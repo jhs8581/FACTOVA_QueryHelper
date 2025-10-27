@@ -6,44 +6,44 @@ using System.Linq;
 using System.Threading.Tasks;
 using OfficeOpenXml;
 
-namespace FACTOVA_Palletizing_Analysis
+namespace FACTOVA_QueryHelper
 {
     /// <summary>
-    /// Excel ÆÄÀÏ °ü¸®¸¦ ´ã´çÇÏ´Â Å¬·¡½º
+    /// Excel ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     public class ExcelManager
     {
         /// <summary>
-        /// Excel ÆÄÀÏ¿¡¼­ Äõ¸® ¸ñ·ÏÀ» ·ÎµåÇÕ´Ï´Ù.
-        /// N¿­ °ª°ú »ó°ü¾øÀÌ ¸ðµç Äõ¸®¸¦ ·ÎµåÇÕ´Ï´Ù.
+        /// Excel ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½Õ´Ï´ï¿½.
+        /// Nï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½Õ´Ï´ï¿½.
         /// </summary>
         public static List<QueryItem> LoadQueries(string filePath, string? sheetName, int startRow)
         {
             var queries = ExcelQueryReader.ReadQueriesFromExcel(
                 filePath,
                 sheetName,
-                "F",     // Äõ¸® (ÇÊ¼ö)
-                "D",     // ÅÇ ÀÌ¸§ (ÇÊ¼ö)
-                "",      // ¼³¸í ¿­ »ç¿ë ¾È ÇÔ
-                "A",     // TNS (¼±ÅÃ)
-                "B",     // User ID (¼±ÅÃ)
-                "C",     // Password (¼±ÅÃ)
+                "F",     // ï¿½ï¿½ï¿½ï¿½ (ï¿½Ê¼ï¿½)
+                "D",     // ï¿½ï¿½ ï¿½Ì¸ï¿½ (ï¿½Ê¼ï¿½)
+                "",      // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½
+                "A",     // TNS (ï¿½ï¿½ï¿½ï¿½)
+                "B",     // User ID (ï¿½ï¿½ï¿½ï¿½)
+                "C",     // Password (ï¿½ï¿½ï¿½ï¿½)
                 startRow,
-                "G",  // ½ÇÇà ¿©ºÎ
-                "H",  // ¾Ë¸² ¿©ºÎ
-                "I",  // ÀÌ»ó
-                "J",  // °°À½
-                "K",  // ÀÌÇÏ
-                "L",  // ÄÃ·³¸í
-                "M",  // ÄÃ·³°ª
-                "N"); // ±âº» È°¼ºÈ­ ¿©ºÎ
+                "G",  // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+                "H",  // ï¿½Ë¸ï¿½ ï¿½ï¿½ï¿½ï¿½
+                "I",  // ï¿½Ì»ï¿½
+                "J",  // ï¿½ï¿½ï¿½ï¿½
+                "K",  // ï¿½ï¿½ï¿½ï¿½
+                "L",  // ï¿½Ã·ï¿½ï¿½ï¿½
+                "M",  // ï¿½Ã·ï¿½ï¿½ï¿½
+                "N"); // ï¿½âº» È°ï¿½ï¿½È­ ï¿½ï¿½ï¿½ï¿½
 
-            // N¿­ ÇÊÅÍ¸µ Á¦°Å - ¸ðµç Äõ¸® ¹ÝÈ¯
+            // Nï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ - ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
             return queries;
         }
 
         /// <summary>
-        /// Excel ÆÄÀÏÀÇ ½ÃÆ® ¸ñ·ÏÀ» °¡Á®¿É´Ï´Ù.
+        /// Excel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½É´Ï´ï¿½.
         /// </summary>
         public static List<string> GetSheetNames(string filePath)
         {
@@ -51,7 +51,7 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         /// <summary>
-        /// SFC Excel ÆÄÀÏ¿¡¼­ ¼³ºñ Á¤º¸¸¦ ·ÎµåÇÕ´Ï´Ù.
+        /// SFC Excel ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½Õ´Ï´ï¿½.
         /// </summary>
         public static List<SfcEquipmentInfo> LoadSfcEquipmentList(string filePath)
         {
@@ -59,7 +59,7 @@ namespace FACTOVA_Palletizing_Analysis
 
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException("Excel ÆÄÀÏÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù.", filePath);
+                throw new FileNotFoundException("Excel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.", filePath);
             }
 
             using (var package = new ExcelPackage(new FileInfo(filePath)))
@@ -67,7 +67,7 @@ namespace FACTOVA_Palletizing_Analysis
                 var worksheet = package.Workbook.Worksheets[0];
                 int rowCount = worksheet.Dimension?.End.Row ?? 0;
 
-                // 2ÇàºÎÅÍ µ¥ÀÌÅÍ ÀÐ±â (1ÇàÀº Çì´õ)
+                // 2ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð±ï¿½ (1ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½)
                 for (int row = 2; row <= rowCount; row++)
                 {
                     var ipAddress = worksheet.Cells[row, 1].Text?.Trim();

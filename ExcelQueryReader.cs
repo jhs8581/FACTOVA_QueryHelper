@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace FACTOVA_Palletizing_Analysis
+namespace FACTOVA_QueryHelper
 {
     public class QueryItem
     {
@@ -17,32 +17,32 @@ namespace FACTOVA_Palletizing_Analysis
         public string UserId { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         
-        // Á÷Á¢ ¿¬°á Á¤º¸ (TNS ´ë½Å »ç¿ë °¡´É)
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (TNS ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
         public string Host { get; set; } = string.Empty;
         public string Port { get; set; } = string.Empty;
         public string ServiceName { get; set; } = string.Empty;
 
-        // »õ·Î¿î ¿É¼Ç ÇÊµå ¼Ó¼ºµé
-        public string EnabledFlag { get; set; } = string.Empty; // G¿­: 'Y'ÀÌ¸é ½ÇÇà °¡´É
-        public string NotifyFlag { get; set; } = string.Empty; // H¿­: 'Y'ÀÌ¸é ¾Ë¸² Ç¥½Ã
-        public string CountGreaterThan { get; set; } = string.Empty; // I¿­: °Ç ¼ö ÀÌ»óÀÏ ¶§ ¾Ë¸²
-        public string CountEquals { get; set; } = string.Empty; // J¿­: °Ç ¼ö¿Í °°À» ¶§ ¾Ë¸²
-        public string CountLessThan { get; set; } = string.Empty; // K¿­: °Ç ¼ö ÀÌÇÏÀÏ ¶§ ¾Ë¸²
-        public string ColumnNames { get; set; } = string.Empty; // L¿­: Ã¼Å©ÇÒ ÄÃ·³¸í (A,B,C Çü½Ä)
-        public string ColumnValues { get; set; } = string.Empty; // M¿­: Ã¼Å©ÇÒ °ªµé (1,2,3 Çü½Ä)
-        public string ExcludeFlag { get; set; } = string.Empty; // N¿­: 'N'ÀÌ¸é Á¦¿Ü
+        // ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½É¼ï¿½ ï¿½Êµï¿½ ï¿½Ó¼ï¿½ï¿½ï¿½
+        public string EnabledFlag { get; set; } = string.Empty; // Gï¿½ï¿½: 'Y'ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+        public string NotifyFlag { get; set; } = string.Empty; // Hï¿½ï¿½: 'Y'ï¿½Ì¸ï¿½ ï¿½Ë¸ï¿½ Ç¥ï¿½ï¿½
+        public string CountGreaterThan { get; set; } = string.Empty; // Iï¿½ï¿½: ï¿½ï¿½ ï¿½ï¿½ ï¿½Ì»ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ë¸ï¿½
+        public string CountEquals { get; set; } = string.Empty; // Jï¿½ï¿½: ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ë¸ï¿½
+        public string CountLessThan { get; set; } = string.Empty; // Kï¿½ï¿½: ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ë¸ï¿½
+        public string ColumnNames { get; set; } = string.Empty; // Lï¿½ï¿½: Ã¼Å©ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½ï¿½ (A,B,C ï¿½ï¿½ï¿½ï¿½)
+        public string ColumnValues { get; set; } = string.Empty; // Mï¿½ï¿½: Ã¼Å©ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (1,2,3 ï¿½ï¿½ï¿½ï¿½)
+        public string ExcludeFlag { get; set; } = string.Empty; // Nï¿½ï¿½: 'N'ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½
     }
 
     public class ExcelQueryReader
     {
-        // EPPlus ¶óÀÌ¼¾½º ¼³Á¤
+        // EPPlus ï¿½ï¿½ï¿½Ì¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         static ExcelQueryReader()
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         }
 
         /// <summary>
-        /// Excel ¿­ ¹®ÀÚ(A, B, C...)¸¦ ¼ýÀÚ ÀÎµ¦½º·Î º¯È¯ (1-based)
+        /// Excel ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(A, B, C...)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ (1-based)
         /// </summary>
         public static int ColumnLetterToNumber(string columnLetter)
         {
@@ -61,7 +61,7 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         /// <summary>
-        /// Excel ÆÄÀÏ¿¡¼­ Äõ¸® ¸ñ·ÏÀ» ÀÐ¾î¿É´Ï´Ù.
+        /// Excel ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð¾ï¿½É´Ï´ï¿½.
         /// </summary>
         public static List<QueryItem> ReadQueriesFromExcel(
             string filePath,
@@ -86,7 +86,7 @@ namespace FACTOVA_Palletizing_Analysis
 
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException($"Excel ÆÄÀÏÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù: {filePath}");
+                throw new FileNotFoundException($"Excel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½: {filePath}");
             }
 
             try
@@ -108,7 +108,7 @@ namespace FACTOVA_Palletizing_Analysis
 
                 if (queryColIndex == 0)
                 {
-                    throw new ArgumentException("Äõ¸® ¿­ÀÌ ÁöÁ¤µÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+                    throw new ArgumentException("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½.");
                 }
 
                 using (var package = new ExcelPackage(new FileInfo(filePath)))
@@ -124,7 +124,7 @@ namespace FACTOVA_Palletizing_Analysis
                         worksheet = package.Workbook.Worksheets[sheetName];
                         if (worksheet == null)
                         {
-                            throw new ArgumentException($"½ÃÆ®¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù: {sheetName}");
+                            throw new ArgumentException($"ï¿½ï¿½Æ®ï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½: {sheetName}");
                         }
                     }
 
@@ -132,10 +132,10 @@ namespace FACTOVA_Palletizing_Analysis
 
                     for (int row = startRow; row <= rowCount; row++)
                     {
-                        // Äõ¸® ÀÐ±â
+                        // ï¿½ï¿½ï¿½ï¿½ ï¿½Ð±ï¿½
                         var query = worksheet.Cells[row, queryColIndex].Text?.Trim();
 
-                        // Äõ¸®°¡ ºñ¾îÀÖÀ¸¸é °Ç³Ê¶Ù±â
+                        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ç³Ê¶Ù±ï¿½
                         if (string.IsNullOrWhiteSpace(query))
                             continue;
 
@@ -145,7 +145,7 @@ namespace FACTOVA_Palletizing_Analysis
                             Query = query
                         };
 
-                        // Äõ¸® ÀÌ¸§ ÀÐ±â
+                        // ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ ï¿½Ð±ï¿½
                         if (nameColIndex > 0)
                         {
                             queryItem.QueryName = worksheet.Cells[row, nameColIndex].Text?.Trim() ?? "";
@@ -155,18 +155,18 @@ namespace FACTOVA_Palletizing_Analysis
                             queryItem.QueryName = $"Query {row - startRow + 1}";
                         }
 
-                        // ¼³¸í ÀÐ±â
+                        // ï¿½ï¿½ï¿½ï¿½ ï¿½Ð±ï¿½
                         if (descColIndex > 0)
                         {
                             queryItem.Description = worksheet.Cells[row, descColIndex].Text?.Trim() ?? "";
                         }
 
-                        // TNS ÀÌ¸§ ÀÐ±â (¶Ç´Â Host:Port:ServiceName Çü½Ä)
+                        // TNS ï¿½Ì¸ï¿½ ï¿½Ð±ï¿½ (ï¿½Ç´ï¿½ Host:Port:ServiceName ï¿½ï¿½ï¿½ï¿½)
                         if (tnsColIndex > 0)
                         {
                             var tnsValue = worksheet.Cells[row, tnsColIndex].Text?.Trim() ?? "";
                             
-                            // Host:Port:ServiceName Çü½ÄÀÎÁö È®ÀÎ
+                            // Host:Port:ServiceName ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
                             if (tnsValue.Contains(":"))
                             {
                                 var parts = tnsValue.Split(':');
@@ -187,19 +187,19 @@ namespace FACTOVA_Palletizing_Analysis
                             }
                         }
 
-                        // User ID ÀÐ±â
+                        // User ID ï¿½Ð±ï¿½
                         if (userColIndex > 0)
                         {
                             queryItem.UserId = worksheet.Cells[row, userColIndex].Text?.Trim() ?? "";
                         }
 
-                        // Password ÀÐ±â
+                        // Password ï¿½Ð±ï¿½
                         if (passColIndex > 0)
                         {
                             queryItem.Password = worksheet.Cells[row, passColIndex].Text?.Trim() ?? "";
                         }
 
-                        // »õ·Î¿î ¿É¼Ç ÇÊµå °ª ÀÐ±â
+                        // ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½É¼ï¿½ ï¿½Êµï¿½ ï¿½ï¿½ ï¿½Ð±ï¿½
                         if (enabledColIndex > 0)
                         {
                             queryItem.EnabledFlag = worksheet.Cells[row, enabledColIndex].Text?.Trim().ToUpper() ?? "";
@@ -246,14 +246,14 @@ namespace FACTOVA_Palletizing_Analysis
             }
             catch (Exception ex)
             {
-                throw new Exception($"Excel ÆÄÀÏ ÀÐ±â ¿À·ù: {ex.Message}", ex);
+                throw new Exception($"Excel ï¿½ï¿½ï¿½ï¿½ ï¿½Ð±ï¿½ ï¿½ï¿½ï¿½ï¿½: {ex.Message}", ex);
             }
 
             return queries;
         }
 
         /// <summary>
-        /// Excel ÆÄÀÏÀÇ ½ÃÆ® ¸ñ·ÏÀ» °¡Á®¿É´Ï´Ù.
+        /// Excel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½É´Ï´ï¿½.
         /// </summary>
         public static List<string> GetSheetNames(string filePath)
         {
@@ -261,7 +261,7 @@ namespace FACTOVA_Palletizing_Analysis
 
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException($"Excel ÆÄÀÏÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù: {filePath}");
+                throw new FileNotFoundException($"Excel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½: {filePath}");
             }
 
             try
@@ -273,14 +273,14 @@ namespace FACTOVA_Palletizing_Analysis
             }
             catch (Exception ex)
             {
-                throw new Exception($"Excel ÆÄÀÏ ÀÐ±â ½ÇÆÐ: {ex.Message}", ex);
+                throw new Exception($"Excel ï¿½ï¿½ï¿½ï¿½ ï¿½Ð±ï¿½ ï¿½ï¿½ï¿½ï¿½: {ex.Message}", ex);
             }
 
             return sheetNames;
         }
 
         /// <summary>
-        /// Excel ÆÄÀÏÀÇ Æ¯Á¤ ½ÃÆ®ÀÇ Çì´õ Á¤º¸¸¦ °¡Á®¿É´Ï´Ù.
+        /// Excel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Æ¯ï¿½ï¿½ ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½É´Ï´ï¿½.
         /// </summary>
         public static List<string> GetColumnHeaders(string filePath, string? sheetName = null, int headerRow = 1)
         {
@@ -288,7 +288,7 @@ namespace FACTOVA_Palletizing_Analysis
 
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException($"Excel ÆÄÀÏÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù: {filePath}");
+                throw new FileNotFoundException($"Excel ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½: {filePath}");
             }
 
             try
@@ -306,7 +306,7 @@ namespace FACTOVA_Palletizing_Analysis
                         worksheet = package.Workbook.Worksheets[sheetName];
                         if (worksheet == null)
                         {
-                            throw new ArgumentException($"½ÃÆ®¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù: {sheetName}");
+                            throw new ArgumentException($"ï¿½ï¿½Æ®ï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½: {sheetName}");
                         }
                     }
 
@@ -321,14 +321,14 @@ namespace FACTOVA_Palletizing_Analysis
             }
             catch (Exception ex)
             {
-                throw new Exception($"Excel ÆÄÀÏ ÀÐ±â ½ÇÆÐ: {ex.Message}", ex);
+                throw new Exception($"Excel ï¿½ï¿½ï¿½ï¿½ ï¿½Ð±ï¿½ ï¿½ï¿½ï¿½ï¿½: {ex.Message}", ex);
             }
 
             return headers;
         }
 
         /// <summary>
-        /// ¼ýÀÚ ÀÎµ¦½º¸¦ Excel ¿­ ¹®ÀÚ·Î º¯È¯ (1-based)
+        /// ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ Excel ï¿½ï¿½ ï¿½ï¿½ï¿½Ú·ï¿½ ï¿½ï¿½È¯ (1-based)
         /// </summary>
         public static string GetColumnLetter(int columnNumber)
         {

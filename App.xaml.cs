@@ -2,7 +2,7 @@
 using System.Data;
 using System.Windows;
 
-namespace FACTOVA_Palletizing_Analysis
+namespace FACTOVA_QueryHelper
 {
     /// <summary>
     /// Interaction logic for App.xaml

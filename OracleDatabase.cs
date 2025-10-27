@@ -3,7 +3,7 @@ using System;
 using System.Data;
 using System.Threading.Tasks;
 
-namespace FACTOVA_Palletizing_Analysis
+namespace FACTOVA_QueryHelper
 {
     public class OracleDatabase
     {
@@ -21,13 +21,13 @@ namespace FACTOVA_Palletizing_Analysis
                     connection.Open();
 
                     using var command = new OracleCommand(query, connection);
-                    command.CommandTimeout = 300; // 5ºÐ Å¸ÀÓ¾Æ¿ô
+                    command.CommandTimeout = 300; // 5ï¿½ï¿½ Å¸ï¿½Ó¾Æ¿ï¿½
 
                     using var adapter = new OracleDataAdapter(command);
                     adapter.Fill(dataTable);
                     
-                    // µð¹ö±×: ½ÇÁ¦ ÄÃ·³¸í È®ÀÎ
-                    System.Diagnostics.Debug.WriteLine("=== Oracle¿¡¼­ ¹ÝÈ¯µÈ ÄÃ·³¸í ===");
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½ï¿½ È®ï¿½ï¿½
+                    System.Diagnostics.Debug.WriteLine("=== Oracleï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½ï¿½ ===");
                     foreach (DataColumn col in dataTable.Columns)
                     {
                         System.Diagnostics.Debug.WriteLine($"  - {col.ColumnName}");
@@ -36,31 +36,31 @@ namespace FACTOVA_Palletizing_Analysis
             }
             catch (OracleException ex)
             {
-                // Oracle Æ¯Á¤ ¿À·ù Ã³¸®
+                // Oracle Æ¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
                 if (ex.Number == 1017) // ORA-01017: invalid username/password; logon denied
                 {
-                    throw new Exception("Oracle ÀÎÁõ ½ÇÆÐ: »ç¿ëÀÚ ID ¶Ç´Â ºñ¹Ð¹øÈ£°¡ ¿Ã¹Ù¸£Áö ¾Ê½À´Ï´Ù.", ex);
+                    throw new Exception("Oracle ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ï¿½ ID ï¿½Ç´ï¿½ ï¿½ï¿½Ð¹ï¿½È£ï¿½ï¿½ ï¿½Ã¹Ù¸ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½.", ex);
                 }
                 else if (ex.Number == 12154) // ORA-12154: TNS:could not resolve the connect identifier specified
                 {
-                    throw new Exception("Oracle ¿¬°á ½ÇÆÐ: TNS ÀÌ¸§À» Ã£À» ¼ö ¾ø½À´Ï´Ù.", ex);
+                    throw new Exception("Oracle ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: TNS ï¿½Ì¸ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.", ex);
                 }
                 else if (ex.Number == 12514) // ORA-12514: TNS:listener does not currently know of service requested
                 {
-                    throw new Exception("Oracle ¿¬°á ½ÇÆÐ: ¼­ºñ½º¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.", ex);
+                    throw new Exception("Oracle ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ñ½º¸ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.", ex);
                 }
                 else if (ex.Number == 12541) // ORA-12541: TNS:no listener
                 {
-                    throw new Exception("Oracle ¿¬°á ½ÇÆÐ: ¸®½º³Ê°¡ ÀÀ´äÇÏÁö ¾Ê½À´Ï´Ù.", ex);
+                    throw new Exception("Oracle ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ï¿½Ê°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê½ï¿½ï¿½Ï´ï¿½.", ex);
                 }
                 else
                 {
-                    throw new Exception($"Oracle ¿À·ù (ORA-{ex.Number:D5}): {ex.Message}", ex);
+                    throw new Exception($"Oracle ï¿½ï¿½ï¿½ï¿½ (ORA-{ex.Number:D5}): {ex.Message}", ex);
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception($"µ¥ÀÌÅÍº£ÀÌ½º ¿¬°á ¶Ç´Â Äõ¸® ½ÇÇà Áß ¿À·ù°¡ ¹ß»ýÇß½À´Ï´Ù: {ex.Message}", ex);
+                throw new Exception($"ï¿½ï¿½ï¿½ï¿½ï¿½Íºï¿½ï¿½Ì½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ï¿½ß½ï¿½ï¿½Ï´ï¿½: {ex.Message}", ex);
             }
 
             return dataTable;
@@ -83,14 +83,14 @@ namespace FACTOVA_Palletizing_Analysis
             }
             catch (OracleException ex)
             {
-                // ¿À·ù¸¦ ·Î±×¿¡ ±â·Ï (¼±ÅÃ»çÇ×)
-                System.Diagnostics.Debug.WriteLine($"Oracle ¿¬°á Å×½ºÆ® ½ÇÆÐ (ORA-{ex.Number:D5}): {ex.Message}");
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î±×¿ï¿½ ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½)
+                System.Diagnostics.Debug.WriteLine($"Oracle ï¿½ï¿½ï¿½ï¿½ ï¿½×½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ (ORA-{ex.Number:D5}): {ex.Message}");
                 return false;
             }
             catch (Exception ex)
             {
-                // ÀÏ¹Ý ¿À·ù ·Î±×
-                System.Diagnostics.Debug.WriteLine($"¿¬°á Å×½ºÆ® ½ÇÆÐ: {ex.Message}");
+                // ï¿½Ï¹ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Î±ï¿½
+                System.Diagnostics.Debug.WriteLine($"ï¿½ï¿½ï¿½ï¿½ ï¿½×½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½: {ex.Message}");
                 return false;
             }
         }

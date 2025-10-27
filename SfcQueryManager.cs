@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace FACTOVA_Palletizing_Analysis
+namespace FACTOVA_QueryHelper
 {
     /// <summary>
-    /// SFC Äõ¸® ½ÇÇà ¹× °á°ú Ã³¸®¸¦ ´ã´çÇÏ´Â Å¬·¡½º
+    /// SFC ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     public class SfcQueryManager
     {
@@ -20,7 +20,7 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         /// <summary>
-        /// TNS ¿£Æ®¸® ¸ñ·ÏÀ» ¾÷µ¥ÀÌÆ®ÇÕ´Ï´Ù.
+        /// TNS ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½Õ´Ï´ï¿½.
         /// </summary>
         public void UpdateTnsEntries(List<TnsEntry> tnsEntries)
         {
@@ -29,7 +29,7 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         /// <summary>
-        /// SFC Äõ¸®¸¦ ½ÇÇàÇÏ°í °á°ú¸¦ ¹ÝÈ¯ÇÕ´Ï´Ù.
+        /// SFC ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½Õ´Ï´ï¿½.
         /// </summary>
         public async Task<DataTable?> ExecuteQueryAsync(
             string tnsName,
@@ -43,7 +43,7 @@ namespace FACTOVA_Palletizing_Analysis
 
             if (selectedTns == null)
             {
-                throw new Exception($"TNS '{tnsName}'¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+                throw new Exception($"TNS '{tnsName}'ï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
             }
 
             string configDate = queryDate.ToString("yyyyMMdd");
@@ -60,7 +60,7 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         /// <summary>
-        /// SFC Äõ¸® °á°ú¸¦ Ã³¸®ÇÏ¿© ¼³ºñ »óÅÂ¸¦ ¾÷µ¥ÀÌÆ®ÇÕ´Ï´Ù.
+        /// SFC ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½Õ´Ï´ï¿½.
         /// </summary>
         public void ProcessQueryResult(DataTable result, List<SfcEquipmentInfo> equipmentList)
         {
@@ -92,7 +92,7 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         /// <summary>
-        /// CONFIG_JSON¿¡¼­ BIZACTOR¸¦ ÃßÃâÇÕ´Ï´Ù.
+        /// CONFIG_JSONï¿½ï¿½ï¿½ï¿½ BIZACTORï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         /// </summary>
         private string ExtractBizActor(string configJson)
         {
@@ -129,14 +129,14 @@ namespace FACTOVA_Palletizing_Analysis
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"JSON ÆÄ½Ì ¿À·ù: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"JSON ï¿½Ä½ï¿½ ï¿½ï¿½ï¿½ï¿½: {ex.Message}");
             }
 
             return "";
         }
 
         /// <summary>
-        /// SFC Äõ¸® °á°ú ¿ä¾à
+        /// SFC ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         /// </summary>
         public class QueryResultSummary
         {
@@ -146,12 +146,12 @@ namespace FACTOVA_Palletizing_Analysis
 
             public string GetSummaryMessage()
             {
-                return $"Á¶È¸ ¿Ï·á - ON: {OnCount}°³, OFF: {OffCount}°³";
+                return $"ï¿½ï¿½È¸ ï¿½Ï·ï¿½ - ON: {OnCount}ï¿½ï¿½, OFF: {OffCount}ï¿½ï¿½";
             }
         }
 
         /// <summary>
-        /// Äõ¸® °á°ú ¿ä¾àÀ» »ý¼ºÇÕ´Ï´Ù.
+        /// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         /// </summary>
         public static QueryResultSummary GetResultSummary(List<SfcEquipmentInfo> equipmentList)
         {

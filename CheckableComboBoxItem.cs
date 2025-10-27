@@ -1,9 +1,9 @@
 using System.ComponentModel;
 
-namespace FACTOVA_Palletizing_Analysis
+namespace FACTOVA_QueryHelper
 {
     /// <summary>
-    /// Ã¼Å©¹Ú½º°¡ ÀÖ´Â ComboBox ¾ÆÀÌÅÛ
+    /// Ã¼Å©ï¿½Ú½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ComboBox ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     public class CheckableComboBoxItem : INotifyPropertyChanged
     {
