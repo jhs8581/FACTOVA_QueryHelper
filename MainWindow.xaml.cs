@@ -99,9 +99,7 @@ namespace FACTOVA_Palletizing_Analysis
             }
 
             //쿼리 로드
-            //string strQuery = "SELECT* FROM TB_SFC_MAINFRAME_CONFIG_N A WHERE A.TRANSACTION_TYPE_CODE = 'LOGIN_AUTO' AND SFC_MODE = 'PROD' AND A.CONFIG_REGISTER_YMD = @CONFIG_REGISTER_YMD AND PC_IP_ADDR IN(@PC_IP_ADDR)";
-            string strQuery = "SELECT* FROM TB_SFC_MAINFRAME_CONFIG_N A WHERE A.TRANSACTION_TYPE_CODE = 'LOGIN_AUTO' AND SFC_MODE = 'PROD' AND PC_IP_ADDR IN(@PC_IP_ADDR)";
-            SfcQueryTextBox.Text = strQuery;
+            SfcQueryTextBox.Text = DEFAULT_SFC_QUERY;
 
             // SFC 계정 정보 로드
             SfcUserIdTextBox.Text = _settings.SfcUserId;
@@ -291,60 +289,90 @@ namespace FACTOVA_Palletizing_Analysis
 
         // Excel 관련 메서드
 
-        private void BrowseExcelButton_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// 파일 대화상자를 열고 선택된 파일 경로를 반환합니다.
+        /// </summary>
+        private string? OpenFileDialog(string filter, string title)
         {
             var openFileDialog = new OpenFileDialog
             {
-                Filter = "Excel Files (*.xlsx;*.xls)|*.xlsx;*.xls|All Files (*.*)|*.*",
-                Title = "Excel 쿼리 파일 선택"
+                Filter = filter,
+                Title = title
             };
 
-            if (openFileDialog.ShowDialog() == true)
+            return openFileDialog.ShowDialog() == true ? openFileDialog.FileName : null;
+        }
+
+        /// <summary>
+        /// Excel 파일의 시트 목록을 로드합니다.
+        /// </summary>
+        private void LoadExcelSheets(string filePath)
+        {
+            try
             {
-                ExcelFilePathTextBox.Text = openFileDialog.FileName;
+                var sheets = ExcelQueryReader.GetSheetNames(filePath);
+                SheetComboBox.ItemsSource = sheets;
+                if (sheets.Count > 0)
+                {
+                    SheetComboBox.SelectedIndex = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Excel 파일 읽기 실패:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void BrowseExcelButton_Click(object sender, RoutedEventArgs e)
+        {
+            string? filePath = OpenFileDialog(
+                "Excel Files (*.xlsx;*.xls)|*.xlsx;*.xls|All Files (*.*)|*.*",
+                "Excel 쿼리 파일 선택");
+
+            if (filePath != null)
+            {
+                ExcelFilePathTextBox.Text = filePath;
                 LoadQueriesButton.IsEnabled = true;
-
-                // 시트 목록 로드
-                try
-                {
-                    var sheets = ExcelQueryReader.GetSheetNames(openFileDialog.FileName);
-                    SheetComboBox.ItemsSource = sheets;
-                    if (sheets.Count > 0)
-                    {
-                        SheetComboBox.SelectedIndex = 0;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Excel 파일 읽기 실패:\n{ex.Message}", "오류", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-
-                // Excel 파일 경로 저장
+                LoadExcelSheets(filePath);
                 SaveSettings();
             }
+        }
+
+        /// <summary>
+        /// 쿼리 로드 시작 행 번호를 검증합니다.
+        /// </summary>
+        private bool ValidateStartRow(out int startRow)
+        {
+            startRow = 2;
+            
+            if (!int.TryParse(StartRowTextBox.Text, out startRow) || startRow < 1)
+            {
+                MessageBox.Show("시작 행 번호는 1 이상이어야 합니다.", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+            
+            return true;
         }
 
         private void LoadQueriesButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                string filePath = ExcelFilePathTextBox.Text;
-                string? sheetName = SheetComboBox.SelectedItem?.ToString();
-
-                // 시작 행 검증
-                if (!int.TryParse(StartRowTextBox.Text, out int startRow) || startRow < 1)
+                if (!ValidateStartRow(out int startRow))
                 {
-                    MessageBox.Show("시작 행 번호는 1 이상이어야 합니다.", "오류", 
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
+
+                string filePath = ExcelFilePathTextBox.Text;
+                string? sheetName = SheetComboBox.SelectedItem?.ToString();
 
                 // 쿼리 로드 - 열 고정: TNS=A, UserID=B, Password=C, 탭이름=D, 쿼리=F
                 // 추가 열: G(실행여부), H(알림여부), I(이상), J(같음), K(이하), L(컬럼명), M(컬럼값), N(제외여부)
                 _loadedQueries = ExcelQueryReader.ReadQueriesFromExcel(
-                    filePath, 
-                    sheetName, 
+                    filePath,
+                    sheetName,
                     "F",     // 쿼리 (고정)
                     "D",     // 탭 이름 (고정)
                     "",      // 설명 열 사용 안 함
@@ -372,7 +400,7 @@ namespace FACTOVA_Palletizing_Analysis
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"쿼리 로드 실패:\n{ex.Message}", "오류", 
+                MessageBox.Show($"쿼리 로드 실패:\n{ex.Message}", "오류",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 UpdateStatus($"쿼리 로드 실패: {ex.Message}", Colors.Red);
             }
@@ -703,33 +731,30 @@ namespace FACTOVA_Palletizing_Analysis
         // SFC 모니터링 관련 메서드
         private void BrowseSfcExcelButton_Click(object sender, RoutedEventArgs e)
         {
-            var openFileDialog = new OpenFileDialog
-            {
-                Filter = "Excel Files (*.xlsx;*.xls)|*.xlsx;*.xls|All Files (*.*)|*.*",
-                Title = "SFC 설비 목록 Excel 파일 선택"
-            };
+            string? filePath = OpenFileDialog(
+                "Excel Files (*.xlsx;*.xls)|*.xlsx;*.xls|All Files (*.*)|*.*",
+                "SFC 설비 목록 Excel 파일 선택");
 
-            if (openFileDialog.ShowDialog() == true)
+            if (filePath != null)
             {
-                SfcExcelFilePathTextBox.Text = openFileDialog.FileName;
+                SfcExcelFilePathTextBox.Text = filePath;
                 LoadSfcExcelButton.IsEnabled = true;
-
-                // SFC Excel 파일 경로 저장
                 SaveSettings();
             }
         }
 
-        private void LoadSfcExcelButton_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// SFC Excel 파일을 로드합니다.
+        /// </summary>
+        private bool LoadSfcEquipmentFromExcel(string filePath)
         {
             try
             {
-                string filePath = SfcExcelFilePathTextBox.Text;
-
                 if (!File.Exists(filePath))
                 {
                     MessageBox.Show("Excel 파일을 찾을 수 없습니다.", "오류",
                         MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
+                    return false;
                 }
 
                 _sfcEquipmentList.Clear();
@@ -759,54 +784,66 @@ namespace FACTOVA_Palletizing_Analysis
                     }
                 }
 
-                ExecuteSfcQueryButton.IsEnabled = _sfcEquipmentList.Count > 0;
-                
-                // 필터 적용
-                ApplySfcFilter();
-                
-                MessageBox.Show($"{_sfcEquipmentList.Count}개의 설비 정보를 로드했습니다.", "완료",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return true;
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Excel 파일 로드 실패:\n{ex.Message}", "오류",
                     MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
             }
         }
 
-        private async void ExecuteSfcQueryButton_Click(object sender, RoutedEventArgs e)
+        private void LoadSfcExcelButton_Click(object sender, RoutedEventArgs e)
         {
+            string filePath = SfcExcelFilePathTextBox.Text;
+            
+            if (LoadSfcEquipmentFromExcel(filePath))
+            {
+                ExecuteSfcQueryButton.IsEnabled = _sfcEquipmentList.Count > 0;
+                ApplySfcFilter();
+                UpdateStatus($"{_sfcEquipmentList.Count}개의 설비 정보를 로드했습니다.", Colors.Green);
+            }
+        }
+
+        /// <summary>
+        /// SFC 쿼리 실행을 위한 입력값을 검증합니다.
+        /// </summary>
+        private bool ValidateSfcQueryInputs(out string userId, out string password)
+        {
+            userId = string.Empty;
+            password = string.Empty;
+
             if (_sfcEquipmentList.Count == 0)
             {
                 MessageBox.Show("먼저 Excel 파일을 로드하세요.", "알림",
                     MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
+                return false;
             }
 
             if (SfcTnsComboBox.SelectedItem == null)
             {
                 MessageBox.Show("TNS를 선택하세요.", "알림",
                     MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
+                return false;
             }
 
             if (ConfigDatePicker.SelectedDate == null)
             {
                 MessageBox.Show("조회 날짜를 선택하세요.", "알림",
                     MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
+                return false;
             }
 
-            // User ID와 Password 검증
-            string userId = SfcUserIdTextBox.Text?.Trim() ?? "";
-            string password = SfcPasswordBox.Password ?? "";
+            userId = SfcUserIdTextBox.Text?.Trim() ?? "";
+            password = SfcPasswordBox.Password ?? "";
 
             if (string.IsNullOrWhiteSpace(userId))
             {
                 MessageBox.Show("User ID를 입력하세요.", "알림",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 SfcUserIdTextBox.Focus();
-                return;
+                return false;
             }
 
             if (string.IsNullOrWhiteSpace(password))
@@ -814,86 +851,106 @@ namespace FACTOVA_Palletizing_Analysis
                 MessageBox.Show("Password를 입력하세요.", "알림",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 SfcPasswordBox.Focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// SFC 쿼리를 실행합니다.
+        /// </summary>
+        private async System.Threading.Tasks.Task<DataTable?> ExecuteSfcQueryAsync(string userId, string password)
+        {
+            string selectedTnsName = SfcTnsComboBox.SelectedItem.ToString() ?? "";
+            var selectedTns = _tnsEntries.FirstOrDefault(t => t.Name == selectedTnsName);
+
+            if (selectedTns == null)
+            {
+                MessageBox.Show("선택한 TNS 정보를 찾을 수 없습니다.", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return null;
+            }
+
+            string query = SfcQueryTextBox.Text;
+            string configDate = ConfigDatePicker.SelectedDate!.Value.ToString("yyyyMMdd");
+            var ipList = string.Join(",", _sfcEquipmentList.Select(e => $"'{e.IpAddress}'"));
+
+            query = query.Replace("@CONFIG_REGISTER_YMD", configDate);
+            query = query.Replace("@PC_IP_ADDR", ipList);
+
+            return await OracleDatabase.ExecuteQueryAsync(
+                selectedTns.ConnectionString,
+                userId,
+                password,
+                query);
+        }
+
+        /// <summary>
+        /// SFC 쿼리 결과를 처리합니다.
+        /// </summary>
+        private void ProcessSfcQueryResult(DataTable result)
+        {
+            var registeredData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            
+            foreach (DataRow row in result.Rows)
+            {
+                if (row["PC_IP_ADDR"] != null && row["PC_IP_ADDR"] != DBNull.Value)
+                {
+                    string ip = row["PC_IP_ADDR"].ToString()?.Trim() ?? "";
+                    string configJson = row["CONFIG_JSON"]?.ToString() ?? "";
+                    registeredData[ip] = configJson;
+                }
+            }
+
+            foreach (var equipment in _sfcEquipmentList)
+            {
+                if (registeredData.ContainsKey(equipment.IpAddress))
+                {
+                    equipment.Status = "ON";
+                    equipment.BizActor = ExtractBizActor(registeredData[equipment.IpAddress]);
+                }
+                else
+                {
+                    equipment.Status = "OFF";
+                    equipment.BizActor = "";
+                }
+            }
+
+            SfcMonitorDataGrid.Items.Refresh();
+            ApplySfcDataGridRowStyle();
+            ApplySfcFilter();
+        }
+
+        private async void ExecuteSfcQueryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!ValidateSfcQueryInputs(out string userId, out string password))
+            {
                 return;
             }
 
             try
             {
                 ExecuteSfcQueryButton.IsEnabled = false;
-
-                // TNS 정보 가져오기
-                string selectedTnsName = SfcTnsComboBox.SelectedItem.ToString() ?? "";
-                var selectedTns = _tnsEntries.FirstOrDefault(t => t.Name == selectedTnsName);
-
-                if (selectedTns == null)
-                {
-                    MessageBox.Show("선택한 TNS 정보를 찾을 수 없습니다.", "오류",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-
-                // 계정 정보 저장
                 SaveSettings();
 
-                // 쿼리 준비
-                string query = SfcQueryTextBox.Text;
-                string configDate = ConfigDatePicker.SelectedDate.Value.ToString("yyyyMMdd");
+                var result = await ExecuteSfcQueryAsync(userId, password);
                 
-                // IP 주소 목록 생성 ('1.1.1.1','2.2.2.2' 형식)
-                var ipList = string.Join(",", _sfcEquipmentList.Select(e => $"'{e.IpAddress}'"));
-
-                // 파라미터 치환
-                query = query.Replace("@CONFIG_REGISTER_YMD", configDate);
-                query = query.Replace("@PC_IP_ADDR", ipList);
-
-                // 쿼리 실행
-                DataTable result = await OracleDatabase.ExecuteQueryAsync(
-                    selectedTns.ConnectionString,
-                    userId,
-                    password,
-                    query);
-
-                // 결과를 Dictionary로 변환 (IP -> CONFIG_JSON)
-                var registeredData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                foreach (DataRow row in result.Rows)
+                if (result != null)
                 {
-                    if (row["PC_IP_ADDR"] != null && row["PC_IP_ADDR"] != DBNull.Value)
-                    {
-                        string ip = row["PC_IP_ADDR"].ToString()?.Trim() ?? "";
-                        string configJson = row["CONFIG_JSON"]?.ToString() ?? "";
-                        registeredData[ip] = configJson;
-                    }
+                    ProcessSfcQueryResult(result);
+                    
+                    int onCount = _sfcEquipmentList.Count(e => e.Status == "ON");
+                    int offCount = _sfcEquipmentList.Count(e => e.Status == "OFF");
+                    
+                    UpdateStatus($"조회 완료 - ON: {onCount}개, OFF: {offCount}개", Colors.Green);
                 }
-
-                // 상태 및 BIZACTOR 업데이트
-                foreach (var equipment in _sfcEquipmentList)
-                {
-                    if (registeredData.ContainsKey(equipment.IpAddress))
-                    {
-                        equipment.Status = "ON";
-                        equipment.BizActor = ExtractBizActor(registeredData[equipment.IpAddress]);
-                    }
-                    else
-                    {
-                        equipment.Status = "OFF";
-                        equipment.BizActor = "";
-                    }
-                }
-
-                // DataGrid 새로고침 및 스타일 적용
-                SfcMonitorDataGrid.Items.Refresh();
-                ApplySfcDataGridRowStyle();
-
-                // 필터 적용
-                ApplySfcFilter();
-
-                MessageBox.Show($"조회 완료\n\nON: {_sfcEquipmentList.Count(e => e.Status == "ON")}개\nOFF: {_sfcEquipmentList.Count(e => e.Status == "OFF")}개",
-                    "완료", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"쿼리 실행 실패:\n{ex.Message}", "오류",
                     MessageBoxButton.OK, MessageBoxImage.Error);
+                UpdateStatus($"쿼리 실행 실패: {ex.Message}", Colors.Red);
             }
             finally
             {
@@ -945,25 +1002,39 @@ namespace FACTOVA_Palletizing_Analysis
         }
 
         // 주기적 쿼리 실행 관련 메서드
+        
+        /// <summary>
+        /// 쿼리 실행 주기를 검증합니다.
+        /// </summary>
+        private bool ValidateQueryInterval(out int interval)
+        {
+            interval = 0;
+            
+            if (!int.TryParse(QueryIntervalTextBox.Text, out interval) || interval < 5)
+            {
+                MessageBox.Show("쿼리 실행 주기는 5초 이상이어야 합니다.", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+            
+            return true;
+        }
+        
         private void StartAutoQueryButton_Click(object sender, RoutedEventArgs e)
         {
             if (_loadedQueries.Count == 0)
             {
-                MessageBox.Show("먼저 Excel에서 쿼리를 로드하세요.", "알림", 
+                MessageBox.Show("먼저 Excel에서 쿼리를 로드하세요.", "알림",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            if (!int.TryParse(QueryIntervalTextBox.Text, out int interval) || interval < 5)
+            if (!ValidateQueryInterval(out int interval))
             {
-                MessageBox.Show("쿼리 실행 주기는 5초 이상이어야 합니다.", "오류", 
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            // 타이머 간격 저장
             SaveSettings();
-
             StartAutoQuery(interval);
         }
 
@@ -1339,37 +1410,112 @@ namespace FACTOVA_Palletizing_Analysis
 
         private void ClearResultsButton_Click(object sender, RoutedEventArgs e)
         {
-            // 결과 탭만 초기화
             ResultTabControl.Items.Clear();
             UpdateStatus("결과 탭이 초기화되었습니다.", Colors.Gray);
         }
 
-        private void ApplySfcDataGridRowStyle()
+        private void ClearFilterButton_Click(object sender, RoutedEventArgs e)
         {
-            // DataGrid 새로고침을 위한 이벤트 핸들러 등록
-            SfcMonitorDataGrid.LoadingRow -= SfcMonitorDataGrid_LoadingRow;
-            SfcMonitorDataGrid.LoadingRow += SfcMonitorDataGrid_LoadingRow;
+            // 텍스트 필터 초기화
+            FilterIpTextBox.Text = "";
+            FilterEquipmentIdTextBox.Text = "";
+            FilterEquipmentNameTextBox.Text = "";
+
+            // 상태 필터 초기화
+            foreach (var item in _statusFilterItems)
+            {
+                item.IsChecked = item.Text == "전체";
+            }
+
+            // BIZACTOR 필터 초기화
+            foreach (var item in _bizActorFilterItems)
+            {
+                item.IsChecked = item.Text == "전체";
+            }
+
+            UpdateFilterComboBoxText();
+            ApplySfcFilter();
+            UpdateStatus("필터가 초기화되었습니다.", Colors.Green);
         }
 
-        private void SfcMonitorDataGrid_LoadingRow(object? sender, DataGridRowEventArgs e)
+        private void UpdateStatus(string message, Color color)
         {
-            var item = e.Row.Item as SfcEquipmentInfo;
-            if (item != null && item.Status == "OFF")
+            StatusTextBlock.Text = message;
+            StatusTextBlock.Foreground = new SolidColorBrush(color);
+        }
+
+        private void BrowseButton_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new OpenFileDialog
             {
-                e.Row.Background = new SolidColorBrush(Colors.LightCoral);
-            }
-            else
+                Filter = "TNS Names File (tnsnames.ora)|tnsnames.ora|All Files (*.*)|*.*",
+                Title = "tnsnames.ora 파일 선택",
+                InitialDirectory = Path.GetDirectoryName(_settings.TnsPath)
+            };
+
+            if (openFileDialog.ShowDialog() == true)
             {
-                e.Row.Background = new SolidColorBrush(Colors.White);
+                TnsPathTextBox.Text = openFileDialog.FileName;
             }
+        }
+
+        private void ResetButton_Click(object sender, RoutedEventArgs e)
+        {
+            TnsPathTextBox.Text = SettingsManager.GetDefaultTnsPath();
+            UpdateStatus("TNS 경로가 기본값으로 복원되었습니다.", Colors.Green);
+        }
+
+        private void SaveSettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(TnsPathTextBox.Text))
+            {
+                MessageBox.Show("TNS 파일 경로를 입력하세요.", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (!File.Exists(TnsPathTextBox.Text))
+            {
+                var result = MessageBox.Show(
+                    "지정한 파일이 존재하지 않습니다.\n그래도 저장하시겠습니까?",
+                    "확인",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result != MessageBoxResult.Yes)
+                    return;
+            }
+
+            _settings.TnsPath = TnsPathTextBox.Text;
+            SettingsManager.SaveSettings(_settings);
+            LoadTnsEntries();
+
+            UpdateStatus("설정이 저장되었습니다.", Colors.Green);
+            MessageBox.Show("설정이 저장되었습니다.", "완료",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private const string DEFAULT_SFC_QUERY = "SELECT * FROM TB_SFC_MAINFRAME_CONFIG_N A WHERE A.TRANSACTION_TYPE_CODE = 'LOGIN_AUTO' AND SFC_MODE = 'PROD' AND A.CONFIG_REGISTER_YMD = @CONFIG_REGISTER_YMD AND PC_IP_ADDR IN (@PC_IP_ADDR)";
+        
+        private void ResetSfcQueryButton_Click(object sender, RoutedEventArgs e)
+        {
+            SfcQueryTextBox.Text = DEFAULT_SFC_QUERY;
+            UpdateStatus("SFC 쿼리가 기본값으로 초기화되었습니다.", Colors.Green);
         }
 
         // SFC 필터링 관련 메서드
+        
+        /// <summary>
+        /// 필터를 적용합니다 (XAML TextChanged 이벤트에서 호출됨).
+        /// </summary>
         private void ApplyFilter(object sender, EventArgs e)
         {
             ApplySfcFilter();
         }
 
+        /// <summary>
+        /// SFC 설비 목록에 필터를 적용합니다.
+        /// </summary>
         private void ApplySfcFilter()
         {
             // UI 컨트롤이 초기화되지 않았으면 리턴
@@ -1442,6 +1588,9 @@ namespace FACTOVA_Palletizing_Analysis
             UpdateFilterStatus(filtered.Count, _sfcEquipmentList.Count);
         }
 
+        /// <summary>
+        /// 필터 상태 메시지를 업데이트합니다.
+        /// </summary>
         private void UpdateFilterStatus(int filteredCount, int totalCount)
         {
             // FilterStatusTextBlock이 초기화되지 않았으면 리턴
@@ -1460,92 +1609,30 @@ namespace FACTOVA_Palletizing_Analysis
             }
         }
 
-        private void ClearFilterButton_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// SFC DataGrid 행 스타일을 적용합니다.
+        /// </summary>
+        private void ApplySfcDataGridRowStyle()
         {
-            // 필터 초기화
-            FilterIpTextBox.Text = "";
-            FilterEquipmentIdTextBox.Text = "";
-            FilterEquipmentNameTextBox.Text = "";
-            
-            // 상태 필터 초기화 (전체만 선택)
-            foreach (var item in _statusFilterItems)
-            {
-                item.IsChecked = item.Text == "전체";
-            }
-
-            // BIZACTOR 필터 초기화 (전체만 선택)
-            foreach (var item in _bizActorFilterItems)
-            {
-                item.IsChecked = item.Text == "전체";
-            }
-
-            // 콤보박스 텍스트 업데이트
-            UpdateFilterComboBoxText();
-
-            // 필터 적용
-            ApplySfcFilter();
+            // DataGrid 새로고침을 위한 이벤트 핸들러 등록
+            SfcMonitorDataGrid.LoadingRow -= SfcMonitorDataGrid_LoadingRow;
+            SfcMonitorDataGrid.LoadingRow += SfcMonitorDataGrid_LoadingRow;
         }
 
-        private void UpdateStatus(string message, Color color)
+        /// <summary>
+        /// SFC DataGrid 행 로딩 시 스타일을 적용합니다.
+        /// </summary>
+        private void SfcMonitorDataGrid_LoadingRow(object? sender, DataGridRowEventArgs e)
         {
-            StatusTextBlock.Text = message;
-            StatusTextBlock.Foreground = new SolidColorBrush(color);
-        }
-
-        private void BrowseButton_Click(object sender, RoutedEventArgs e)
-        {
-            var openFileDialog = new OpenFileDialog
+            var item = e.Row.Item as SfcEquipmentInfo;
+            if (item != null && item.Status == "OFF")
             {
-                Filter = "TNS Names File (tnsnames.ora)|tnsnames.ora|All Files (*.*)|*.*",
-                Title = "tnsnames.ora 파일 선택",
-                InitialDirectory = System.IO.Path.GetDirectoryName(_settings.TnsPath)
-            };
-
-            if (openFileDialog.ShowDialog() == true)
-            {
-                TnsPathTextBox.Text = openFileDialog.FileName;
+                e.Row.Background = new SolidColorBrush(Colors.LightCoral);
             }
-        }
-
-        private void ResetButton_Click(object sender, RoutedEventArgs e)
-        {
-            TnsPathTextBox.Text = SettingsManager.GetDefaultTnsPath();
-        }
-
-        private void SaveSettingsButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(TnsPathTextBox.Text))
+            else
             {
-                MessageBox.Show("TNS 파일 경로를 입력하세요.", "오류", 
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                e.Row.Background = new SolidColorBrush(Colors.White);
             }
-
-            if (!File.Exists(TnsPathTextBox.Text))
-            {
-                var result = MessageBox.Show(
-                    "지정한 파일이 존재하지 않습니다.\n그래도 저장하시겠습니까?", 
-                    "확인", 
-                    MessageBoxButton.YesNo, 
-                    MessageBoxImage.Question);
-                
-                if (result != MessageBoxResult.Yes)
-                    return;
-            }
-
-            _settings.TnsPath = TnsPathTextBox.Text;
-            SettingsManager.SaveSettings(_settings);
-
-            LoadTnsEntries();
-
-            MessageBox.Show("설정이 저장되었습니다.", "완료", 
-                MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void ResetSfcQueryButton_Click(object sender, RoutedEventArgs e)
-        {
-            string strQuery = "SELECT* FROM TB_SFC_MAINFRAME_CONFIG_N A WHERE A.TRANSACTION_TYPE_CODE = 'LOGIN_AUTO' AND SFC_MODE = 'PROD' AND A.CONFIG_REGISTER_YMD = @CONFIG_REGISTER_YMD AND PC_IP_ADDR IN(@PC_IP_ADDR)";
-            SfcQueryTextBox.Text = strQuery;
         }
     }
 }
