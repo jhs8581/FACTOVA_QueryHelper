@@ -6,7 +6,7 @@ using System.Linq;
 namespace FACTOVA_QueryHelper
 {
     /// <summary>
-    /// SFC ���� ��� ���͸��� �����ϴ� Ŭ����
+    /// SFC 설비 목록 필터링을 담당하는 클래스
     /// </summary>
     public class SfcFilterManager
     {
@@ -28,7 +28,7 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// ���� ����
+        /// 필터 조건
         /// </summary>
         public class FilterCriteria
         {
@@ -38,58 +38,60 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// ���͸� �����մϴ�.
+        /// 필터를 적용합니다.
         /// </summary>
         public FilterResult ApplyFilter(FilterCriteria criteria)
         {
             if (criteria == null)
                 throw new ArgumentNullException(nameof(criteria));
 
-            // ���� ���� ����ȭ
+            // 입력 필터 정규화
             string ipFilter = criteria.IpAddress?.Trim().ToLower() ?? "";
             string equipmentIdFilter = criteria.EquipmentId?.Trim().ToLower() ?? "";
             string equipmentNameFilter = criteria.EquipmentName?.Trim().ToLower() ?? "";
 
-            // ���õ� ���� ���
+            // 선택된 상태 목록
             var selectedStatuses = _statusFilterItems
-                .Where(i => i.IsChecked && i.Text != "��ü")
+                .Where(i => i.IsChecked && i.Text != "전체")
                 .Select(i => i.Text)
                 .ToList();
-            bool isAllStatusSelected = _statusFilterItems.FirstOrDefault(i => i.Text == "��ü")?.IsChecked ?? true;
+            bool isAllStatusSelected = _statusFilterItems.FirstOrDefault(i => i.Text == "전체")?.IsChecked ?? false;
 
-            // ���õ� BIZACTOR ���
+            // 선택된 BIZACTOR 목록
             var selectedBizActors = _bizActorFilterItems
-                .Where(i => i.IsChecked && i.Text != "��ü")
+                .Where(i => i.IsChecked && i.Text != "전체")
                 .Select(i => i.Text)
                 .ToList();
-            bool isAllBizActorSelected = _bizActorFilterItems.FirstOrDefault(i => i.Text == "��ü")?.IsChecked ?? true;
+            bool isAllBizActorSelected = _bizActorFilterItems.FirstOrDefault(i => i.Text == "전체")?.IsChecked ?? false;
 
-            // ���͸� ����
+            // 필터링 수행
             var filtered = _sourceList.Where(item =>
             {
-                // IP �ּ� ����
+                // IP 주소 필터
                 if (!string.IsNullOrEmpty(ipFilter) && 
                     !item.IpAddress.ToLower().Contains(ipFilter))
                     return false;
 
-                // ���� ID ����
+                // 설비 ID 필터
                 if (!string.IsNullOrEmpty(equipmentIdFilter) && 
                     !item.EquipmentId.ToLower().Contains(equipmentIdFilter))
                     return false;
 
-                // ����� ����
+                // 설비명 필터
                 if (!string.IsNullOrEmpty(equipmentNameFilter) && 
                     !item.EquipmentName.ToLower().Contains(equipmentNameFilter))
                     return false;
 
-                // ���� ���� (��Ƽ����Ʈ)
+                // 상태 필터 (멀티셀렉트)
+                // "전체"가 선택되지 않았고, 특정 항목이 선택되었을 때만 필터링
                 if (!isAllStatusSelected && selectedStatuses.Count > 0)
                 {
                     if (!selectedStatuses.Contains(item.Status))
                         return false;
                 }
 
-                // BIZACTOR ���� (��Ƽ����Ʈ)
+                // BIZACTOR 필터 (멀티셀렉트)
+                // "전체"가 선택되지 않았고, 특정 항목이 선택되었을 때만 필터링
                 if (!isAllBizActorSelected && selectedBizActors.Count > 0)
                 {
                     if (!selectedBizActors.Contains(item.BizActor))
@@ -99,7 +101,7 @@ namespace FACTOVA_QueryHelper
                 return true;
             }).ToList();
 
-            // ���͸��� ����Ʈ ������Ʈ
+            // 필터링된 리스트 업데이트
             _filteredList.Clear();
             foreach (var item in filtered)
             {
@@ -115,48 +117,65 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// ��� ���͸� �ʱ�ȭ�մϴ�.
+        /// 모든 필터를 초기화합니다.
         /// </summary>
         public void ClearAllFilters()
         {
-            // ���� ���� �ʱ�ȭ
+            // 상태 필터 초기화 - OFF만 체크
             foreach (var item in _statusFilterItems)
             {
-                item.IsChecked = item.Text == "��ü";
+                if (item.Text == "OFF")
+                {
+                    item.IsChecked = true;
+                }
+                else
+                {
+                    item.IsChecked = false;
+                }
             }
 
-            // BIZACTOR ���� �ʱ�ȭ
+            // BIZACTOR 필터 초기화 - 전체 체크
             foreach (var item in _bizActorFilterItems)
             {
-                item.IsChecked = item.Text == "��ü";
+                item.IsChecked = item.Text == "전체";
             }
         }
 
         /// <summary>
-        /// ���� �޺��ڽ� �ؽ�Ʈ�� ������Ʈ�մϴ�.
+        /// 필터 콤보박스 텍스트를 업데이트합니다.
         /// </summary>
         public FilterComboBoxText GetFilterComboBoxText()
         {
             var result = new FilterComboBoxText();
 
-            // ���� ���� �ؽ�Ʈ
-            var checkedStatusItems = _statusFilterItems.Where(i => i.IsChecked && i.Text != "��ü").ToList();
-            if (checkedStatusItems.Count == 0 || 
-                _statusFilterItems.FirstOrDefault(i => i.Text == "��ü")?.IsChecked == true)
+            // 상태 필터 텍스트
+            var checkedStatusItems = _statusFilterItems.Where(i => i.IsChecked && i.Text != "전체").ToList();
+            var allStatusItem = _statusFilterItems.FirstOrDefault(i => i.Text == "전체");
+            
+            if (allStatusItem?.IsChecked == true)
             {
-                result.StatusText = "��ü";
+                result.StatusText = "전체";
+            }
+            else if (checkedStatusItems.Count == 0)
+            {
+                result.StatusText = "선택 안 됨";
             }
             else
             {
                 result.StatusText = string.Join(", ", checkedStatusItems.Select(i => i.Text));
             }
 
-            // BIZACTOR ���� �ؽ�Ʈ
-            var checkedBizActorItems = _bizActorFilterItems.Where(i => i.IsChecked && i.Text != "��ü").ToList();
-            if (checkedBizActorItems.Count == 0 || 
-                _bizActorFilterItems.FirstOrDefault(i => i.Text == "��ü")?.IsChecked == true)
+            // BIZACTOR 필터 텍스트
+            var checkedBizActorItems = _bizActorFilterItems.Where(i => i.IsChecked && i.Text != "전체").ToList();
+            var allBizActorItem = _bizActorFilterItems.FirstOrDefault(i => i.Text == "전체");
+            
+            if (allBizActorItem?.IsChecked == true)
             {
-                result.BizActorText = "��ü";
+                result.BizActorText = "전체";
+            }
+            else if (checkedBizActorItems.Count == 0)
+            {
+                result.BizActorText = "선택 안 됨";
             }
             else
             {
@@ -167,7 +186,7 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// ���� üũ�ڽ� ������ ó���մϴ�.
+        /// 필터 체크박스 변경을 처리합니다.
         /// </summary>
         public void HandleCheckBoxChanged(CheckableComboBoxItem changedItem)
         {
@@ -178,29 +197,29 @@ namespace FACTOVA_QueryHelper
                 ? _statusFilterItems 
                 : _bizActorFilterItems;
 
-            // "��ü"�� �����ϸ� �ٸ� ��� �׸� ���� ����
-            if (changedItem.Text == "��ü" && changedItem.IsChecked)
+            // "전체"가 선택되면 다른 모든 항목 해제
+            if (changedItem.Text == "전체" && changedItem.IsChecked)
             {
-                foreach (var otherItem in collection.Where(i => i.Text != "��ü"))
+                foreach (var otherItem in collection.Where(i => i.Text != "전체"))
                 {
                     otherItem.IsChecked = false;
                 }
             }
-            // �ٸ� �׸��� �����ϸ� "��ü" ���� ����
-            else if (changedItem.Text != "��ü" && changedItem.IsChecked)
+            // 다른 항목이 선택되면 "전체" 항목 해제
+            else if (changedItem.Text != "전체" && changedItem.IsChecked)
             {
-                var allItem = collection.FirstOrDefault(i => i.Text == "��ü");
+                var allItem = collection.FirstOrDefault(i => i.Text == "전체");
                 if (allItem != null)
                 {
                     allItem.IsChecked = false;
                 }
             }
-            // ��� �׸��� ���� �����Ǹ� "��ü" ����
+            // 모든 항목이 해제 상태이면 "전체" 선택
             else if (!changedItem.IsChecked)
             {
                 if (!collection.Any(i => i.IsChecked))
                 {
-                    var allItem = collection.FirstOrDefault(i => i.Text == "��ü");
+                    var allItem = collection.FirstOrDefault(i => i.Text == "전체");
                     if (allItem != null)
                     {
                         allItem.IsChecked = true;
@@ -211,7 +230,7 @@ namespace FACTOVA_QueryHelper
     }
 
     /// <summary>
-    /// ���� ���� ���
+    /// 필터 결과 클래스
     /// </summary>
     public class FilterResult
     {
@@ -223,21 +242,21 @@ namespace FACTOVA_QueryHelper
         {
             if (!IsFiltered)
             {
-                return $"��ü {TotalCount}��";
+                return $"전체 {TotalCount}개";
             }
             else
             {
-                return $"���͸�: {FilteredCount}�� / ��ü: {TotalCount}��";
+                return $"필터링: {FilteredCount}개 / 전체: {TotalCount}개";
             }
         }
     }
 
     /// <summary>
-    /// ���� �޺��ڽ� �ؽ�Ʈ
+    /// 필터 콤보박스 텍스트
     /// </summary>
     public class FilterComboBoxText
     {
-        public string StatusText { get; set; } = "��ü";
-        public string BizActorText { get; set; } = "��ü";
+        public string StatusText { get; set; } = "전체";
+        public string BizActorText { get; set; } = "전체";
     }
 }

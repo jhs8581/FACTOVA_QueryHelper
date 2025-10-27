@@ -16,8 +16,8 @@ namespace FACTOVA_QueryHelper
         public string SfcExcelFilePath { get; set; } = string.Empty;
         public string SfcUserId { get; set; } = string.Empty;
         public string SfcPassword { get; set; } = string.Empty;
-        public string SfcTnsName { get; set; } = string.Empty; // SFC TNS ���ð� ����
-        public bool StopOnNotification { get; set; } = true; // �˸� �� �ڵ� ���� ���� (�⺻��: true)
+        public string SfcTnsName { get; set; } = string.Empty; // SFC TNS 엔트리 이름
+        public bool StopOnNotification { get; set; } = true; // 알림 시 자동 실행 중지 (기본값: true)
     }
 
     public class SettingsManager
@@ -50,7 +50,7 @@ namespace FACTOVA_QueryHelper
             }
             catch
             {
-                // �ε� ���� �� �⺻ ���� ��ȯ
+                // 로드 실패 시 기본 설정 반환
             }
 
             return new AppSettings { TnsPath = GetDefaultTnsPath() };
@@ -74,7 +74,7 @@ namespace FACTOVA_QueryHelper
             }
             catch
             {
-                // ���� ���� ����
+                // 저장 실패 무시
             }
         }
     }

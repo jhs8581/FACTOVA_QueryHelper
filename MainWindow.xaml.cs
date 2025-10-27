@@ -796,8 +796,8 @@ namespace FACTOVA_QueryHelper
                     ApplySfcFilter();
 
                     // 요약 생성
-                    var summary = SfcQueryManager.GetResultSummary(_sfcEquipmentList.ToList());
-                    UpdateStatus(summary.GetSummaryMessage(), Colors.Green);
+                    //var summary = SfcQueryManager.GetResultSummary(_sfcEquipmentList.ToList());
+                    //UpdateStatus(summary.GetSummaryMessage(), Colors.Green);
 
                     // OFF 상태인 설비 알림
                     ShowOffEquipmentNotification();
