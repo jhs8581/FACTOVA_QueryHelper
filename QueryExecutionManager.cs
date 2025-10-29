@@ -127,7 +127,7 @@ namespace FACTOVA_QueryHelper
                         
                         if (newNotifications > 0)
                         {
-                            logEntry.AppendLine($"  ?? 알림: {newNotifications}개");
+                            logEntry.AppendLine($"  [알림] 알림: {newNotifications}개");
                             // 알림 내용 로그에 추가
                             for (int n = notificationsBefore; n < result.Notifications.Count; n++)
                             {
@@ -141,7 +141,7 @@ namespace FACTOVA_QueryHelper
                             }
                         }
 
-                        logEntry.AppendLine($"  ? 성공");
+                        logEntry.AppendLine($"  [성공] 성공");
                         
                         // 결과 탭 생성
                         _createResultTabCallback(queryItem, queryResult.Result, queryResult.Duration, null);
@@ -150,7 +150,7 @@ namespace FACTOVA_QueryHelper
                     }
                     else
                     {
-                        logEntry.AppendLine($"  ? 실패: {queryResult.ErrorMessage}");
+                        logEntry.AppendLine($"  [실패] 실패: {queryResult.ErrorMessage}");
                         
                         // 오류 탭 생성
                         _createResultTabCallback(queryItem, null, 0, queryResult.ErrorMessage);
@@ -160,7 +160,7 @@ namespace FACTOVA_QueryHelper
                 }
                 catch (Exception ex)
                 {
-                    logEntry.AppendLine($"  ? 실패: {ex.Message}");
+                    logEntry.AppendLine($"  [실패] 실패: {ex.Message}");
                     
                     // 오류 탭 생성
                     _createResultTabCallback(queryItem, null, 0, ex.Message);
@@ -176,7 +176,7 @@ namespace FACTOVA_QueryHelper
             // 작업 요약 추가
             result.ExecutionLogs.Add(new string('=', 80));
             result.ExecutionLogs.Add("");
-            result.ExecutionLogs.Add("?? 작업 요약");
+            result.ExecutionLogs.Add("[작업 요약]");
             result.ExecutionLogs.Add($"  총 실행 시간: {result.TotalDuration:F2}초");
             result.ExecutionLogs.Add($"  성공: {result.SuccessCount}개");
             result.ExecutionLogs.Add($"  실패: {result.FailCount}개");
@@ -226,7 +226,7 @@ namespace FACTOVA_QueryHelper
                     {
                         var availableTns = string.Join(", ", _tnsEntries.Select(t => t.Name));
                         throw new Exception($"TNS '{queryItem.TnsName}'를 찾을 수 없습니다.\n\n" +
-                            $"?? 해결 방법:\n" +
+                            $"[해결 방법]\n" +
                             $"1. Excel A열에 정확한 TNS 이름 입력\n" +
                             $"2. 또는 Host:Port:ServiceName 형식으로 입력\n" +
                             $"   예) 192.168.1.10:1521:ORCL\n\n" +
@@ -297,7 +297,7 @@ namespace FACTOVA_QueryHelper
                 {
                     var msg = $"[{queryItem.QueryName}] 조회 결과 {rowCount}건 (기준: {greaterThan}건 이상)";
                     notifications.Add(msg);
-                    System.Diagnostics.Debug.WriteLine($"  ? 알림 추가: {msg}");
+                    System.Diagnostics.Debug.WriteLine($"  [알림 추가] 알림 추가: {msg}");
                 }
             }
 
@@ -310,7 +310,7 @@ namespace FACTOVA_QueryHelper
                 {
                     var msg = $"[{queryItem.QueryName}] 조회 결과 {rowCount}건 (기준: {equals}건과 같음)";
                     notifications.Add(msg);
-                    System.Diagnostics.Debug.WriteLine($"  ? 알림 추가: {msg}");
+                    System.Diagnostics.Debug.WriteLine($"  [알림 추가] 알림 추가: {msg}");
                 }
             }
 
@@ -323,7 +323,7 @@ namespace FACTOVA_QueryHelper
                 {
                     var msg = $"[{queryItem.QueryName}] 조회 결과 {rowCount}건 (기준: {lessThan}건 이하)";
                     notifications.Add(msg);
-                    System.Diagnostics.Debug.WriteLine($"  ? 알림 추가: {msg}");
+                    System.Diagnostics.Debug.WriteLine($"  [알림 추가] 알림 추가: {msg}");
                 }
             }
         }
@@ -367,7 +367,7 @@ namespace FACTOVA_QueryHelper
 
             if (columnNames.Count != columnValues.Count)
             {
-                System.Diagnostics.Debug.WriteLine($"  ?? 컬럼명 개수({columnNames.Count})와 값 개수({columnValues.Count})가 다름");
+                System.Diagnostics.Debug.WriteLine($"  [경고] 컬럼명 개수({columnNames.Count})와 값 개수({columnValues.Count})가 다름");
                 return;
             }
 
@@ -402,7 +402,7 @@ namespace FACTOVA_QueryHelper
                     if (!isMatch)
                     {
                         anyMismatch = true;
-                        System.Diagnostics.Debug.WriteLine($"      ?? 불일치 발견: {columnName}");
+                        System.Diagnostics.Debug.WriteLine($"      [불일치] 불일치 발견: {columnName}");
                     }
                 }
 
@@ -410,11 +410,11 @@ namespace FACTOVA_QueryHelper
                 {
                     mismatchCount++;
                     var checkInfo = string.Join(", ", columnNames.Zip(columnValues, (n, v) => $"{n}={v}"));
-                    System.Diagnostics.Debug.WriteLine($"    ?? 행 {i + 1}: 조건 불일치 발견 - 기대값: {checkInfo}");
+                    System.Diagnostics.Debug.WriteLine($"    [불일치] 행 {i + 1}: 조건 불일치 발견 - 기대값: {checkInfo}");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"    ? 행 {i + 1}: 모든 조건 일치 (알림 없음)");
+                    System.Diagnostics.Debug.WriteLine($"    [일치] 행 {i + 1}: 모든 조건 일치 (알림 없음)");
                 }
             }
 
@@ -424,11 +424,11 @@ namespace FACTOVA_QueryHelper
                 var checkInfo = string.Join(", ", columnNames.Zip(columnValues, (n, v) => $"{n}={v}"));
                 var msg = $"[{queryItem.QueryName}] 조건 불일치 발견: {mismatchCount}개 행 (기대값: {checkInfo})";
                 notifications.Add(msg);
-                System.Diagnostics.Debug.WriteLine($"  ? 알림 추가: {msg}");
+                System.Diagnostics.Debug.WriteLine($"  [알림 추가] 알림 추가: {msg}");
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine($"  ?? 모든 행이 조건과 일치 - 알림 없음");
+                System.Diagnostics.Debug.WriteLine($"  [정보] 모든 행이 조건과 일치 - 알림 없음");
             }
 
             System.Diagnostics.Debug.WriteLine($"  - 컬럼 값 체크 완료, 총 불일치 행: {mismatchCount}개");

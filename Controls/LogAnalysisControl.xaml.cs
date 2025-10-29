@@ -830,7 +830,7 @@ namespace FACTOVA_QueryHelper.Controls
 
                 statusPanel.Children.Add(new TextBlock
                 {
-                    Text = $"✓ {result.Rows.Count}개 행 | {result.Columns.Count}개 열 | 소요시간: {duration:F2}초",
+                    Text = $"[성공] {result.Rows.Count}개 행 | {result.Columns.Count}개 열 | 소요시간: {duration:F2}초",
                     FontSize = 11,
                     Foreground = new SolidColorBrush(Colors.Green),
                     VerticalAlignment = VerticalAlignment.Center
@@ -903,7 +903,7 @@ namespace FACTOVA_QueryHelper.Controls
 
                 var statusText = new TextBlock
                 {
-                    Text = "✗ 실행 실패",
+                    Text = "[실패] 실행 실패",
                     FontSize = 11,
                     Foreground = new SolidColorBrush(Colors.Red),
                     Margin = new Thickness(5)
@@ -1008,22 +1008,113 @@ namespace FACTOVA_QueryHelper.Controls
             Grid.SetRow(summaryBorder, 0);
             grid.Children.Add(summaryBorder);
 
-            // 로그 내용
-            var logTextBox = new TextBox
+            // RichTextBox로 로그 표시 (알림 영역은 빨간색 텍스트로 강조)
+            var richTextBox = new System.Windows.Controls.RichTextBox
             {
-                Text = string.Join(Environment.NewLine, logs),
                 IsReadOnly = true,
                 FontFamily = new FontFamily("Consolas"),
                 FontSize = 11,
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-                TextWrapping = TextWrapping.NoWrap,
                 Padding = new Thickness(10),
                 Background = new SolidColorBrush(Color.FromRgb(250, 250, 250))
             };
 
-            Grid.SetRow(logTextBox, 1);
-            grid.Children.Add(logTextBox);
+            var document = new System.Windows.Documents.FlowDocument();
+            
+            string? currentQueryName = null;
+            bool isInNotificationSection = false;
+
+            foreach (var log in logs)
+            {
+                var paragraph = new System.Windows.Documents.Paragraph
+                {
+                    Margin = new Thickness(0)
+                };
+
+                // 쿼리 시작/종료 추적
+                if (log.Contains("쿼리:"))
+                {
+                    var match = System.Text.RegularExpressions.Regex.Match(log, @"쿼리: (.+)");
+                    if (match.Success)
+                    {
+                        currentQueryName = match.Groups[1].Value.Trim();
+                        isInNotificationSection = notifiedQueryNames.Contains(currentQueryName);
+                    }
+                }
+                else if (log.StartsWith("---") || log.StartsWith("[작업 요약]"))
+                {
+                    currentQueryName = null;
+                    isInNotificationSection = false;
+                }
+
+                Color textColor = Colors.Black;
+                bool isBold = false;
+
+                // 알림 관련 로그 - 진한 빨간색 + 굵게
+                if (log.Contains("[알림]") || log.Contains("알림:") || 
+                    (log.Contains("조회 결과") && log.Contains("기준:")) ||
+                    log.Contains("조건 일치") || log.Contains("조건 불일치") ||
+                    log.StartsWith("    - "))
+                {
+                    textColor = Color.FromRgb(220, 53, 69);
+                    isBold = true;
+                }
+                // 알림 있는 쿼리 영역 - 빨간색 계열
+                else if (isInNotificationSection)
+                {
+                    if (log.Contains("쿼리:"))
+                    {
+                        textColor = Color.FromRgb(220, 53, 69);
+                        isBold = true;
+                    }
+                    else if (log.Contains("[성공]") || log.Contains("성공:"))
+                    {
+                        textColor = Color.FromRgb(255, 69, 58);
+                    }
+                    else if (log.Contains("[실패]"))
+                    {
+                        textColor = Color.FromRgb(220, 53, 69);
+                        isBold = true;
+                    }
+                    else
+                    {
+                        textColor = Color.FromRgb(255, 99, 71);
+                    }
+                }
+                // 일반 로그
+                else
+                {
+                    if (log.Contains("[성공]") || log.Contains("성공:"))
+                    {
+                        textColor = Colors.Green;
+                    }
+                    else if (log.Contains("[실패]"))
+                    {
+                        textColor = Colors.Red;
+                    }
+                    else if (log.StartsWith("[작업 요약]"))
+                    {
+                        textColor = Colors.Blue;
+                        isBold = true;
+                    }
+                }
+
+                var run = new System.Windows.Documents.Run(log)
+                {
+                    Foreground = new SolidColorBrush(textColor)
+                };
+
+                if (isBold)
+                    run.FontWeight = FontWeights.Bold;
+
+                paragraph.Inlines.Add(run);
+                document.Blocks.Add(paragraph);
+            }
+
+            richTextBox.Document = document;
+            Grid.SetRow(richTextBox, 1);
+            grid.Children.Add(richTextBox);
 
             tabItem.Content = grid;
             ResultTabControl.Items.Insert(0, tabItem);
