@@ -133,6 +133,23 @@
                         <Button x:Name="ClearResultsButton" Content="결과 초기화" 
                                 Width="100" Height="30" Margin="20,0,10,0"
                                 Click="ClearResultsButton_Click"/>
+                        
+                        <!-- 폰트 크기 조절 -->
+                        <TextBlock Text="폰트 크기:" VerticalAlignment="Center" Margin="20,0,10,0"/>
+                        <Button x:Name="DecreaseFontButton" Content="-" 
+                                Width="30" Height="30" Margin="0,0,5,0"
+                                Click="DecreaseFontButton_Click"
+                                ToolTip="폰트 크기 감소"/>
+                        <TextBlock x:Name="FontSizeTextBlock" Text="11" 
+                                   VerticalAlignment="Center" 
+                                   FontWeight="Bold"
+                                   Foreground="#FF0078D7"
+                                   MinWidth="25"
+                                   TextAlignment="Center"/>
+                        <Button x:Name="IncreaseFontButton" Content="+" 
+                                Width="30" Height="30" Margin="5,0,0,0"
+                                Click="IncreaseFontButton_Click"
+                                ToolTip="폰트 크기 증가"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Grid.Row="1">

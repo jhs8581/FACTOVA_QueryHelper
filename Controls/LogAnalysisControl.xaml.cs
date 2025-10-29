@@ -90,6 +90,9 @@ namespace FACTOVA_QueryHelper.Controls
             // 자동 실행 활성화 설정 로드
             EnableAutoExecutionCheckBox.IsChecked = _sharedData.Settings.EnableAutoExecution;
             QueryIntervalTextBox.IsEnabled = _sharedData.Settings.EnableAutoExecution;
+            
+            // 폰트 크기 설정 로드
+            FontSizeTextBlock.Text = _sharedData.Settings.FontSize.ToString();
         }
 
         /// <summary>
@@ -716,6 +719,105 @@ namespace FACTOVA_QueryHelper.Controls
             UpdateStatus("결과 탭이 초기화되었습니다.", Colors.Gray);
         }
 
+        private void IncreaseFontButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_sharedData == null) return;
+
+            if (_sharedData.Settings.FontSize < 20)
+            {
+                _sharedData.Settings.FontSize++;
+                ApplyFontSize();
+                _sharedData.SaveSettingsCallback?.Invoke();
+            }
+        }
+
+        private void DecreaseFontButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_sharedData == null) return;
+
+            if (_sharedData.Settings.FontSize > 8)
+            {
+                _sharedData.Settings.FontSize--;
+                ApplyFontSize();
+                _sharedData.SaveSettingsCallback?.Invoke();
+            }
+        }
+
+        private void ApplyFontSize()
+        {
+            if (_sharedData == null) return;
+
+            int fontSize = _sharedData.Settings.FontSize;
+            FontSizeTextBlock.Text = fontSize.ToString();
+
+            // 모든 탭에 폰트 크기 적용
+            foreach (TabItem tab in ResultTabControl.Items)
+            {
+                ApplyFontSizeToTab(tab, fontSize);
+            }
+        }
+
+        private void ApplyFontSizeToTab(TabItem tab, int fontSize)
+        {
+            if (tab.Content is Grid grid)
+            {
+                foreach (var child in grid.Children)
+                {
+                    // DataGrid 폰트 크기 적용
+                    if (child is DataGrid dataGrid)
+                    {
+                        dataGrid.FontSize = fontSize;
+                    }
+                    // RichTextBox 폰트 크기 적용 (작업 로그)
+                    else if (child is System.Windows.Controls.RichTextBox richTextBox)
+                    {
+                        richTextBox.FontSize = fontSize;
+                    }
+                    // TextBox 폰트 크기 적용 (오류 메시지)
+                    else if (child is TextBox textBox)
+                    {
+                        textBox.FontSize = fontSize;
+                    }
+                    // StackPanel 내부의 TextBlock 폰트 크기 적용
+                    else if (child is StackPanel stackPanel)
+                    {
+                        foreach (var stackChild in stackPanel.Children)
+                        {
+                            if (stackChild is TextBlock textBlock)
+                            {
+                                textBlock.FontSize = fontSize;
+                            }
+                        }
+                    }
+                    // GroupBox 내부 적용
+                    else if (child is GroupBox groupBox && groupBox.Content is ScrollViewer scrollViewer)
+                    {
+                        ApplyFontSizeToScrollViewer(scrollViewer, fontSize);
+                    }
+                }
+            }
+        }
+
+        private void ApplyFontSizeToScrollViewer(ScrollViewer scrollViewer, int fontSize)
+        {
+            if (scrollViewer.Content is WrapPanel wrapPanel)
+            {
+                foreach (var child in wrapPanel.Children)
+                {
+                    if (child is Border border && border.Child is StackPanel stackPanel)
+                    {
+                        foreach (var stackChild in stackPanel.Children)
+                        {
+                            if (stackChild is TextBlock textBlock)
+                            {
+                                textBlock.FontSize = fontSize - 1; // 요약 카드는 약간 작게
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// 쿼리 결과 탭을 생성합니다.
         /// </summary>
@@ -727,11 +829,128 @@ namespace FACTOVA_QueryHelper.Controls
             };
 
             var grid = new Grid();
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
+            // 폰트 크기 가져오기
+            int fontSize = _sharedData?.Settings.FontSize ?? 11;
+
             if (result != null && errorMessage == null)
             {
+                // 요약 정보 패널 생성
+                var summaryBorder = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromRgb(240, 248, 255)),
+                    Padding = new Thickness(15, 10, 15, 10),
+                    Margin = new Thickness(0, 0, 0, 10)
+                };
+
+                var summaryStack = new StackPanel();
+
+                // 첫 번째 줄: 기본 정보
+                var row1Panel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Margin = new Thickness(0, 0, 0, 5)
+                };
+
+                // 쿼리명
+                row1Panel.Children.Add(new TextBlock
+                {
+                    Text = $"쿼리: {queryItem.QueryName}",
+                    FontSize = fontSize,
+                    FontWeight = FontWeights.Bold,
+                    Margin = new Thickness(0, 0, 20, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                });
+
+                // 결과 건수
+                row1Panel.Children.Add(new TextBlock
+                {
+                    Text = $"결과: {result.Rows.Count}건",
+                    FontSize = fontSize,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Colors.Green),
+                    Margin = new Thickness(0, 0, 20, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                });
+
+                // 컬럼 수
+                row1Panel.Children.Add(new TextBlock
+                {
+                    Text = $"컬럼: {result.Columns.Count}개",
+                    FontSize = fontSize,
+                    Foreground = new SolidColorBrush(Colors.Blue),
+                    Margin = new Thickness(0, 0, 20, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                });
+
+                // 소요시간
+                row1Panel.Children.Add(new TextBlock
+                {
+                    Text = $"소요시간: {duration:F2}초",
+                    FontSize = fontSize,
+                    Foreground = new SolidColorBrush(Colors.Gray),
+                    Margin = new Thickness(0, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                });
+
+                summaryStack.Children.Add(row1Panel);
+
+                // 두 번째 줄: DB 연결 정보
+                var row2Panel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal
+                };
+
+                if (!string.IsNullOrEmpty(queryItem.TnsName))
+                {
+                    row2Panel.Children.Add(new TextBlock
+                    {
+                        Text = $"TNS: {queryItem.TnsName}",
+                        FontSize = fontSize - 1,
+                        Foreground = new SolidColorBrush(Colors.DarkBlue),
+                        Margin = new Thickness(0, 0, 20, 0),
+                        VerticalAlignment = VerticalAlignment.Center
+                    });
+
+                    row2Panel.Children.Add(new TextBlock
+                    {
+                        Text = $"User: {queryItem.UserId}",
+                        FontSize = fontSize - 1,
+                        Foreground = new SolidColorBrush(Colors.DarkBlue),
+                        Margin = new Thickness(0, 0, 0, 0),
+                        VerticalAlignment = VerticalAlignment.Center
+                    });
+                }
+                else if (!string.IsNullOrEmpty(queryItem.Host))
+                {
+                    row2Panel.Children.Add(new TextBlock
+                    {
+                        Text = $"DB: {queryItem.Host}:{queryItem.Port}/{queryItem.ServiceName}",
+                        FontSize = fontSize - 1,
+                        Foreground = new SolidColorBrush(Colors.DarkBlue),
+                        Margin = new Thickness(0, 0, 20, 0),
+                        VerticalAlignment = VerticalAlignment.Center
+                    });
+
+                    row2Panel.Children.Add(new TextBlock
+                    {
+                        Text = $"User: {queryItem.UserId}",
+                        FontSize = fontSize - 1,
+                        Foreground = new SolidColorBrush(Colors.DarkBlue),
+                        Margin = new Thickness(0, 0, 0, 0),
+                        VerticalAlignment = VerticalAlignment.Center
+                    });
+                }
+
+                summaryStack.Children.Add(row2Panel);
+
+                summaryBorder.Child = summaryStack;
+                Grid.SetRow(summaryBorder, 0);
+                grid.Children.Add(summaryBorder);
+
                 // 성공 - 데이터 그리드 생성
                 var dataGrid = new DataGrid
                 {
@@ -746,7 +965,8 @@ namespace FACTOVA_QueryHelper.Controls
                     CanUserReorderColumns = true,
                     SelectionMode = DataGridSelectionMode.Extended,
                     SelectionUnit = DataGridSelectionUnit.Cell,
-                    ClipboardCopyMode = DataGridClipboardCopyMode.IncludeHeader
+                    ClipboardCopyMode = DataGridClipboardCopyMode.IncludeHeader,
+                    FontSize = fontSize
                 };
 
                 // 컨텍스트 메뉴 추가
@@ -818,7 +1038,7 @@ namespace FACTOVA_QueryHelper.Controls
                     }
                 };
 
-                Grid.SetRow(dataGrid, 0);
+                Grid.SetRow(dataGrid, 1);
                 grid.Children.Add(dataGrid);
 
                 // 상태 표시
@@ -831,36 +1051,12 @@ namespace FACTOVA_QueryHelper.Controls
                 statusPanel.Children.Add(new TextBlock
                 {
                     Text = $"[성공] {result.Rows.Count}개 행 | {result.Columns.Count}개 열 | 소요시간: {duration:F2}초",
-                    FontSize = 11,
+                    FontSize = fontSize - 1,
                     Foreground = new SolidColorBrush(Colors.Green),
                     VerticalAlignment = VerticalAlignment.Center
                 });
 
-                // DB 연결 정보 표시
-                if (!string.IsNullOrEmpty(queryItem.TnsName))
-                {
-                    statusPanel.Children.Add(new TextBlock
-                    {
-                        Text = $" | TNS: {queryItem.TnsName}, User: {queryItem.UserId}",
-                        FontSize = 11,
-                        Foreground = new SolidColorBrush(Colors.Blue),
-                        Margin = new Thickness(5, 0, 0, 0),
-                        VerticalAlignment = VerticalAlignment.Center
-                    });
-                }
-                else if (!string.IsNullOrEmpty(queryItem.Host))
-                {
-                    statusPanel.Children.Add(new TextBlock
-                    {
-                        Text = $" | DB: {queryItem.Host}:{queryItem.Port}/{queryItem.ServiceName}, User: {queryItem.UserId}",
-                        FontSize = 11,
-                        Foreground = new SolidColorBrush(Colors.Blue),
-                        Margin = new Thickness(5, 0, 0, 0),
-                        VerticalAlignment = VerticalAlignment.Center
-                    });
-                }
-
-                Grid.SetRow(statusPanel, 1);
+                Grid.SetRow(statusPanel, 2);
                 grid.Children.Add(statusPanel);
             }
             else
@@ -895,7 +1091,8 @@ namespace FACTOVA_QueryHelper.Controls
                     TextWrapping = TextWrapping.Wrap,
                     VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
                     FontFamily = new FontFamily("Consolas"),
-                    Padding = new Thickness(10)
+                    Padding = new Thickness(10),
+                    FontSize = fontSize
                 };
 
                 Grid.SetRow(errorTextBox, 0);
@@ -904,7 +1101,7 @@ namespace FACTOVA_QueryHelper.Controls
                 var statusText = new TextBlock
                 {
                     Text = "[실패] 실행 실패",
-                    FontSize = 11,
+                    FontSize = fontSize - 1,
                     Foreground = new SolidColorBrush(Colors.Red),
                     Margin = new Thickness(5)
                 };
@@ -939,6 +1136,9 @@ namespace FACTOVA_QueryHelper.Controls
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
+            // 폰트 크기 가져오기
+            int fontSize = _sharedData?.Settings.FontSize ?? 11;
+
             // 상단 요약 패널
             var summaryBorder = new Border
             {
@@ -955,7 +1155,7 @@ namespace FACTOVA_QueryHelper.Controls
             summaryPanel.Children.Add(new TextBlock
             {
                 Text = $"시작: {startTime:HH:mm:ss}",
-                FontSize = 12,
+                FontSize = fontSize,
                 Margin = new Thickness(0, 0, 20, 0),
                 VerticalAlignment = VerticalAlignment.Center
             });
@@ -963,7 +1163,7 @@ namespace FACTOVA_QueryHelper.Controls
             summaryPanel.Children.Add(new TextBlock
             {
                 Text = $"소요시간: {totalDuration:F2}초",
-                FontSize = 12,
+                FontSize = fontSize,
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(Colors.Blue),
                 Margin = new Thickness(0, 0, 20, 0),
@@ -973,7 +1173,7 @@ namespace FACTOVA_QueryHelper.Controls
             summaryPanel.Children.Add(new TextBlock
             {
                 Text = $"성공: {successCount}개",
-                FontSize = 12,
+                FontSize = fontSize,
                 Foreground = new SolidColorBrush(Colors.Green),
                 Margin = new Thickness(0, 0, 20, 0),
                 VerticalAlignment = VerticalAlignment.Center
@@ -984,7 +1184,7 @@ namespace FACTOVA_QueryHelper.Controls
                 summaryPanel.Children.Add(new TextBlock
                 {
                     Text = $"실패: {failCount}개",
-                    FontSize = 12,
+                    FontSize = fontSize,
                     Foreground = new SolidColorBrush(Colors.Red),
                     Margin = new Thickness(0, 0, 20, 0),
                     VerticalAlignment = VerticalAlignment.Center
@@ -996,7 +1196,7 @@ namespace FACTOVA_QueryHelper.Controls
                 summaryPanel.Children.Add(new TextBlock
                 {
                     Text = $"알림: {notificationCount}개",
-                    FontSize = 12,
+                    FontSize = fontSize,
                     Foreground = new SolidColorBrush(Colors.Red),
                     FontWeight = FontWeights.Bold,
                     Margin = new Thickness(0, 0, 20, 0),
@@ -1013,7 +1213,7 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 IsReadOnly = true,
                 FontFamily = new FontFamily("Consolas"),
-                FontSize = 11,
+                FontSize = fontSize,
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
                 Padding = new Thickness(10),
