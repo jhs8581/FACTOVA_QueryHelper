@@ -4,7 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="1200">
+             d:DesignHeight="700" d:DesignWidth="1200"
+             Background="White">
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -124,44 +125,36 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
 
-                        <Button x:Name="LoadQueriesButton" Content="쿼리 로드" 
-                                Width="100" Height="30" Margin="5,0,10,0"
-                                Click="LoadQueriesButton_Click"
-                                Background="#FF0078D7" 
-                                Foreground="White"
-                                FontWeight="Bold"
-                                IsEnabled="False"/>
-                        <Button x:Name="ExecuteAllButton" Content="선택한 쿼리 실행" 
-                                Width="130" Height="30" Margin="5,0,10,0"
-                                Click="ExecuteAllButton_Click"
-                                Background="#FF28A745" 
-                                Foreground="White"
-                                FontWeight="Bold"
-                                IsEnabled="False"/>
-                                
+                        <TextBlock Text="디폴트 폼:" VerticalAlignment="Center" Margin="20,0,10,0"/>
+                        <ComboBox x:Name="DefaultFormComboBox" Width="200" Margin="5,0,10,0" VerticalAlignment="Center"
+                                  DisplayMemberPath="Text"
+                                  ToolTip="디폴트로 설정할 폼을 선택하세요"/>
+                        
                         <Button x:Name="ClearResultsButton" Content="결과 초기화" 
-                                Width="100" Height="30" Margin="5,0,10,0"
+                                Width="100" Height="30" Margin="20,0,10,0"
                                 Click="ClearResultsButton_Click"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Grid.Row="1">
-                        <TextBlock Text="주기 실행:" VerticalAlignment="Center" Margin="5,0,10,0"/>
+                        <CheckBox x:Name="EnableAutoExecutionCheckBox" 
+                                  Content="자동 실행" 
+                                  VerticalAlignment="Center"
+                                  Margin="5,0,15,0"
+                                  IsChecked="False"
+                                  Checked="EnableAutoExecutionCheckBox_Changed"
+                                  Unchecked="EnableAutoExecutionCheckBox_Changed"
+                                  ToolTip="체크하면 주기적으로 자동 실행됩니다"/>
+                        
+                        <TextBlock Text="실행 주기:" VerticalAlignment="Center" Margin="5,0,10,0"/>
                         <TextBox x:Name="QueryIntervalTextBox" Width="60" Text="60" VerticalAlignment="Center"
+                                 IsEnabled="False"
                                  ToolTip="쿼리 실행 주기 (초)"/>
                         <TextBlock Text="초" VerticalAlignment="Center" Margin="5,0,10,0"/>
                         
-                        <Button x:Name="StartAutoQueryButton" Content="자동 실행 시작" 
-                                Width="120" Height="30" Margin="5,0,5,0"
-                                Click="StartAutoQueryButton_Click"
+                        <Button x:Name="ToggleAutoQueryButton" Content="실행" 
+                                Width="100" Height="30" Margin="5,0,15,0"
+                                Click="ToggleAutoQueryButton_Click"
                                 Background="#FF0078D7" 
-                                Foreground="White"
-                                FontWeight="Bold"
-                                IsEnabled="False"/>
-                                
-                        <Button x:Name="StopAutoQueryButton" Content="자동 실행 중지" 
-                                Width="120" Height="30" Margin="5,0,15,0"
-                                Click="StopAutoQueryButton_Click"
-                                Background="#FFDC3545" 
                                 Foreground="White"
                                 FontWeight="Bold"
                                 IsEnabled="False"/>
@@ -171,6 +164,8 @@
                                   VerticalAlignment="Center"
                                   Margin="0,0,15,0"
                                   IsChecked="True"
+                                  Checked="StopOnNotificationCheckBox_Changed"
+                                  Unchecked="StopOnNotificationCheckBox_Changed"
                                   ToolTip="체크하면 알림 팝업이 표시될 때 자동 실행이 중지됩니다"/>
                         
                         <Border x:Name="AutoQueryCountdownBorder"

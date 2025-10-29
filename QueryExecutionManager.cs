@@ -1,4 +1,4 @@
-ï»¿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -11,7 +11,7 @@ using System.Windows.Media;
 namespace FACTOVA_QueryHelper
 {
     /// <summary>
-    /// ì¿¼ë¦¬ ì‹¤í–‰ ë° ê²°ê³¼ ê´€ë¦¬ë¥¼ ë‹´ë‹¹í•˜ëŠ” í´ë˜ìŠ¤
+    /// Äõ¸® ½ÇÇà ¹× °á°ú °ü¸®¸¦ ´ã´çÇÏ´Â Å¬·¡½º
     /// </summary>
     public class QueryExecutionManager
     {
@@ -36,7 +36,7 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// TNS ì—”íŠ¸ë¦¬ ëª©ë¡ì„ ì—…ë°ì´íŠ¸í•©ë‹ˆë‹¤.
+        /// TNS ¿£Æ®¸® ¸ñ·ÏÀ» ¾÷µ¥ÀÌÆ®ÇÕ´Ï´Ù.
         /// </summary>
         public void UpdateTnsEntries(List<TnsEntry> tnsEntries)
         {
@@ -44,7 +44,7 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// ì„¤ì •ì„ ì—…ë°ì´íŠ¸í•©ë‹ˆë‹¤.
+        /// ¼³Á¤À» ¾÷µ¥ÀÌÆ®ÇÕ´Ï´Ù.
         /// </summary>
         public void UpdateSettings(AppSettings settings)
         {
@@ -52,26 +52,27 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// ì¿¼ë¦¬ ì‹¤í–‰ ê²°ê³¼
+        /// Äõ¸® ½ÇÇà °á°ú
         /// </summary>
         public class ExecutionResult
         {
             public int SuccessCount { get; set; }
             public int FailCount { get; set; }
             public List<string> Notifications { get; set; } = new List<string>();
+            public List<string> NotifiedQueryNames { get; set; } = new List<string>();
             public List<string> ExecutionLogs { get; set; } = new List<string>();
             public DateTime StartTime { get; set; }
             public double TotalDuration { get; set; }
         }
 
         /// <summary>
-        /// ì—¬ëŸ¬ ì¿¼ë¦¬ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
+        /// ¿©·¯ Äõ¸®¸¦ ½ÇÇàÇÕ´Ï´Ù.
         /// </summary>
         public async Task<ExecutionResult> ExecuteQueriesAsync(List<QueryItem> queries)
         {
             if (queries == null || queries.Count == 0)
             {
-                throw new ArgumentException("ì‹¤í–‰í•  ì¿¼ë¦¬ê°€ ì—†ìŠµë‹ˆë‹¤.", nameof(queries));
+                throw new ArgumentException("½ÇÇàÇÒ Äõ¸®°¡ ¾ø½À´Ï´Ù.", nameof(queries));
             }
 
             var result = new ExecutionResult
@@ -79,19 +80,19 @@ namespace FACTOVA_QueryHelper
                 StartTime = DateTime.Now
             };
 
-            // ê¸°ì¡´ ê²°ê³¼ íƒ­ ì´ˆê¸°í™”
+            // ±âÁ¸ °á°ú ÅÇ ÃÊ±âÈ­
             _resultTabControl.Items.Clear();
 
-            // ì‘ì—… ë¡œê·¸ í—¤ë” ì¶”ê°€
-            result.ExecutionLogs.Add($"ì‘ì—… ì‹œì‘ ì‹œê°„: {result.StartTime:yyyy-MM-dd HH:mm:ss}");
-            result.ExecutionLogs.Add($"ì„ íƒëœ ì¿¼ë¦¬ ìˆ˜: {queries.Count}ê°œ");
+            // ÀÛ¾÷ ·Î±× Çì´õ Ãß°¡
+            result.ExecutionLogs.Add($"ÀÛ¾÷ ½ÃÀÛ ½Ã°£: {result.StartTime:yyyy-MM-dd HH:mm:ss}");
+            result.ExecutionLogs.Add($"¼±ÅÃµÈ Äõ¸® ¼ö: {queries.Count}°³");
             result.ExecutionLogs.Add(new string('=', 80));
             result.ExecutionLogs.Add("");
 
-            // ì „ë‹¬ë°›ì€ ì¿¼ë¦¬ë¥¼ ê·¸ëŒ€ë¡œ ì‹¤í–‰ (í•„í„°ë§ì€ MainWindowì—ì„œ ì²˜ë¦¬ë¨)
+            // Àü´Ş¹ŞÀº Äõ¸®¸¦ ±×´ë·Î ½ÇÇà (ÇÊÅÍ¸µÀº MainWindow¿¡¼­ Ã³¸®µÊ)
             var queriesToExecute = queries;
 
-            result.ExecutionLogs.Add($"ì‹¤í–‰ ëŒ€ìƒ ì¿¼ë¦¬: {queriesToExecute.Count}ê°œ");
+            result.ExecutionLogs.Add($"½ÇÇà ´ë»ó Äõ¸®: {queriesToExecute.Count}°³");
             result.ExecutionLogs.Add("");
 
             for (int i = 0; i < queriesToExecute.Count; i++)
@@ -99,12 +100,12 @@ namespace FACTOVA_QueryHelper
                 var queryItem = queriesToExecute[i];
 
                 _updateStatusCallback(
-                    $"ì¿¼ë¦¬ ì‹¤í–‰ ì¤‘... ({i + 1}/{queriesToExecute.Count}) - {queryItem.QueryName}",
+                    $"Äõ¸® ½ÇÇà Áß... ({i + 1}/{queriesToExecute.Count}) - {queryItem.QueryName}",
                     Colors.Blue);
 
                 var logEntry = new StringBuilder();
                 logEntry.AppendLine($"[{i + 1}/{queriesToExecute.Count}] {queryItem.QueryName}");
-                logEntry.AppendLine($"  ì‹œì‘ ì‹œê°„: {DateTime.Now:HH:mm:ss}");
+                logEntry.AppendLine($"  ½ÃÀÛ ½Ã°£: {DateTime.Now:HH:mm:ss}");
 
                 try
                 {
@@ -112,40 +113,46 @@ namespace FACTOVA_QueryHelper
 
                     if (queryResult.IsSuccess)
                     {
-                        // ì•Œë¦¼ ì¶”ê°€ ì „ í˜„ì¬ ì•Œë¦¼ ê°œìˆ˜ ì €ì¥
+                        // ¾Ë¸² Ãß°¡ Àü ÇöÀç ¾Ë¸² °³¼ö ÀúÀå
                         int notificationsBefore = result.Notifications.Count;
 
-                        // ê²°ê³¼ ê±´ìˆ˜ ì²´í¬ ë° ì•Œë¦¼
+                        // °á°ú °Ç¼ö Ã¼Å© ¹× ¾Ë¸²
                         CheckResultCountAndNotify(queryItem, queryResult.Result!.Rows.Count, result.Notifications);
 
-                        // íŠ¹ì • ì»¬ëŸ¼ ê°’ ì²´í¬ ë° ì•Œë¦¼
+                        // Æ¯Á¤ ÄÃ·³ °ª Ã¼Å© ¹× ¾Ë¸²
                         CheckColumnValuesAndNotify(queryItem, queryResult.Result!, result.Notifications);
 
-                        // ì´ë²ˆ ì¿¼ë¦¬ì—ì„œ ì¶”ê°€ëœ ì•Œë¦¼ ê°œìˆ˜ ê³„ì‚°
+                        // ÀÌ¹ø Äõ¸®¿¡¼­ Ãß°¡µÈ ¾Ë¸² °³¼ö °è»ê
                         int newNotifications = result.Notifications.Count - notificationsBefore;
                         
                         if (newNotifications > 0)
                         {
-                            logEntry.AppendLine($"  ğŸ”” ì•Œë¦¼: {newNotifications}ê°œ");
-                            // ì•Œë¦¼ ë‚´ìš© ë¡œê·¸ì— ì¶”ê°€
+                            logEntry.AppendLine($"  ?? ¾Ë¸²: {newNotifications}°³");
+                            // ¾Ë¸² ³»¿ë ·Î±×¿¡ Ãß°¡
                             for (int n = notificationsBefore; n < result.Notifications.Count; n++)
                             {
                                 logEntry.AppendLine($"    - {result.Notifications[n].Replace($"[{queryItem.QueryName}] ", "")}");
                             }
+                            
+                            // ¾Ë¸²ÀÌ ¹ß»ıÇÑ Äõ¸® ÀÌ¸§ Ãß°¡
+                            if (!result.NotifiedQueryNames.Contains(queryItem.QueryName))
+                            {
+                                result.NotifiedQueryNames.Add(queryItem.QueryName);
+                            }
                         }
 
-                        logEntry.AppendLine($"  âœ… ì„±ê³µ");
+                        logEntry.AppendLine($"  ? ¼º°ø");
                         
-                        // ê²°ê³¼ íƒ­ ìƒì„±
+                        // °á°ú ÅÇ »ı¼º
                         _createResultTabCallback(queryItem, queryResult.Result, queryResult.Duration, null);
                         
                         result.SuccessCount++;
                     }
                     else
                     {
-                        logEntry.AppendLine($"  âŒ ì‹¤íŒ¨: {queryResult.ErrorMessage}");
+                        logEntry.AppendLine($"  ? ½ÇÆĞ: {queryResult.ErrorMessage}");
                         
-                        // ì˜¤ë¥˜ íƒ­ ìƒì„±
+                        // ¿À·ù ÅÇ »ı¼º
                         _createResultTabCallback(queryItem, null, 0, queryResult.ErrorMessage);
                         
                         result.FailCount++;
@@ -153,9 +160,9 @@ namespace FACTOVA_QueryHelper
                 }
                 catch (Exception ex)
                 {
-                    logEntry.AppendLine($"  âŒ ì‹¤íŒ¨: {ex.Message}");
+                    logEntry.AppendLine($"  ? ½ÇÆĞ: {ex.Message}");
                     
-                    // ì˜¤ë¥˜ íƒ­ ìƒì„±
+                    // ¿À·ù ÅÇ »ı¼º
                     _createResultTabCallback(queryItem, null, 0, ex.Message);
                     
                     result.FailCount++;
@@ -166,22 +173,22 @@ namespace FACTOVA_QueryHelper
 
             result.TotalDuration = (DateTime.Now - result.StartTime).TotalSeconds;
 
-            // ì‘ì—… ìš”ì•½ ì¶”ê°€
+            // ÀÛ¾÷ ¿ä¾à Ãß°¡
             result.ExecutionLogs.Add(new string('=', 80));
             result.ExecutionLogs.Add("");
-            result.ExecutionLogs.Add("ğŸ“Š ì‘ì—… ìš”ì•½");
-            result.ExecutionLogs.Add($"  ì´ ì‹¤í–‰ ì‹œê°„: {result.TotalDuration:F2}ì´ˆ");
-            result.ExecutionLogs.Add($"  ì„±ê³µ: {result.SuccessCount}ê°œ");
-            result.ExecutionLogs.Add($"  ì‹¤íŒ¨: {result.FailCount}ê°œ");
-            result.ExecutionLogs.Add($"  ì•Œë¦¼: {result.Notifications.Count}ê°œ");
+            result.ExecutionLogs.Add("?? ÀÛ¾÷ ¿ä¾à");
+            result.ExecutionLogs.Add($"  ÃÑ ½ÇÇà ½Ã°£: {result.TotalDuration:F2}ÃÊ");
+            result.ExecutionLogs.Add($"  ¼º°ø: {result.SuccessCount}°³");
+            result.ExecutionLogs.Add($"  ½ÇÆĞ: {result.FailCount}°³");
+            result.ExecutionLogs.Add($"  ¾Ë¸²: {result.Notifications.Count}°³");
             result.ExecutionLogs.Add("");
-            result.ExecutionLogs.Add($"ì‘ì—… ì™„ë£Œ ì‹œê°„: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            result.ExecutionLogs.Add($"ÀÛ¾÷ ¿Ï·á ½Ã°£: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
 
             return result;
         }
 
         /// <summary>
-        /// ë‹¨ì¼ ì¿¼ë¦¬ ì‹¤í–‰ ê²°ê³¼
+        /// ´ÜÀÏ Äõ¸® ½ÇÇà °á°ú
         /// </summary>
         private class SingleQueryResult
         {
@@ -192,7 +199,7 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// ë‹¨ì¼ ì¿¼ë¦¬ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤.
+        /// ´ÜÀÏ Äõ¸®¸¦ ½ÇÇàÇÕ´Ï´Ù.
         /// </summary>
         private async Task<SingleQueryResult> ExecuteSingleQueryAsync(QueryItem queryItem, StringBuilder logEntry)
         {
@@ -201,48 +208,48 @@ namespace FACTOVA_QueryHelper
 
             try
             {
-                // ì§ì ‘ ì—°ê²° ì •ë³´ê°€ ìˆëŠ”ì§€ í™•ì¸
+                // Á÷Á¢ ¿¬°á Á¤º¸°¡ ÀÖ´ÂÁö È®ÀÎ
                 if (!string.IsNullOrWhiteSpace(queryItem.Host) &&
                     !string.IsNullOrWhiteSpace(queryItem.Port) &&
                     !string.IsNullOrWhiteSpace(queryItem.ServiceName))
                 {
                     connectionString = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={queryItem.Host})(PORT={queryItem.Port}))(CONNECT_DATA=(SERVICE_NAME={queryItem.ServiceName})));";
-                    logEntry.AppendLine($"  ì—°ê²°: {queryItem.Host}:{queryItem.Port}/{queryItem.ServiceName}");
+                    logEntry.AppendLine($"  ¿¬°á: {queryItem.Host}:{queryItem.Port}/{queryItem.ServiceName}");
                 }
                 else
                 {
-                    // TNS ì •ë³´ ì°¾ê¸°
+                    // TNS Á¤º¸ Ã£±â
                     var selectedTns = _tnsEntries.FirstOrDefault(t =>
                         t.Name.Equals(queryItem.TnsName, StringComparison.OrdinalIgnoreCase));
 
                     if (selectedTns == null)
                     {
                         var availableTns = string.Join(", ", _tnsEntries.Select(t => t.Name));
-                        throw new Exception($"TNS '{queryItem.TnsName}'ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.\n\n" +
-                            $"ğŸ’¡ í•´ê²° ë°©ë²•:\n" +
-                            $"1. Excel Aì—´ì— ì •í™•í•œ TNS ì´ë¦„ ì…ë ¥\n" +
-                            $"2. ë˜ëŠ” Host:Port:ServiceName í˜•ì‹ìœ¼ë¡œ ì…ë ¥\n" +
-                            $"   ì˜ˆ) 192.168.1.10:1521:ORCL\n\n" +
-                            $"ì‚¬ìš© ê°€ëŠ¥í•œ TNS ëª©ë¡:\n{availableTns}\n\n" +
-                            $"tnsnames.ora íŒŒì¼ ê²½ë¡œ:\n{_settings.TnsPath}");
+                        throw new Exception($"TNS '{queryItem.TnsName}'¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.\n\n" +
+                            $"?? ÇØ°á ¹æ¹ı:\n" +
+                            $"1. Excel A¿­¿¡ Á¤È®ÇÑ TNS ÀÌ¸§ ÀÔ·Â\n" +
+                            $"2. ¶Ç´Â Host:Port:ServiceName Çü½ÄÀ¸·Î ÀÔ·Â\n" +
+                            $"   ¿¹) 192.168.1.10:1521:ORCL\n\n" +
+                            $"»ç¿ë °¡´ÉÇÑ TNS ¸ñ·Ï:\n{availableTns}\n\n" +
+                            $"tnsnames.ora ÆÄÀÏ °æ·Î:\n{_settings.TnsPath}");
                     }
 
                     connectionString = selectedTns.ConnectionString;
                     logEntry.AppendLine($"  TNS: {queryItem.TnsName}");
                 }
 
-                // User IDì™€ Password ê²€ì¦
+                // User ID¿Í Password °ËÁõ
                 if (string.IsNullOrWhiteSpace(queryItem.UserId))
-                    throw new Exception("User IDê°€ ì§€ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
+                    throw new Exception("User ID°¡ ÁöÁ¤µÇÁö ¾Ê¾Ò½À´Ï´Ù.");
 
                 if (string.IsNullOrWhiteSpace(queryItem.Password))
-                    throw new Exception("Passwordê°€ ì§€ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
+                    throw new Exception("Password°¡ ÁöÁ¤µÇÁö ¾Ê¾Ò½À´Ï´Ù.");
 
-                logEntry.AppendLine($"  ì‚¬ìš©ì: {queryItem.UserId}");
+                logEntry.AppendLine($"  »ç¿ëÀÚ: {queryItem.UserId}");
 
                 var startTime = DateTime.Now;
 
-                // ì¿¼ë¦¬ ì‹¤í–‰
+                // Äõ¸® ½ÇÇà
                 result.Result = await OracleDatabase.ExecuteQueryAsync(
                     connectionString,
                     queryItem.UserId,
@@ -252,9 +259,9 @@ namespace FACTOVA_QueryHelper
                 var endTime = DateTime.Now;
                 result.Duration = (endTime - startTime).TotalSeconds;
 
-                logEntry.AppendLine($"  ì™„ë£Œ ì‹œê°„: {endTime:HH:mm:ss}");
-                logEntry.AppendLine($"  ì†Œìš” ì‹œê°„: {result.Duration:F2}ì´ˆ");
-                logEntry.AppendLine($"  ê²°ê³¼: {result.Result.Rows.Count}í–‰ Ã— {result.Result.Columns.Count}ì—´");
+                logEntry.AppendLine($"  ¿Ï·á ½Ã°£: {endTime:HH:mm:ss}");
+                logEntry.AppendLine($"  ¼Ò¿ä ½Ã°£: {result.Duration:F2}ÃÊ");
+                logEntry.AppendLine($"  °á°ú: {result.Result.Rows.Count}Çà ¡¿ {result.Result.Columns.Count}¿­");
 
                 result.IsSuccess = true;
             }
@@ -268,96 +275,114 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// ê²°ê³¼ ê±´ìˆ˜ë¥¼ ì²´í¬í•˜ê³  ì•Œë¦¼ì„ ì¶”ê°€í•©ë‹ˆë‹¤.
+        /// °á°ú °Ç¼ö¸¦ Ã¼Å©ÇÏ°í ¾Ë¸²À» Ãß°¡ÇÕ´Ï´Ù.
         /// </summary>
         private void CheckResultCountAndNotify(QueryItem queryItem, int rowCount, List<string> notifications)
         {
-            // Hì—´ì´ 'Y'ê°€ ì•„ë‹ˆë©´ ì•Œë¦¼ì„ ì¶”ê°€í•˜ì§€ ì•ŠìŒ
+            // H¿­ÀÌ 'Y'°¡ ¾Æ´Ï¸é ¾Ë¸²À» Ãß°¡ÇÏÁö ¾ÊÀ½
             if (queryItem.NotifyFlag != "Y")
             {
-                System.Diagnostics.Debug.WriteLine($"[{queryItem.QueryName}] NotifyFlag != 'Y', ì•Œë¦¼ ê±´ë„ˆëœ€ (NotifyFlag={queryItem.NotifyFlag})");
+                System.Diagnostics.Debug.WriteLine($"[{queryItem.QueryName}] NotifyFlag != 'Y', ¾Ë¸² °Ç³Ê¶Ü (NotifyFlag={queryItem.NotifyFlag})");
                 return;
             }
 
-            System.Diagnostics.Debug.WriteLine($"[{queryItem.QueryName}] ì•Œë¦¼ ì²´í¬ ì‹œì‘ - ê²°ê³¼ ê±´ìˆ˜: {rowCount}ê±´");
+            System.Diagnostics.Debug.WriteLine($"[{queryItem.QueryName}] ¾Ë¸² Ã¼Å© ½ÃÀÛ - °á°ú °Ç¼ö: {rowCount}°Ç");
 
-            // Iì—´: ì´ìƒì¼ ë•Œ
+            // I¿­: ÀÌ»óÀÏ ¶§
             if (!string.IsNullOrWhiteSpace(queryItem.CountGreaterThan) &&
                 int.TryParse(queryItem.CountGreaterThan, out int greaterThan))
             {
-                System.Diagnostics.Debug.WriteLine($"  - Iì—´(ì´ìƒ) ì²´í¬: {rowCount} >= {greaterThan} ?");
+                System.Diagnostics.Debug.WriteLine($"  - I¿­(ÀÌ»ó) Ã¼Å©: {rowCount} >= {greaterThan} ?");
                 if (rowCount >= greaterThan)
                 {
-                    var msg = $"[{queryItem.QueryName}] ì¡°íšŒ ê²°ê³¼ {rowCount}ê±´ (ê¸°ì¤€: {greaterThan}ê±´ ì´ìƒ)";
+                    var msg = $"[{queryItem.QueryName}] Á¶È¸ °á°ú {rowCount}°Ç (±âÁØ: {greaterThan}°Ç ÀÌ»ó)";
                     notifications.Add(msg);
-                    System.Diagnostics.Debug.WriteLine($"  âœ… ì•Œë¦¼ ì¶”ê°€: {msg}");
+                    System.Diagnostics.Debug.WriteLine($"  ? ¾Ë¸² Ãß°¡: {msg}");
                 }
             }
 
-            // Jì—´: ê°™ì„ ë•Œ
+            // J¿­: °°À» ¶§
             if (!string.IsNullOrWhiteSpace(queryItem.CountEquals) &&
                 int.TryParse(queryItem.CountEquals, out int equals))
             {
-                System.Diagnostics.Debug.WriteLine($"  - Jì—´(ê°™ìŒ) ì²´í¬: {rowCount} == {equals} ?");
+                System.Diagnostics.Debug.WriteLine($"  - J¿­(°°À½) Ã¼Å©: {rowCount} == {equals} ?");
                 if (rowCount == equals)
                 {
-                    var msg = $"[{queryItem.QueryName}] ì¡°íšŒ ê²°ê³¼ {rowCount}ê±´ (ê¸°ì¤€: {equals}ê±´ê³¼ ê°™ìŒ)";
+                    var msg = $"[{queryItem.QueryName}] Á¶È¸ °á°ú {rowCount}°Ç (±âÁØ: {equals}°Ç°ú °°À½)";
                     notifications.Add(msg);
-                    System.Diagnostics.Debug.WriteLine($"  âœ… ì•Œë¦¼ ì¶”ê°€: {msg}");
+                    System.Diagnostics.Debug.WriteLine($"  ? ¾Ë¸² Ãß°¡: {msg}");
                 }
             }
 
-            // Kì—´: ì´í•˜ì¼ ë•Œ
+            // K¿­: ÀÌÇÏÀÏ ¶§
             if (!string.IsNullOrWhiteSpace(queryItem.CountLessThan) &&
                 int.TryParse(queryItem.CountLessThan, out int lessThan))
             {
-                System.Diagnostics.Debug.WriteLine($"  - Kì—´(ì´í•˜) ì²´í¬: {rowCount} <= {lessThan} ?");
+                System.Diagnostics.Debug.WriteLine($"  - K¿­(ÀÌÇÏ) Ã¼Å©: {rowCount} <= {lessThan} ?");
                 if (rowCount <= lessThan)
                 {
-                    var msg = $"[{queryItem.QueryName}] ì¡°íšŒ ê²°ê³¼ {rowCount}ê±´ (ê¸°ì¤€: {lessThan}ê±´ ì´í•˜)";
+                    var msg = $"[{queryItem.QueryName}] Á¶È¸ °á°ú {rowCount}°Ç (±âÁØ: {lessThan}°Ç ÀÌÇÏ)";
                     notifications.Add(msg);
-                    System.Diagnostics.Debug.WriteLine($"  âœ… ì•Œë¦¼ ì¶”ê°€: {msg}");
+                    System.Diagnostics.Debug.WriteLine($"  ? ¾Ë¸² Ãß°¡: {msg}");
                 }
             }
         }
 
         /// <summary>
-        /// ì»¬ëŸ¼ ê°’ì„ ì²´í¬í•˜ê³  ì•Œë¦¼ì„ ì¶”ê°€í•©ë‹ˆë‹¤.
+        /// ÄÃ·³ °ªÀ» Ã¼Å©ÇÏ°í ¾Ë¸²À» Ãß°¡ÇÕ´Ï´Ù.
         /// </summary>
         private void CheckColumnValuesAndNotify(QueryItem queryItem, DataTable result, List<string> notifications)
         {
-            // Hì—´ì´ 'Y'ê°€ ì•„ë‹ˆë©´ ì•Œë¦¼ì„ ì¶”ê°€í•˜ì§€ ì•ŠìŒ
-            if (queryItem.NotifyFlag != "Y")
-                return;
+            System.Diagnostics.Debug.WriteLine($"[{queryItem.QueryName}] CheckColumnValuesAndNotify ½ÃÀÛ");
+            System.Diagnostics.Debug.WriteLine($"  - NotifyFlag: '{queryItem.NotifyFlag}'");
+            System.Diagnostics.Debug.WriteLine($"  - ColumnNames: '{queryItem.ColumnNames}'");
+            System.Diagnostics.Debug.WriteLine($"  - ColumnValues: '{queryItem.ColumnValues}'");
 
-            // Lì—´ê³¼ Mì—´ ì²´í¬
-            if (string.IsNullOrWhiteSpace(queryItem.ColumnNames) ||
-                string.IsNullOrWhiteSpace(queryItem.ColumnValues))
+            // H¿­ÀÌ 'Y'°¡ ¾Æ´Ï¸é ¾Ë¸²À» Ãß°¡ÇÏÁö ¾ÊÀ½
+            if (queryItem.NotifyFlag != "Y")
             {
-                System.Diagnostics.Debug.WriteLine($"[{queryItem.QueryName}] Lì—´/Mì—´ì´ ë¹„ì–´ìˆìŒ, ì»¬ëŸ¼ ì²´í¬ ê±´ë„ˆëœ€");
+                System.Diagnostics.Debug.WriteLine($"[{queryItem.QueryName}] NotifyFlag != 'Y', ÄÃ·³ Ã¼Å© °Ç³Ê¶Ü");
                 return;
             }
 
-            System.Diagnostics.Debug.WriteLine($"[{queryItem.QueryName}] ì»¬ëŸ¼ ê°’ ì²´í¬ ì‹œì‘");
-            System.Diagnostics.Debug.WriteLine($"  - Lì—´(ì»¬ëŸ¼ëª…): {queryItem.ColumnNames}");
-            System.Diagnostics.Debug.WriteLine($"  - Mì—´(ê°’): {queryItem.ColumnValues}");
+            // L¿­°ú M¿­ Ã¼Å©
+            if (string.IsNullOrWhiteSpace(queryItem.ColumnNames) ||
+                string.IsNullOrWhiteSpace(queryItem.ColumnValues))
+            {
+                System.Diagnostics.Debug.WriteLine($"[{queryItem.QueryName}] L¿­/M¿­ÀÌ ºñ¾îÀÖÀ½, ÄÃ·³ Ã¼Å© °Ç³Ê¶Ü");
+                System.Diagnostics.Debug.WriteLine($"  - ColumnNames IsNullOrWhiteSpace: {string.IsNullOrWhiteSpace(queryItem.ColumnNames)}");
+                System.Diagnostics.Debug.WriteLine($"  - ColumnValues IsNullOrWhiteSpace: {string.IsNullOrWhiteSpace(queryItem.ColumnValues)}");
+                return;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[{queryItem.QueryName}] ÄÃ·³ °ª Ã¼Å© ½ÃÀÛ");
+            System.Diagnostics.Debug.WriteLine($"  - L¿­(ÄÃ·³¸í): '{queryItem.ColumnNames}'");
+            System.Diagnostics.Debug.WriteLine($"  - M¿­(°ª): '{queryItem.ColumnValues}'");
 
             var columnNames = queryItem.ColumnNames.Split(',').Select(c => c.Trim()).ToList();
             var columnValues = queryItem.ColumnValues.Split(',').Select(v => v.Trim()).ToList();
 
+            System.Diagnostics.Debug.WriteLine($"  - ÆÄ½ÌµÈ ÄÃ·³¸í °³¼ö: {columnNames.Count}, °ª: [{string.Join(", ", columnNames)}]");
+            System.Diagnostics.Debug.WriteLine($"  - ÆÄ½ÌµÈ °ª °³¼ö: {columnValues.Count}, °ª: [{string.Join(", ", columnValues)}]");
+
             if (columnNames.Count != columnValues.Count)
             {
-                System.Diagnostics.Debug.WriteLine($"  âš ï¸ ì»¬ëŸ¼ëª… ê°œìˆ˜({columnNames.Count})ì™€ ê°’ ê°œìˆ˜({columnValues.Count})ê°€ ë‹¤ë¦„");
+                System.Diagnostics.Debug.WriteLine($"  ?? ÄÃ·³¸í °³¼ö({columnNames.Count})¿Í °ª °³¼ö({columnValues.Count})°¡ ´Ù¸§");
                 return;
             }
 
-            System.Diagnostics.Debug.WriteLine($"  - ì´ {result.Rows.Count}ê°œ í–‰ ê²€ì‚¬");
+            System.Diagnostics.Debug.WriteLine($"  - ÃÑ {result.Rows.Count}°³ Çà °Ë»ç");
+            System.Diagnostics.Debug.WriteLine($"  - °á°ú Å×ÀÌºí ÄÃ·³ ¸ñ·Ï: [{string.Join(", ", result.Columns.Cast<DataColumn>().Select(c => c.ColumnName))}]");
 
+            int mismatchCount = 0;
             for (int i = 0; i < result.Rows.Count; i++)
             {
                 var row = result.Rows[i];
-                bool allMatch = true;
+                bool anyMismatch = false;
 
+                System.Diagnostics.Debug.WriteLine($"    Çà {i + 1} °Ë»ç ½ÃÀÛ:");
+
+                // OR Á¶°ÇÀ¸·Î º¯°æ: ÇÏ³ª¶óµµ ºÒÀÏÄ¡ÇÏ¸é ¾Ë¸²
                 for (int j = 0; j < columnNames.Count; j++)
                 {
                     string columnName = columnNames[j];
@@ -365,29 +390,48 @@ namespace FACTOVA_QueryHelper
 
                     if (!result.Columns.Contains(columnName))
                     {
-                        System.Diagnostics.Debug.WriteLine($"    í–‰{i + 1}: ì»¬ëŸ¼ '{columnName}' ì—†ìŒ");
-                        allMatch = false;
-                        break;
+                        System.Diagnostics.Debug.WriteLine($"      ÄÃ·³ '{columnName}' ¾øÀ½");
+                        continue;
                     }
 
                     var actualValue = row[columnName]?.ToString()?.Trim() ?? "";
-                    if (actualValue != expectedValue)
+                    bool isMatch = actualValue == expectedValue;
+                    System.Diagnostics.Debug.WriteLine($"      ÄÃ·³ '{columnName}': ½ÇÁ¦°ª='{actualValue}', ±â´ë°ª='{expectedValue}', ÀÏÄ¡={isMatch}");
+                    
+                    // OR Á¶°Ç: ÇÏ³ª¶óµµ ºÒÀÏÄ¡ÇÏ¸é anyMismatch = true
+                    if (!isMatch)
                     {
-                        allMatch = false;
-                        break;
+                        anyMismatch = true;
+                        System.Diagnostics.Debug.WriteLine($"      ?? ºÒÀÏÄ¡ ¹ß°ß: {columnName}");
                     }
                 }
 
-                if (allMatch)
+                if (anyMismatch)
                 {
-                    var matchInfo = string.Join(", ", columnNames.Zip(columnValues, (n, v) => $"{n}={v}"));
-                    var msg = $"[{queryItem.QueryName}] ì¡°ê±´ ì¼ì¹˜ ë°œê²¬ (í–‰ {i + 1}): {matchInfo}";
-                    notifications.Add(msg);
-                    System.Diagnostics.Debug.WriteLine($"  âœ… ì•Œë¦¼ ì¶”ê°€: {msg}");
+                    mismatchCount++;
+                    var checkInfo = string.Join(", ", columnNames.Zip(columnValues, (n, v) => $"{n}={v}"));
+                    System.Diagnostics.Debug.WriteLine($"    ?? Çà {i + 1}: Á¶°Ç ºÒÀÏÄ¡ ¹ß°ß - ±â´ë°ª: {checkInfo}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"    ? Çà {i + 1}: ¸ğµç Á¶°Ç ÀÏÄ¡ (¾Ë¸² ¾øÀ½)");
                 }
             }
 
-            System.Diagnostics.Debug.WriteLine($"  - ì»¬ëŸ¼ ê°’ ì²´í¬ ì™„ë£Œ");
+            // Á¶°Ç¿¡ ºÒÀÏÄ¡ÇÏ´Â ÇàÀÌ ÇÏ³ª¶óµµ ÀÖÀ¸¸é ¾Ë¸² Ãß°¡
+            if (mismatchCount > 0)
+            {
+                var checkInfo = string.Join(", ", columnNames.Zip(columnValues, (n, v) => $"{n}={v}"));
+                var msg = $"[{queryItem.QueryName}] Á¶°Ç ºÒÀÏÄ¡ ¹ß°ß: {mismatchCount}°³ Çà (±â´ë°ª: {checkInfo})";
+                notifications.Add(msg);
+                System.Diagnostics.Debug.WriteLine($"  ? ¾Ë¸² Ãß°¡: {msg}");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"  ?? ¸ğµç ÇàÀÌ Á¶°Ç°ú ÀÏÄ¡ - ¾Ë¸² ¾øÀ½");
+            }
+
+            System.Diagnostics.Debug.WriteLine($"  - ÄÃ·³ °ª Ã¼Å© ¿Ï·á, ÃÑ ºÒÀÏÄ¡ Çà: {mismatchCount}°³");
         }
     }
 }

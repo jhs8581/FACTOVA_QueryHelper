@@ -61,7 +61,6 @@ namespace FACTOVA_QueryHelper.Controls
                 File.Exists(_sharedData.Settings.ExcelFilePath))
             {
                 ExcelFilePathTextBox.Text = _sharedData.Settings.ExcelFilePath;
-                LoadQueriesButton.IsEnabled = true;
 
                 // 시트 목록 로드
                 try
@@ -72,6 +71,9 @@ namespace FACTOVA_QueryHelper.Controls
                     {
                         SheetComboBox.SelectedIndex = 0;
                     }
+                    
+                    // 경로가 지정되어 있으면 자동으로 쿼리 로드
+                    LoadQueriesFromExcel();
                 }
                 catch
                 {
@@ -84,6 +86,10 @@ namespace FACTOVA_QueryHelper.Controls
 
             // 알림 시 자동 실행 중지 설정 로드
             StopOnNotificationCheckBox.IsChecked = _sharedData.Settings.StopOnNotification;
+            
+            // 자동 실행 활성화 설정 로드
+            EnableAutoExecutionCheckBox.IsChecked = _sharedData.Settings.EnableAutoExecution;
+            QueryIntervalTextBox.IsEnabled = _sharedData.Settings.EnableAutoExecution;
         }
 
         /// <summary>
@@ -112,11 +118,12 @@ namespace FACTOVA_QueryHelper.Controls
 
             if (_sharedData != null && _sharedData.LoadedQueries != null)
             {
-                StartAutoQueryButton.IsEnabled = _sharedData.LoadedQueries.Count > 0;
+                ToggleAutoQueryButton.IsEnabled = _sharedData.LoadedQueries.Count > 0;
+                ToggleAutoQueryButton.Content = "실행";
+                ToggleAutoQueryButton.Background = new SolidColorBrush(Color.FromRgb(0, 120, 215)); // 파란색
             }
-            StopAutoQueryButton.IsEnabled = false;
-            QueryIntervalTextBox.IsEnabled = true;
-            LoadQueriesButton.IsEnabled = true;
+            
+            QueryIntervalTextBox.IsEnabled = EnableAutoExecutionCheckBox.IsChecked == true;
             BrowseExcelButton.IsEnabled = true;
 
             UpdateStatus("자동 쿼리 실행 중지", Colors.Orange);
@@ -133,7 +140,6 @@ namespace FACTOVA_QueryHelper.Controls
             if (filePath != null)
             {
                 ExcelFilePathTextBox.Text = filePath;
-                LoadQueriesButton.IsEnabled = true;
 
                 try
                 {
@@ -143,20 +149,23 @@ namespace FACTOVA_QueryHelper.Controls
                     {
                         SheetComboBox.SelectedIndex = 0;
                     }
+                    
+                    // 설정 저장
+                    _sharedData.Settings.ExcelFilePath = filePath;
+                    _sharedData.SaveSettingsCallback?.Invoke();
+                    
+                    // 자동으로 쿼리 로드
+                    LoadQueriesFromExcel();
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Excel 파일 읽기 실패:\n{ex.Message}", "오류",
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-
-                // 설정 저장
-                _sharedData.Settings.ExcelFilePath = filePath;
-                _sharedData.SaveSettingsCallback?.Invoke();
             }
         }
 
-        private void LoadQueriesButton_Click(object sender, RoutedEventArgs e)
+        private void LoadQueriesFromExcel()
         {
             if (_sharedData == null) return;
 
@@ -186,8 +195,7 @@ namespace FACTOVA_QueryHelper.Controls
                 InitializeQueryFilterComboBox();
 
                 LoadedQueriesTextBlock.Text = $"{_sharedData.LoadedQueries.Count}개";
-                ExecuteAllButton.IsEnabled = _sharedData.LoadedQueries.Count > 0;
-                StartAutoQueryButton.IsEnabled = _sharedData.LoadedQueries.Count > 0;
+                ToggleAutoQueryButton.IsEnabled = _sharedData.LoadedQueries.Count > 0;
 
                 UpdateStatus($"{_sharedData.LoadedQueries.Count}개의 쿼리를 로드했습니다.", Colors.Green);
                 System.Diagnostics.Debug.WriteLine("=== 쿼리 로드 완료 ===");
@@ -250,6 +258,37 @@ namespace FACTOVA_QueryHelper.Controls
 
             QueryFilterComboBox.ItemsSource = _sharedData.QueryFilterItems;
             UpdateQueryFilterComboBoxText();
+
+            // 디폴트 폼 콤보박스 초기화
+            InitializeDefaultFormComboBox();
+        }
+
+        /// <summary>
+        /// 디폴트 폼 콤보박스를 초기화합니다.
+        /// </summary>
+        private void InitializeDefaultFormComboBox()
+        {
+            if (_sharedData == null) return;
+
+            var defaultFormItems = new List<CheckableComboBoxItem>();
+
+            // 각 쿼리를 항목으로 추가 (단일 선택용)
+            foreach (var query in _sharedData.LoadedQueries)
+            {
+                defaultFormItems.Add(new CheckableComboBoxItem
+                {
+                    Text = query.QueryName,
+                    IsChecked = false
+                });
+            }
+
+            DefaultFormComboBox.ItemsSource = defaultFormItems;
+            
+            // 첫 번째 항목이 있으면 선택
+            if (defaultFormItems.Count > 0)
+            {
+                DefaultFormComboBox.SelectedIndex = 0;
+            }
         }
 
         /// <summary>
@@ -371,11 +410,6 @@ namespace FACTOVA_QueryHelper.Controls
 
         #region 쿼리 실행 관련 메서드
 
-        private async void ExecuteAllButton_Click(object sender, RoutedEventArgs e)
-        {
-            await ExecuteQueries();
-        }
-
         private async System.Threading.Tasks.Task ExecuteQueries()
         {
             if (_sharedData == null) return;
@@ -410,18 +444,46 @@ namespace FACTOVA_QueryHelper.Controls
                     result.TotalDuration,
                     result.SuccessCount,
                     result.FailCount,
-                    result.Notifications.Count);
+                    result.Notifications.Count,
+                    result.NotifiedQueryNames);
 
-                // 첫 번째 탭 선택
-                if (ResultTabControl.Items.Count > 0)
+                // UI가 완전히 업데이트될 때까지 대기한 후 탭 선택
+                await Dispatcher.InvokeAsync(() =>
                 {
-                    ResultTabControl.SelectedIndex = 0;
-                }
+                    if (ResultTabControl.Items.Count > 0)
+                    {
+                        // 디폴트 폼이 선택되어 있으면 해당 탭으로 이동
+                        if (DefaultFormComboBox.SelectedItem is CheckableComboBoxItem selectedForm)
+                        {
+                            var defaultTabIndex = FindTabIndexByName(selectedForm.Text);
+                            if (defaultTabIndex >= 0)
+                            {
+                                ResultTabControl.SelectedIndex = defaultTabIndex;
+                            }
+                            else
+                            {
+                                // 디폴트 폼을 찾지 못하면 첫 번째 탭(작업 로그) 선택
+                                ResultTabControl.SelectedIndex = 0;
+                            }
+                        }
+                        else
+                        {
+                            // 디폴트 폼이 선택되지 않았으면 첫 번째 탭(작업 로그) 선택
+                            ResultTabControl.SelectedIndex = 0;
+                        }
+                    }
+                }, System.Windows.Threading.DispatcherPriority.Loaded);
 
-                // 알림 표시
+                // 알림이 있으면 메인 윈도우를 깜빡이고 탭 색상 변경 (팝업은 표시하지 않음)
                 if (result.Notifications.Count > 0)
                 {
-                    ShowNotificationsPopup(result.Notifications);
+                    FlashMainWindow();
+                    
+                    // 알림 시 자동 실행 중지
+                    if (_isAutoQueryRunning && StopOnNotificationCheckBox.IsChecked == true)
+                    {
+                        StopAutoQuery();
+                    }
                 }
             }
             finally
@@ -430,51 +492,151 @@ namespace FACTOVA_QueryHelper.Controls
             }
         }
 
+        /// <summary>
+        /// 탭 이름으로 탭 인덱스를 찾습니다.
+        /// </summary>
+        private int FindTabIndexByName(string tabName)
+        {
+            for (int i = 0; i < ResultTabControl.Items.Count; i++)
+            {
+                if (ResultTabControl.Items[i] is TabItem tabItem && 
+                    tabItem.Header?.ToString() == tabName)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
         private void SetQueryExecutionUIEnabled(bool enabled)
         {
-            ExecuteAllButton.IsEnabled = enabled;
-            LoadQueriesButton.IsEnabled = enabled;
             BrowseExcelButton.IsEnabled = enabled;
         }
 
-        private void ShowNotificationsPopup(List<string> notifications)
+        private void FlashMainWindow()
         {
-            // 팝업이 뜨면 체크박스 설정에 따라 자동 조회 타이머 중지
-            if (_isAutoQueryRunning && StopOnNotificationCheckBox.IsChecked == true)
+            try
             {
-                StopAutoQuery();
+                var mainWindow = Application.Current.MainWindow;
+                if (mainWindow != null)
+                {
+                    var helper = new System.Windows.Interop.WindowInteropHelper(mainWindow);
+                    if (helper.Handle != IntPtr.Zero)
+                    {
+                        FlashWindow(helper.Handle);
+                    }
+                }
             }
+            catch
+            {
+                // 깜빡임 실패 시 무시
+            }
+        }
 
-            // 커스텀 알림 창 표시 (작업표시줄 깜빡임 포함)
-            var notificationWindow = new NotificationWindow(notifications);
-            notificationWindow.ShowDialog();
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        private static extern bool FlashWindowEx(ref FLASHWINFO pwfi);
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct FLASHWINFO
+        {
+            public uint cbSize;
+            public IntPtr hwnd;
+            public uint dwFlags;
+            public uint uCount;
+            public uint dwTimeout;
+        }
+
+        private const uint FLASHW_ALL = 3;
+        private const uint FLASHW_TIMERNOFG = 12;
+
+        private void FlashWindow(IntPtr hwnd)
+        {
+            var info = new FLASHWINFO
+            {
+                cbSize = (uint)System.Runtime.InteropServices.Marshal.SizeOf<FLASHWINFO>(),
+                hwnd = hwnd,
+                dwFlags = FLASHW_ALL | FLASHW_TIMERNOFG,
+                uCount = 5,
+                dwTimeout = 0
+            };
+
+            FlashWindowEx(ref info);
         }
 
         #endregion
 
         #region 자동 실행 관련 메서드
 
-        private void StartAutoQueryButton_Click(object sender, RoutedEventArgs e)
+        private void ToggleAutoQueryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isAutoQueryRunning)
+            {
+                StopAutoQuery();
+            }
+            else
+            {
+                if (_sharedData == null) return;
+
+                var selectedQueries = GetSelectedQueries();
+                if (!ValidationHelper.ValidateListNotEmpty(selectedQueries, "선택된 쿼리 목록"))
+                    return;
+
+                // 자동 실행이 체크되어 있으면 주기 실행, 아니면 1회만 실행
+                if (EnableAutoExecutionCheckBox.IsChecked == true)
+                {
+                    if (!ValidationHelper.ValidateQueryInterval(QueryIntervalTextBox.Text, out int interval))
+                        return;
+
+                    // 설정 저장
+                    _sharedData.Settings.QueryIntervalSeconds = interval;
+                    _sharedData.SaveSettingsCallback?.Invoke();
+
+                    StartAutoQuery(interval);
+                }
+                else
+                {
+                    // 1회만 실행
+                    _ = ExecuteQueries();
+                }
+            }
+        }
+
+        private void EnableAutoExecutionCheckBox_Changed(object sender, RoutedEventArgs e)
         {
             if (_sharedData == null) return;
 
-            var selectedQueries = GetSelectedQueries();
-            if (!ValidationHelper.ValidateListNotEmpty(selectedQueries, "선택된 쿼리 목록"))
-                return;
+            bool isEnabled = EnableAutoExecutionCheckBox.IsChecked == true;
 
-            if (!ValidationHelper.ValidateQueryInterval(QueryIntervalTextBox.Text, out int interval))
-                return;
-
-            // 설정 저장
-            _sharedData.Settings.QueryIntervalSeconds = interval;
+            // 체크박스 상태를 설정에 저장
+            _sharedData.Settings.EnableAutoExecution = isEnabled;
             _sharedData.SaveSettingsCallback?.Invoke();
 
-            StartAutoQuery(interval);
+            // 실행 주기 입력란 활성화/비활성화
+            QueryIntervalTextBox.IsEnabled = isEnabled && !_isAutoQueryRunning;
+
+            // 버튼 텍스트 변경
+            if (isEnabled)
+            {
+                ToggleAutoQueryButton.Content = _isAutoQueryRunning ? "종료" : "실행";
+            }
+            else
+            {
+                ToggleAutoQueryButton.Content = "실행";
+            }
+
+            System.Diagnostics.Debug.WriteLine($"자동 실행 활성화 설정 변경: {_sharedData.Settings.EnableAutoExecution}");
         }
 
-        private void StopAutoQueryButton_Click(object sender, RoutedEventArgs e)
+        private void StopOnNotificationCheckBox_Changed(object sender, RoutedEventArgs e)
         {
-            StopAutoQuery();
+            if (_sharedData == null) return;
+
+            // 체크박스 상태를 설정에 저장
+            _sharedData.Settings.StopOnNotification = StopOnNotificationCheckBox.IsChecked ?? true;
+            _sharedData.SaveSettingsCallback?.Invoke();
+
+            System.Diagnostics.Debug.WriteLine($"알림 시 자동 실행 중지 설정 변경: {_sharedData.Settings.StopOnNotification}");
         }
 
         private void StartAutoQuery(int intervalSeconds)
@@ -502,10 +664,9 @@ namespace FACTOVA_QueryHelper.Controls
             // 즉시 한 번 실행
             _ = ExecuteQueries();
 
-            StartAutoQueryButton.IsEnabled = false;
-            StopAutoQueryButton.IsEnabled = true;
+            ToggleAutoQueryButton.Content = "종료";
+            ToggleAutoQueryButton.Background = new SolidColorBrush(Color.FromRgb(220, 53, 69)); // 빨간색
             QueryIntervalTextBox.IsEnabled = false;
-            LoadQueriesButton.IsEnabled = false;
             BrowseExcelButton.IsEnabled = false;
 
             AutoQueryCountdownBorder.Visibility = Visibility.Visible;
@@ -760,13 +921,19 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         private void CreateExecutionLogTab(List<string> logs, DateTime startTime, double totalDuration, 
-            int successCount, int failCount, int notificationCount)
+            int successCount, int failCount, int notificationCount, List<string> notifiedQueryNames)
         {
             var tabItem = new TabItem
             {
                 Header = "작업 로그",
                 FontWeight = FontWeights.Bold
             };
+            
+            // 알림이 있으면 탭 색상을 빨간색으로 변경
+            if (notificationCount > 0)
+            {
+                tabItem.Foreground = new SolidColorBrush(Colors.Red);
+            }
 
             var grid = new Grid();
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -830,7 +997,8 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     Text = $"알림: {notificationCount}개",
                     FontSize = 12,
-                    Foreground = new SolidColorBrush(Colors.Orange),
+                    Foreground = new SolidColorBrush(Colors.Red),
+                    FontWeight = FontWeights.Bold,
                     Margin = new Thickness(0, 0, 20, 0),
                     VerticalAlignment = VerticalAlignment.Center
                 });
@@ -859,6 +1027,16 @@ namespace FACTOVA_QueryHelper.Controls
 
             tabItem.Content = grid;
             ResultTabControl.Items.Insert(0, tabItem);
+            
+            // 알림이 있는 쿼리 탭의 색상을 빨간색으로 변경
+            foreach (var queryName in notifiedQueryNames)
+            {
+                var tabIndex = FindTabIndexByName(queryName);
+                if (tabIndex >= 0 && ResultTabControl.Items[tabIndex] is TabItem queryTab)
+                {
+                    queryTab.Foreground = new SolidColorBrush(Colors.Red);
+                }
+            }
         }
 
         #endregion
