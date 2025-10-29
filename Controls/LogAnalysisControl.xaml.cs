@@ -445,17 +445,9 @@ namespace FACTOVA_QueryHelper.Controls
                 StopAutoQuery();
             }
 
-            var message = new StringBuilder();
-            message.AppendLine("알림이 있습니다:");
-            message.AppendLine();
-
-            foreach (var notification in notifications)
-            {
-                message.AppendLine($"• {notification}");
-            }
-
-            MessageBox.Show(message.ToString(), "조회 결과 알림", 
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            // 커스텀 알림 창 표시 (작업표시줄 깜빡임 포함)
+            var notificationWindow = new NotificationWindow(notifications);
+            notificationWindow.ShowDialog();
         }
 
         #endregion
