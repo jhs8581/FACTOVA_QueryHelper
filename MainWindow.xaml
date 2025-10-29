@@ -14,6 +14,11 @@
                 <controls:LogAnalysisControl x:Name="LogAnalysisControl"/>
             </TabItem>
 
+            <!-- 쿼리 관리 탭 -->
+            <TabItem Header="쿼리 관리">
+                <controls:QueryManagementControl x:Name="QueryManagementControl"/>
+            </TabItem>
+
             <!-- SFC 모니터링 탭 -->
             <TabItem Header="SFC 모니터링">
                 <controls:SfcMonitoringControl x:Name="SfcMonitoringControl"/>

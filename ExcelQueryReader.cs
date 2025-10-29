@@ -17,20 +17,39 @@ namespace FACTOVA_QueryHelper
         public string UserId { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         
-        // ���� ���� ���� (TNS ��� ��� ����)
+        // 직접 연결 정보 (TNS 대신 사용 가능)
         public string Host { get; set; } = string.Empty;
         public string Port { get; set; } = string.Empty;
         public string ServiceName { get; set; } = string.Empty;
 
-        // ���ο� �ɼ� �ʵ� �Ӽ���
-        public string EnabledFlag { get; set; } = string.Empty; // G��: 'Y'�̸� ���� ����
-        public string NotifyFlag { get; set; } = string.Empty; // H��: 'Y'�̸� �˸� ǥ��
-        public string CountGreaterThan { get; set; } = string.Empty; // I��: �� �� �̻��� �� �˸�
-        public string CountEquals { get; set; } = string.Empty; // J��: �� ���� ���� �� �˸�
-        public string CountLessThan { get; set; } = string.Empty; // K��: �� �� ������ �� �˸�
-        public string ColumnNames { get; set; } = string.Empty; // L��: üũ�� �÷��� (A,B,C ����)
-        public string ColumnValues { get; set; } = string.Empty; // M��: üũ�� ���� (1,2,3 ����)
-        public string ExcludeFlag { get; set; } = string.Empty; // N��: 'N'�̸� ����
+        // 새로운 옵션 필드 속성들
+        public string EnabledFlag { get; set; } = string.Empty; // G열: 'Y'이면 실행 활성
+        public string NotifyFlag { get; set; } = string.Empty; // H열: 'Y'이면 알림 표시
+        public string CountGreaterThan { get; set; } = string.Empty; // I열: N건 이상일 때 알림
+        public string CountEquals { get; set; } = string.Empty; // J열: N건 정확히 일치 시 알림
+        public string CountLessThan { get; set; } = string.Empty; // K열: N건 이하일 때 알림
+        public string ColumnNames { get; set; } = string.Empty; // L열: 체크할 컬럼명 (A,B,C 형식)
+        public string ColumnValues { get; set; } = string.Empty; // M열: 체크할 컬럼값 (1,2,3 형식)
+        public string ExcludeFlag { get; set; } = string.Empty; // N열: 'N'이면 제외
+
+        // DataGrid CheckBox 바인딩용 Bool 속성
+        public bool EnabledFlagBool
+        {
+            get => string.Equals(EnabledFlag, "Y", StringComparison.OrdinalIgnoreCase);
+            set => EnabledFlag = value ? "Y" : "N";
+        }
+
+        public bool NotifyFlagBool
+        {
+            get => string.Equals(NotifyFlag, "Y", StringComparison.OrdinalIgnoreCase);
+            set => NotifyFlag = value ? "Y" : "N";
+        }
+
+        public bool ExcludeFlagBool
+        {
+            get => string.Equals(ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase);
+            set => ExcludeFlag = value ? "Y" : "N";
+        }
     }
 
     public class ExcelQueryReader
