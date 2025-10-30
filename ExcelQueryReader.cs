@@ -30,7 +30,7 @@ namespace FACTOVA_QueryHelper
         public string CountLessThan { get; set; } = string.Empty; // K열: N건 이하일 때 알림
         public string ColumnNames { get; set; } = string.Empty; // L열: 체크할 컬럼명 (A,B,C 형식)
         public string ColumnValues { get; set; } = string.Empty; // M열: 체크할 컬럼값 (1,2,3 형식)
-        public string ExcludeFlag { get; set; } = string.Empty; // N열: 'N'이면 제외
+        public string ExcludeFlag { get; set; } = string.Empty; // N열: 'Y'이면 제외
 
         // DataGrid CheckBox 바인딩용 Bool 속성
         public bool EnabledFlagBool
@@ -45,10 +45,13 @@ namespace FACTOVA_QueryHelper
             set => NotifyFlag = value ? "Y" : "N";
         }
 
+        // "포함" 체크박스 (ExcludeFlag와 반대 로직)
+        // 체크 = 포함 (ExcludeFlag = "N")
+        // 체크 해제 = 제외 (ExcludeFlag = "Y")
         public bool ExcludeFlagBool
         {
-            get => string.Equals(ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase);
-            set => ExcludeFlag = value ? "Y" : "N";
+            get => !string.Equals(ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase);
+            set => ExcludeFlag = value ? "N" : "Y";
         }
     }
 

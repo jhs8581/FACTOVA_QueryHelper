@@ -64,7 +64,7 @@ namespace FACTOVA_QueryHelper
         {
             if (list == null || list.Count == 0)
             {
-                MessageBox.Show($"{listName}��(��) ����ֽ��ϴ�.", "�˸�",
+                MessageBox.Show($"{listName}이 없습니다.", "알림",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return false;
             }

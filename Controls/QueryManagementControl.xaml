@@ -15,89 +15,66 @@
 
         <!-- 상단 버튼 영역 -->
         <GroupBox Header="데이터베이스 관리" Grid.Row="0" Padding="10" Margin="0,0,0,10">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <!-- 첫 번째 행: Excel 가져오기 -->
-                <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,10">
-                    <TextBlock Text="Excel 파일:" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="Bold"/>
-                    <TextBox x:Name="ExcelFilePathTextBox" Width="400" Height="25" 
-                             IsReadOnly="True" VerticalAlignment="Center" Margin="0,0,10,0"
-                             ToolTip="가져올 Excel 파일 경로"/>
-                    <Button x:Name="BrowseExcelButton" Content="찾아보기..." 
-                            Width="100" Height="30" Margin="0,0,10,0"
-                            Click="BrowseExcelButton_Click"
-                            ToolTip="Excel 파일 선택"/>
-                    <Button x:Name="ImportFromExcelButton" Content="Excel → DB 가져오기" 
-                            Width="150" Height="30" Margin="0,0,10,0"
-                            Click="ImportFromExcelButton_Click"
-                            Background="#FF28A745" 
-                            Foreground="White"
-                            FontWeight="Bold"
-                            IsEnabled="False"
-                            ToolTip="Excel 파일의 쿼리를 데이터베이스에 저장합니다"/>
-                </StackPanel>
-
-                <!-- 두 번째 행: DB 관리 버튼 -->
-                <StackPanel Orientation="Horizontal" Grid.Row="1">
-                    <Button x:Name="LoadFromDbButton" Content="🔄 새로고침" 
-                            Width="120" Height="30" Margin="0,0,10,0"
-                            Click="LoadFromDbButton_Click"
-                            Background="#FF0078D7" 
-                            Foreground="White"
-                            FontWeight="Bold"
-                            ToolTip="데이터베이스에서 쿼리 목록을 다시 로드합니다"/>
-                    
-                    <Button x:Name="ExportToExcelButton" Content="📤 Excel 내보내기" 
-                            Width="150" Height="30" Margin="0,0,10,0"
-                            Click="ExportToExcelButton_Click"
-                            ToolTip="데이터베이스 쿼리를 Excel로 내보냅니다"/>
-                    
-                    <Separator Width="1" Background="#FFCCCCCC" Margin="10,0"/>
-                    
-                    <Button x:Name="AddQueryButton" Content="➕ 쿼리 추가" 
-                            Width="110" Height="30" Margin="0,0,10,0"
-                            Click="AddQueryButton_Click"
-                            Background="#FF28A745" 
-                            Foreground="White"
-                            FontWeight="Bold"
-                            ToolTip="새 쿼리를 직접 추가합니다"/>
-                    
-                    <Button x:Name="EditQueryButton" Content="✏️ 수정" 
-                            Width="100" Height="30" Margin="0,0,10,0"
-                            Click="EditQueryButton_Click"
-                            IsEnabled="False"
-                            Background="#FFFFC107"
-                            ToolTip="선택한 쿼리를 수정합니다"/>
-                    
-                    <Button x:Name="DeleteQueryButton" Content="🗑️ 삭제" 
-                            Width="100" Height="30" Margin="0,0,10,0"
-                            Click="DeleteQueryButton_Click"
-                            IsEnabled="False"
-                            Background="#FFDC3545" 
-                            Foreground="White"
-                            ToolTip="선택한 쿼리를 삭제합니다"/>
-                    
-                    <Button x:Name="ClearAllButton" Content="⚠️ 전체 삭제" 
-                            Width="110" Height="30" Margin="0,0,20,0"
-                            Click="ClearAllButton_Click"
-                            Background="#FFDC3545" 
-                            Foreground="White"
-                            ToolTip="모든 쿼리를 삭제합니다"/>
-                    
-                    <Separator Width="20" Background="Transparent"/>
-                    
-                    <TextBlock Text="DB 쿼리 수:" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="Bold"/>
-                    <TextBlock x:Name="DbQueryCountTextBlock" Text="0개" 
-                               VerticalAlignment="Center" 
-                               FontWeight="Bold" 
-                               Foreground="#FF28A745"
-                               FontSize="16"/>
-                </StackPanel>
-            </Grid>
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="LoadFromDbButton" Content="🔄 새로고침" 
+                        Width="120" Height="30" Margin="0,0,10,0"
+                        Click="LoadFromDbButton_Click"
+                        Background="#FF0078D7" 
+                        Foreground="White"
+                        FontWeight="Bold"
+                        ToolTip="데이터베이스에서 쿼리 목록을 다시 로드합니다"/>
+                
+                <Button x:Name="ExportToExcelButton" Content="📤 Excel 내보내기" 
+                        Width="150" Height="30" Margin="0,0,10,0"
+                        Click="ExportToExcelButton_Click"
+                        ToolTip="데이터베이스 쿼리를 Excel로 내보냅니다"/>
+                
+                <Button x:Name="ImportFromExcelButton" Content="📥 Excel 가져오기" 
+                        Width="150" Height="30" Margin="0,0,10,0"
+                        Click="ImportFromExcelButton_Click"
+                        ToolTip="Excel 파일에서 쿼리를 가져옵니다"/>
+                
+                <Separator Width="1" Background="#FFCCCCCC" Margin="10,0"/>
+                
+                <Button x:Name="AddQueryButton" Content="➕ 쿼리 추가" 
+                        Width="110" Height="30" Margin="0,0,10,0"
+                        Click="AddQueryButton_Click"
+                        Background="#FF28A745" 
+                        Foreground="White"
+                        FontWeight="Bold"
+                        ToolTip="새 쿼리를 직접 추가합니다"/>
+                
+                <Button x:Name="EditQueryButton" Content="✏️ 수정" 
+                        Width="100" Height="30" Margin="0,0,10,0"
+                        Click="EditQueryButton_Click"
+                        IsEnabled="False"
+                        Background="#FFFFC107"
+                        ToolTip="선택한 쿼리를 수정합니다"/>
+                
+                <Button x:Name="DeleteQueryButton" Content="🗑️ 삭제" 
+                        Width="100" Height="30" Margin="0,0,10,0"
+                        Click="DeleteQueryButton_Click"
+                        IsEnabled="False"
+                        Background="#FFDC3545" 
+                        Foreground="White"
+                        ToolTip="선택한 쿼리를 삭제합니다"/>
+                
+                <Button x:Name="ClearAllButton" Content="⚠️ 전체 삭제" 
+                        Width="110" Height="30" Margin="0,0,20,0"
+                        Click="ClearAllButton_Click"
+                        Background="#FFDC3545" 
+                        Foreground="White"
+                        ToolTip="모든 쿼리를 삭제합니다"/>
+                
+                <Separator Width="20" Background="Transparent"/>
+                
+                <TextBlock Text="DB 쿼리 수:" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="Bold"/>
+                <TextBlock x:Name="DbQueryCountTextBlock" Text="0개" 
+                           VerticalAlignment="Center" 
+                           FontWeight="Bold" 
+                           Foreground="#FF28A745"
+                           FontSize="16"/>
+            </StackPanel>
         </GroupBox>
 
         <!-- 쿼리 목록 DataGrid -->
@@ -181,7 +158,7 @@
                         <DataGridTextColumn Header="≤건수" Binding="{Binding CountLessThan, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
                         <DataGridTextColumn Header="컬럼명" Binding="{Binding ColumnNames, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
                         <DataGridTextColumn Header="컬럼값" Binding="{Binding ColumnValues, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
-                        <DataGridCheckBoxColumn Header="제외" Binding="{Binding ExcludeFlagBool, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
+                        <DataGridCheckBoxColumn Header="포함" Binding="{Binding ExcludeFlagBool, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>

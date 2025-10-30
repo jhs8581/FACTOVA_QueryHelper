@@ -66,28 +66,12 @@ namespace FACTOVA_QueryHelper.Controls
 
         #region 이벤트 핸들러
 
-        private void BrowseExcelButton_Click(object sender, RoutedEventArgs e)
-        {
-            string? filePath = FileDialogManager.OpenExcelFileDialog("Excel 쿼리 파일 선택");
-            if (filePath != null)
-            {
-                ExcelFilePathTextBox.Text = filePath;
-                ImportFromExcelButton.IsEnabled = true;
-                UpdateStatus("Excel 파일이 선택되었습니다. '가져오기' 버튼을 클릭하세요.", Colors.Blue);
-            }
-        }
-
         private void ImportFromExcelButton_Click(object sender, RoutedEventArgs e)
         {
             if (_database == null) return;
 
-            string filePath = ExcelFilePathTextBox.Text;
-            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
-            {
-                MessageBox.Show("유효한 Excel 파일을 선택하세요.", "알림",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            string? filePath = FileDialogManager.OpenExcelFileDialog("Excel 쿼리 파일 선택");
+            if (filePath == null) return;
 
             var result = MessageBox.Show(
                 "기존 데이터베이스의 쿼리를 모두 삭제하고 Excel 파일에서 가져오시겠습니까?\n\n" +
@@ -249,11 +233,11 @@ namespace FACTOVA_QueryHelper.Controls
         {
             var dbPath = QueryDatabase.GetDatabasePath();
             var message = new StringBuilder();
-            message.AppendLine("📁 데이터베이스 파일 위치:");
+            message.AppendLine("데이터베이스 파일 위치:");
             message.AppendLine();
             message.AppendLine(dbPath);
             message.AppendLine();
-            message.AppendLine($"파일 존재 여부: {(File.Exists(dbPath) ? "✅ 예" : "❌ 아니오")}");
+            message.AppendLine($"파일 존재: {(File.Exists(dbPath) ? "예" : "아니오")}");
 
             if (File.Exists(dbPath))
             {

@@ -60,31 +60,6 @@ namespace FACTOVA_QueryHelper.Controls
         {
             if (_sharedData == null) return;
 
-            // Excel 파일 경로 로드
-            if (!string.IsNullOrWhiteSpace(_sharedData.Settings.ExcelFilePath) && 
-                File.Exists(_sharedData.Settings.ExcelFilePath))
-            {
-                ExcelFilePathTextBox.Text = _sharedData.Settings.ExcelFilePath;
-
-                // 시트 목록 로드
-                try
-                {
-                    var sheets = ExcelQueryReader.GetSheetNames(_sharedData.Settings.ExcelFilePath);
-                    SheetComboBox.ItemsSource = sheets;
-                    if (sheets.Count > 0)
-                    {
-                        SheetComboBox.SelectedIndex = 0;
-                    }
-                    
-                    // 경로가 지정되어 있으면 자동으로 쿼리 로드
-                    LoadQueriesFromExcel();
-                }
-                catch
-                {
-                    // 시트 로드 실패 무시
-                }
-            }
-
             // 쿼리 타이머 간격 로드
             QueryIntervalTextBox.Text = _sharedData.Settings.QueryIntervalSeconds.ToString();
 
@@ -98,8 +73,8 @@ namespace FACTOVA_QueryHelper.Controls
             // 폰트 크기 설정 로드
             FontSizeTextBlock.Text = _sharedData.Settings.FontSize.ToString();
             
-            // DB 쿼리 수 업데이트
-            UpdateDbQueryCount();
+            // 자동으로 DB에서 쿼리 로드
+            LoadFromDbButton_Click(null!, null!);
         }
 
         /// <summary>
@@ -134,46 +109,11 @@ namespace FACTOVA_QueryHelper.Controls
             }
             
             QueryIntervalTextBox.IsEnabled = EnableAutoExecutionCheckBox.IsChecked == true;
-            BrowseExcelButton.IsEnabled = true;
 
             UpdateStatus("자동 쿼리 실행 중지", Colors.Orange);
         }
 
-        #region Excel 파일 관련 이벤트 핸들러
-
-        private void BrowseExcelButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_sharedData == null) return;
-
-            string? filePath = FileDialogManager.OpenExcelFileDialog("Excel 쿼리 파일 선택");
-
-            if (filePath != null)
-            {
-                ExcelFilePathTextBox.Text = filePath;
-
-                try
-                {
-                    var sheets = ExcelManager.GetSheetNames(filePath);
-                    SheetComboBox.ItemsSource = sheets;
-                    if (sheets.Count > 0)
-                    {
-                        SheetComboBox.SelectedIndex = 0;
-                    }
-                    
-                    // 설정 저장
-                    _sharedData.Settings.ExcelFilePath = filePath;
-                    _sharedData.SaveSettingsCallback?.Invoke();
-                    
-                    // 자동으로 쿼리 로드
-                    LoadQueriesFromExcel();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Excel 파일 읽기 실패:\n{ex.Message}", "오류",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
+        #region DB 관련 이벤트 핸들러
 
         private void LoadFromDbButton_Click(object sender, RoutedEventArgs e)
         {
@@ -192,13 +132,9 @@ namespace FACTOVA_QueryHelper.Controls
 
                 LoadedQueriesTextBlock.Text = $"{_sharedData.LoadedQueries.Count}개";
                 ToggleAutoQueryButton.IsEnabled = _sharedData.LoadedQueries.Count > 0;
-                SaveToDbButton.IsEnabled = false; // DB에서 로드했으므로 저장 버튼은 비활성화
 
                 UpdateStatus($"데이터베이스에서 {_sharedData.LoadedQueries.Count}개의 쿼리를 로드했습니다.", Colors.Green);
                 System.Diagnostics.Debug.WriteLine("=== DB에서 쿼리 로드 완료 ===");
-                
-                MessageBox.Show($"{_sharedData.LoadedQueries.Count}개의 쿼리를 데이터베이스에서 로드했습니다.", "완료",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -208,230 +144,6 @@ namespace FACTOVA_QueryHelper.Controls
                 MessageBox.Show($"데이터베이스 로드 실패:\n{ex.Message}", "오류",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 UpdateStatus($"DB 로드 실패: {ex.Message}", Colors.Red);
-            }
-        }
-
-        private void SaveToDbButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_sharedData == null || _database == null) return;
-
-            if (_sharedData.LoadedQueries == null || _sharedData.LoadedQueries.Count == 0)
-            {
-                MessageBox.Show("저장할 쿼리가 없습니다.", "알림",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            var result = MessageBox.Show(
-                $"현재 Excel의 {_sharedData.LoadedQueries.Count}개 쿼리를 데이터베이스에 저장하시겠습니까?\n\n" +
-                "기존 데이터베이스의 쿼리를 모두 삭제하고 현재 쿼리로 교체합니다.",
-                "DB에 저장",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
-            {
-                try
-                {
-                    _database.ImportFromExcel(_sharedData.LoadedQueries, clearExisting: true);
-                    
-                    UpdateDbQueryCount(); // DB 쿼리 수 업데이트
-                    UpdateStatus($"{_sharedData.LoadedQueries.Count}개 쿼리를 데이터베이스에 저장했습니다.", Colors.Green);
-                    MessageBox.Show($"{_sharedData.LoadedQueries.Count}개의 쿼리를 성공적으로 저장했습니다.\n\n" +
-                        $"데이터베이스 경로:\n{QueryDatabase.GetDatabasePath()}", 
-                        "완료",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"데이터베이스 저장 실패:\n{ex.Message}", "오류",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                    UpdateStatus($"DB 저장 실패: {ex.Message}", Colors.Red);
-                }
-            }
-        }
-
-        private void ManageQueriesButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_database == null) return;
-
-            try
-            {
-                // 간단한 관리 윈도우 표시
-                var queries = _database.GetAllQueries();
-                var message = new StringBuilder();
-                message.AppendLine($"데이터베이스 쿼리 목록 ({queries.Count}개):");
-                message.AppendLine();
-                
-                foreach (var query in queries.Take(10))
-                {
-                    message.AppendLine($"• {query.QueryName} ({query.TnsName ?? query.Host})");
-                }
-                
-                if (queries.Count > 10)
-                {
-                    message.AppendLine($"... 외 {queries.Count - 10}개");
-                }
-                
-                message.AppendLine();
-                message.AppendLine("개별 쿼리 추가/수정/삭제는 곧 추가될 예정입니다.");
-                message.AppendLine("현재는 Excel을 통해 관리하시고 'DB에 저장'을 이용하세요.");
-
-                MessageBox.Show(message.ToString(), "쿼리 관리",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"쿼리 목록 조회 실패:\n{ex.Message}", "오류",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void ExportToExcelButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_database == null) return;
-
-            var dialog = new Microsoft.Win32.SaveFileDialog
-            {
-                Filter = "Excel Files (*.xlsx)|*.xlsx",
-                Title = "Excel 파일로 내보내기",
-                FileName = $"queries_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
-            };
-
-            if (dialog.ShowDialog() != true) return;
-
-            try
-            {
-                var queries = _database.GetAllQueries();
-                ExcelManager.ExportQueries(queries, dialog.FileName);
-                
-                UpdateStatus($"{queries.Count}개 쿼리를 Excel로 내보냈습니다.", Colors.Green);
-                MessageBox.Show($"{queries.Count}개의 쿼리를 성공적으로 내보냈습니다.\n\n{dialog.FileName}", "완료",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                
-                // 파일 탐색기로 열기 확인
-                var result = MessageBox.Show("파일 탐색기로 파일을 열까요?", "확인",
-                    MessageBoxButton.YesNo, MessageBoxImage.Question);
-                
-                if (result == MessageBoxResult.Yes)
-                {
-                    System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{dialog.FileName}\"");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Excel 내보내기 실패:\n{ex.Message}", "오류",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void ViewDbPathButton_Click(object sender, RoutedEventArgs e)
-        {
-            var dbPath = QueryDatabase.GetDatabasePath();
-            var message = new StringBuilder();
-            message.AppendLine("데이터베이스 파일 위치:");
-            message.AppendLine();
-            message.AppendLine(dbPath);
-            message.AppendLine();
-            message.AppendLine($"파일 존재 여부: {(System.IO.File.Exists(dbPath) ? "예" : "아니오")}");
-            
-            if (System.IO.File.Exists(dbPath))
-            {
-                var fileInfo = new System.IO.FileInfo(dbPath);
-                message.AppendLine($"파일 크기: {fileInfo.Length:N0} bytes");
-                message.AppendLine($"수정 날짜: {fileInfo.LastWriteTime:yyyy-MM-dd HH:mm:ss}");
-            }
-
-            MessageBox.Show(message.ToString(), "데이터베이스 정보",
-                MessageBoxButton.OK, MessageBoxImage.Information);
-            
-            // 폴더 열기 확인
-            var result = MessageBox.Show("파일 탐색기로 폴더를 열까요?", "확인",
-                MessageBoxButton.YesNo, MessageBoxImage.Question);
-            
-            if (result == MessageBoxResult.Yes)
-            {
-                var directory = System.IO.Path.GetDirectoryName(dbPath);
-                if (!string.IsNullOrEmpty(directory))
-                {
-                    System.Diagnostics.Process.Start("explorer.exe", directory);
-                }
-            }
-        }
-
-        private void UpdateDbQueryCount()
-        {
-            if (_database == null) return;
-
-            try
-            {
-                var count = _database.GetAllQueries().Count;
-                // TODO: DbQueryCountTextBlock은 XAML에 추가 후 활성화
-                // DbQueryCountTextBlock.Text = $"{count}개";
-            }
-            catch
-            {
-                // TODO: DbQueryCountTextBlock은 XAML에 추가 후 활성화
-                // DbQueryCountTextBlock.Text = "0개";
-            }
-        }
-
-        private void LoadQueriesFromExcel()
-        {
-            if (_sharedData == null) return;
-
-            System.Diagnostics.Debug.WriteLine("=== 쿼리 로드 시작 ===");
-            System.Diagnostics.Debug.WriteLine($"Excel 파일 경로: {ExcelFilePathTextBox.Text}");
-            System.Diagnostics.Debug.WriteLine($"시작 행: {StartRowTextBox.Text}");
-            System.Diagnostics.Debug.WriteLine($"선택된 시트: {SheetComboBox.SelectedItem?.ToString()}");
-
-            if (!ValidationHelper.ValidateStartRow(StartRowTextBox.Text, out int startRow))
-            {
-                System.Diagnostics.Debug.WriteLine("시작 행 검증 실패");
-                return;
-            }
-
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"Excel 파일에서 쿼리 로드 시작... (시작 행: {startRow})");
-                
-                _sharedData.LoadedQueries = ExcelManager.LoadQueries(
-                    ExcelFilePathTextBox.Text,
-                    SheetComboBox.SelectedItem?.ToString(),
-                    startRow);
-
-                System.Diagnostics.Debug.WriteLine($"로드된 쿼리 수: {_sharedData.LoadedQueries.Count}개");
-                
-                // 쿼리 필터 콤보박스 초기화
-                InitializeQueryFilterComboBox();
-
-                LoadedQueriesTextBlock.Text = $"{_sharedData.LoadedQueries.Count}개";
-                ToggleAutoQueryButton.IsEnabled = _sharedData.LoadedQueries.Count > 0;
-                SaveToDbButton.IsEnabled = _sharedData.LoadedQueries.Count > 0;
-
-                UpdateStatus($"{_sharedData.LoadedQueries.Count}개의 쿼리를 로드했습니다.", Colors.Green);
-                System.Diagnostics.Debug.WriteLine("=== 쿼리 로드 완료 ===");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"=== 쿼리 로드 실패 ===");
-                System.Diagnostics.Debug.WriteLine($"오류 메시지: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"스택 트레이스:\n{ex.StackTrace}");
-                
-                var errorMessage = new StringBuilder();
-                errorMessage.AppendLine($"쿼리 로드 실패: {ex.Message}");
-                errorMessage.AppendLine();
-                errorMessage.AppendLine("상세 정보:");
-                errorMessage.AppendLine($"- Excel 파일: {ExcelFilePathTextBox.Text}");
-                errorMessage.AppendLine($"- 시트: {SheetComboBox.SelectedItem?.ToString() ?? "(선택되지 않음)"}");
-                errorMessage.AppendLine($"- 시작 행: {startRow}");
-                errorMessage.AppendLine();
-                errorMessage.AppendLine($"오류 상세:");
-                errorMessage.AppendLine(ex.ToString());
-
-                MessageBox.Show(errorMessage.ToString(), "쿼리 로드 오류",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-                UpdateStatus($"쿼리 로드 실패: {ex.Message}", Colors.Red);
             }
         }
 
@@ -458,8 +170,9 @@ namespace FACTOVA_QueryHelper.Controls
             // 각 쿼리를 항목으로 추가
             foreach (var query in _sharedData.LoadedQueries)
             {
-                // ExcludeFlag가 'Y'이면 기본 체크
-                bool isChecked = string.Equals(query.ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase);
+                // ExcludeFlag가 'N'이거나 빈 값이면 기본 체크 (포함)
+                // ExcludeFlag가 'Y'이면 체크 해제 (제외)
+                bool isChecked = !string.Equals(query.ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase);
                 
                 _sharedData.QueryFilterItems.Add(new CheckableComboBoxItem
                 {
@@ -722,7 +435,7 @@ namespace FACTOVA_QueryHelper.Controls
 
         private void SetQueryExecutionUIEnabled(bool enabled)
         {
-            BrowseExcelButton.IsEnabled = enabled;
+            // UI 활성화/비활성화는 필요 시 추가
         }
 
         private void FlashMainWindow()
@@ -879,7 +592,6 @@ namespace FACTOVA_QueryHelper.Controls
             ToggleAutoQueryButton.Content = "종료";
             ToggleAutoQueryButton.Background = new SolidColorBrush(Color.FromRgb(220, 53, 69)); // 빨간색
             QueryIntervalTextBox.IsEnabled = false;
-            BrowseExcelButton.IsEnabled = false;
 
             AutoQueryCountdownBorder.Visibility = Visibility.Visible;
             UpdateCountdownDisplay();

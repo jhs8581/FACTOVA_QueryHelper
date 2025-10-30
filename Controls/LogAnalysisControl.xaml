@@ -12,123 +12,38 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <GroupBox Header="Excel 쿼리 파일 설정" Grid.Row="0" Padding="10" Margin="0,0,0,10">
+        <GroupBox Header="쿼리 설정" Grid.Row="0" Padding="10" Margin="0,0,0,10">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <TextBlock Text="Excel 파일:" VerticalAlignment="Center" Grid.Column="0" Margin="0,0,10,0"/>
-                    <TextBox x:Name="ExcelFilePathTextBox" Grid.Column="1" Margin="5" 
-                             IsReadOnly="True" VerticalAlignment="Center"/>
-                    <Button x:Name="BrowseExcelButton" Grid.Column="2" Content="📂 찾아보기..." 
-                            Width="110" Height="30" Margin="5"
-                            Click="BrowseExcelButton_Click"
-                            ToolTip="Excel 쿼리 파일 선택"/>
-                    <Button x:Name="LoadFromDbButton" Grid.Column="3" Content="💾 DB에서 로드" 
-                            Width="120" Height="30" Margin="5"
+                <!-- 첫 번째 행: DB 로드 버튼 -->
+                <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,10">
+                    <Button x:Name="LoadFromDbButton" Content="💾 DB에서 쿼리 로드" 
+                            Width="150" Height="35" Margin="0,0,15,0"
                             Click="LoadFromDbButton_Click"
                             Background="#FF28A745" 
                             Foreground="White"
                             FontWeight="Bold"
+                            FontSize="14"
                             ToolTip="데이터베이스에서 쿼리 목록 로드"/>
-                    <Button x:Name="SaveToDbButton" Grid.Column="4" Content="💿 DB에 저장" 
-                            Width="110" Height="30" Margin="5"
-                            Click="SaveToDbButton_Click"
-                            Background="#FF0078D7" 
-                            Foreground="White"
-                            FontWeight="Bold"
-                            IsEnabled="False"
-                            ToolTip="현재 Excel의 쿼리를 데이터베이스에 저장"/>
-                </Grid>
+                    
+                    <TextBlock Text="로드된 쿼리:" VerticalAlignment="Center" Margin="10,0,10,0" FontWeight="Bold"/>
+                    <TextBlock x:Name="LoadedQueriesTextBlock" Text="0개" VerticalAlignment="Center" 
+                               FontWeight="Bold" Foreground="#FF0078D7" FontSize="16"/>
+                </StackPanel>
 
+                <!-- 두 번째 행: 쿼리 실행 옵션 -->
                 <Grid Grid.Row="1" Margin="0,10,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="200"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="80"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <TextBlock Text="시트:" VerticalAlignment="Center" Grid.Column="0" Margin="0,0,10,0"/>
-                    <ComboBox x:Name="SheetComboBox" Grid.Column="1" Margin="5" VerticalAlignment="Center"/>
-
-                    <TextBlock Text="시작 행:" VerticalAlignment="Center" Grid.Column="2" Margin="20,0,10,0"/>
-                    <TextBox x:Name="StartRowTextBox" Grid.Column="3" Margin="5" Text="2" VerticalAlignment="Center"
-                             ToolTip="데이터 시작 행 번호 (헤더 제외)"/>
-
-                    <TextBlock Text="(헤더 행 제외)" VerticalAlignment="Center" Grid.Column="4" Margin="10,0,10,0" 
-                               FontSize="11" Foreground="Gray"/>
-                </Grid>
-
-                <Expander Grid.Row="2" Margin="0,10,0,0" 
-                          IsExpanded="False"
-                          BorderBrush="#FF0078D7" 
-                          BorderThickness="1">
-                    <Expander.Header>
-                        <TextBlock Text="Excel 열 구조 (고정) - 클릭하여 펼치기/접기" 
-                                   FontWeight="Bold" 
-                                   Foreground="#FF0078D7"/>
-                    </Expander.Header>
-                    <Border Background="#FFF0F8FF" 
-                            Padding="15"
-                            CornerRadius="0,0,5,5">
-                        <TextBlock FontSize="11" LineHeight="18" TextWrapping="Wrap">
-                            • A열: TNS 이름 (예: GM2MRSP)
-                            <LineBreak/>
-                            • B열: User ID (DB 계정)
-                            <LineBreak/>
-                            • C열: Password (DB 비밀번호)
-                            <LineBreak/>
-                            • D열: 탭 이름 (결과 탭에 표시될 이름)
-                            <LineBreak/>
-                            • F열: SQL 쿼리
-                            <LineBreak/>
-                            • G열: 실행 여부 (Y/N, 빈 값은 Y로 간주)
-                            <LineBreak/>
-                            • H열: 알림 여부 (Y/N)
-                            <LineBreak/>
-                            • I열: 이상 건수 (N건 이상일 때 알림)
-                            <LineBreak/>
-                            • J열: 같음 건수 (정확히 N건일 때 알림)
-                            <LineBreak/>
-                            • K열: 이하 건수 (N건 이하일 때 알림)
-                            <LineBreak/>
-                            • L열: 컬럼명 (쉼표로 구분)
-                            <LineBreak/>
-                            • M열: 컬럼값 (쉼표로 구분)
-                            <LineBreak/>
-                            • N열: 제외 여부 (N이면 로드 시 제외)
-                        </TextBlock>
-                    </Border>
-                </Expander>
-
-                <Grid Grid.Row="3" Margin="0,10,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,5">
-                        <TextBlock Text="로드된 쿼리:" VerticalAlignment="Center" Margin="10,0,10,0"/>
-                        <TextBlock x:Name="LoadedQueriesTextBlock" Text="0개" VerticalAlignment="Center" 
-                                   FontWeight="Bold" Foreground="#FF0078D7"/>
-                        
-                        <TextBlock Text="실행할 쿼리:" VerticalAlignment="Center" Margin="20,0,10,0"/>
+                        <TextBlock Text="실행할 쿼리:" VerticalAlignment="Center" Margin="0,0,10,0"/>
                         <ComboBox x:Name="QueryFilterComboBox" Width="300" Margin="5,0,10,0" VerticalAlignment="Center"
                                   IsEditable="True"
                                   IsReadOnly="True"
