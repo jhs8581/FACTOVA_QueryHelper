@@ -1,0 +1,73 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # v1.0.0, v1.1.0 등의 태그에 반응
+  workflow_dispatch:  # 수동 실행 허용
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    
+    - name: Restore dependencies
+      run: dotnet restore
+    
+    - name: Build Release
+      run: dotnet build --configuration Release --no-restore
+    
+    - name: Publish Self-Contained Executable
+      run: |
+        dotnet publish -c Release -r win-x64 --self-contained true `
+          -p:PublishSingleFile=true `
+          -p:IncludeNativeLibrariesForSelfExtract=true `
+          -p:EnableCompressionInSingleFile=true `
+          --output ./publish
+    
+    - name: Get version from tag
+      id: get_version
+      shell: pwsh
+      run: |
+        $version = "${{ github.ref_name }}"
+        echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        echo "Version: $version"
+    
+    - name: Create ZIP archive
+      shell: pwsh
+      run: |
+        $version = "${{ steps.get_version.outputs.VERSION }}"
+        Compress-Archive -Path ./publish/* -DestinationPath "FACTOVA_QueryHelper_$version.zip"
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          ./publish/FACTOVA_QueryHelper.exe
+          FACTOVA_QueryHelper_${{ steps.get_version.outputs.VERSION }}.zip
+        body: |
+          ## FACTOVA Query Helper ${{ steps.get_version.outputs.VERSION }}
+          
+          ### 다운로드
+          - **FACTOVA_QueryHelper.exe**: 단일 실행 파일 (권장)
+          - **ZIP 파일**: 전체 패키지
+          
+          ### 설치 방법
+          1. `FACTOVA_QueryHelper.exe` 파일을 다운로드합니다.
+          2. 원하는 위치에 저장하고 실행합니다.
+          3. .NET 8 Runtime이 필요하지 않습니다 (자체 포함).
+          
+          ### 변경 사항
+          - 이 버전의 변경 사항을 여기에 작성하세요.
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

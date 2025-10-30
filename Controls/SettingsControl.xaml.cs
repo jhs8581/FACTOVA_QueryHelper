@@ -46,6 +46,9 @@ namespace FACTOVA_QueryHelper.Controls
             DatabasePathTextBox.Text = string.IsNullOrWhiteSpace(_sharedData.Settings.DatabasePath) 
                 ? QueryDatabase.GetDefaultDatabasePath() 
                 : _sharedData.Settings.DatabasePath;
+            
+            // 업데이트 자동 확인 설정 로드
+            CheckUpdateOnStartupCheckBox.IsChecked = _sharedData.Settings.CheckUpdateOnStartup;
         }
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
@@ -140,6 +143,63 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 MessageBox.Show("설정이 저장되었습니다.", "완료",
                     MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private void CheckUpdateOnStartupCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            if (_sharedData == null) return;
+
+            // 체크박스 상태를 설정에 저장
+            _sharedData.Settings.CheckUpdateOnStartup = CheckUpdateOnStartupCheckBox.IsChecked ?? true;
+            _sharedData.SaveSettingsCallback?.Invoke();
+
+            System.Diagnostics.Debug.WriteLine($"업데이트 자동 확인 설정 변경: {_sharedData.Settings.CheckUpdateOnStartup}");
+        }
+
+        private async void CheckUpdateNowButton_Click(object sender, RoutedEventArgs e)
+        {
+            CheckUpdateNowButton.IsEnabled = false;
+            CheckUpdateNowButton.Content = "확인 중...";
+            UpdateStatus("업데이트를 확인하는 중...", Colors.Blue);
+
+            try
+            {
+                var updateInfo = await UpdateChecker.CheckForUpdatesAsync();
+
+                if (updateInfo.HasUpdate)
+                {
+                    UpdateStatus($"새 버전 {updateInfo.LatestVersion}이 있습니다.", Colors.Green);
+                    
+                    var updateWindow = new UpdateNotificationWindow(updateInfo)
+                    {
+                        Owner = Window.GetWindow(this)
+                    };
+                    updateWindow.ShowDialog();
+                }
+                else if (!string.IsNullOrEmpty(updateInfo.ErrorMessage))
+                {
+                    UpdateStatus($"업데이트 확인 실패: {updateInfo.ErrorMessage}", Colors.Red);
+                    MessageBox.Show($"업데이트를 확인할 수 없습니다:\n{updateInfo.ErrorMessage}", 
+                        "오류", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                else
+                {
+                    UpdateStatus("최신 버전을 사용 중입니다.", Colors.Green);
+                    MessageBox.Show("현재 최신 버전을 사용하고 있습니다.", 
+                        "업데이트", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"업데이트 확인 중 오류: {ex.Message}", Colors.Red);
+                MessageBox.Show($"업데이트 확인 중 오류가 발생했습니다:\n{ex.Message}", 
+                    "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                CheckUpdateNowButton.IsEnabled = true;
+                CheckUpdateNowButton.Content = "지금 업데이트 확인";
             }
         }
 
