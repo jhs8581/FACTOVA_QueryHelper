@@ -167,8 +167,10 @@ namespace FACTOVA_QueryHelper.Controls
                 IsChecked = false 
             });
 
-            // 각 쿼리를 항목으로 추가
-            foreach (var query in _sharedData.LoadedQueries)
+            // ID 순으로 정렬하여 각 쿼리를 항목으로 추가
+            var sortedQueries = _sharedData.LoadedQueries.OrderBy(q => q.RowNumber).ToList();
+            
+            foreach (var query in sortedQueries)
             {
                 // ExcludeFlag가 'N'이거나 빈 값이면 기본 체크 (포함)
                 // ExcludeFlag가 'Y'이면 체크 해제 (제외)
@@ -196,21 +198,35 @@ namespace FACTOVA_QueryHelper.Controls
             if (_sharedData == null) return;
 
             var defaultFormItems = new List<CheckableComboBoxItem>();
+            int defaultIndex = -1;
 
-            // 각 쿼리를 항목으로 추가 (단일 선택용)
-            foreach (var query in _sharedData.LoadedQueries)
+            // ID 순으로 정렬하여 각 쿼리를 항목으로 추가 (단일 선택용)
+            var sortedQueries = _sharedData.LoadedQueries.OrderBy(q => q.RowNumber).ToList();
+            
+            for (int i = 0; i < sortedQueries.Count; i++)
             {
+                var query = sortedQueries[i];
                 defaultFormItems.Add(new CheckableComboBoxItem
                 {
                     Text = query.QueryName,
                     IsChecked = false
                 });
+                
+                // 디폴트로 설정된 쿼리 찾기
+                if (query.DefaultFlagBool && defaultIndex == -1)
+                {
+                    defaultIndex = i;
+                }
             }
 
             DefaultFormComboBox.ItemsSource = defaultFormItems;
             
-            // 첫 번째 항목이 있으면 선택
-            if (defaultFormItems.Count > 0)
+            // 디폴트 쿼리가 있으면 선택, 없으면 첫 번째 항목 선택
+            if (defaultIndex >= 0)
+            {
+                DefaultFormComboBox.SelectedIndex = defaultIndex;
+            }
+            else if (defaultFormItems.Count > 0)
             {
                 DefaultFormComboBox.SelectedIndex = 0;
             }

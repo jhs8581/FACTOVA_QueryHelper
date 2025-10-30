@@ -24,16 +24,6 @@
                         FontWeight="Bold"
                         ToolTip="데이터베이스에서 쿼리 목록을 다시 로드합니다"/>
                 
-                <Button x:Name="ExportToExcelButton" Content="📤 Excel 내보내기" 
-                        Width="150" Height="30" Margin="0,0,10,0"
-                        Click="ExportToExcelButton_Click"
-                        ToolTip="데이터베이스 쿼리를 Excel로 내보냅니다"/>
-                
-                <Button x:Name="ImportFromExcelButton" Content="📥 Excel 가져오기" 
-                        Width="150" Height="30" Margin="0,0,10,0"
-                        Click="ImportFromExcelButton_Click"
-                        ToolTip="Excel 파일에서 쿼리를 가져옵니다"/>
-                
                 <Separator Width="1" Background="#FFCCCCCC" Margin="10,0"/>
                 
                 <Button x:Name="AddQueryButton" Content="➕ 쿼리 추가" 
@@ -52,19 +42,12 @@
                         ToolTip="선택한 쿼리를 수정합니다"/>
                 
                 <Button x:Name="DeleteQueryButton" Content="🗑️ 삭제" 
-                        Width="100" Height="30" Margin="0,0,10,0"
+                        Width="100" Height="30" Margin="0,0,20,0"
                         Click="DeleteQueryButton_Click"
                         IsEnabled="False"
                         Background="#FFDC3545" 
                         Foreground="White"
                         ToolTip="선택한 쿼리를 삭제합니다"/>
-                
-                <Button x:Name="ClearAllButton" Content="⚠️ 전체 삭제" 
-                        Width="110" Height="30" Margin="0,0,20,0"
-                        Click="ClearAllButton_Click"
-                        Background="#FFDC3545" 
-                        Foreground="White"
-                        ToolTip="모든 쿼리를 삭제합니다"/>
                 
                 <Separator Width="20" Background="Transparent"/>
                 
@@ -118,6 +101,7 @@
                           HeadersVisibility="All"
                           SelectionChanged="QueriesDataGrid_SelectionChanged"
                           BeginningEdit="QueriesDataGrid_BeginningEdit"
+                          CellEditEnding="QueriesDataGrid_CellEditEnding"
                           FontSize="11">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="ID" Binding="{Binding RowNumber}" Width="50" IsReadOnly="True"/>
@@ -159,6 +143,7 @@
                         <DataGridTextColumn Header="컬럼명" Binding="{Binding ColumnNames, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
                         <DataGridTextColumn Header="컬럼값" Binding="{Binding ColumnValues, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
                         <DataGridCheckBoxColumn Header="포함" Binding="{Binding ExcludeFlagBool, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
+                        <DataGridCheckBoxColumn Header="디폴트" Binding="{Binding DefaultFlagBool, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>

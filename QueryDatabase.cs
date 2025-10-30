@@ -58,10 +58,23 @@ namespace FACTOVA_QueryHelper
                     ColumnNames TEXT,
                     ColumnValues TEXT,
                     ExcludeFlag TEXT DEFAULT 'N',
+                    DefaultFlag TEXT DEFAULT 'N',
                     CreatedDate TEXT DEFAULT CURRENT_TIMESTAMP,
                     ModifiedDate TEXT DEFAULT CURRENT_TIMESTAMP
                 )";
             command.ExecuteNonQuery();
+            
+            // DefaultFlag 컬럼이 없는 기존 테이블에 컬럼 추가
+            try
+            {
+                var alterCommand = connection.CreateCommand();
+                alterCommand.CommandText = "ALTER TABLE Queries ADD COLUMN DefaultFlag TEXT DEFAULT 'N'";
+                alterCommand.ExecuteNonQuery();
+            }
+            catch
+            {
+                // 컬럼이 이미 존재하면 무시
+            }
         }
 
         /// <summary>
@@ -98,7 +111,8 @@ namespace FACTOVA_QueryHelper
                     CountLessThan = reader["CountLessThan"]?.ToString() ?? "",
                     ColumnNames = reader["ColumnNames"]?.ToString() ?? "",
                     ColumnValues = reader["ColumnValues"]?.ToString() ?? "",
-                    ExcludeFlag = reader["ExcludeFlag"]?.ToString() ?? "N"
+                    ExcludeFlag = reader["ExcludeFlag"]?.ToString() ?? "N",
+                    DefaultFlag = reader["DefaultFlag"]?.ToString() ?? "N"
                 });
             }
 
@@ -126,11 +140,11 @@ namespace FACTOVA_QueryHelper
                 INSERT INTO Queries (
                     QueryName, TnsName, Host, Port, ServiceName, UserId, Password, Query,
                     EnabledFlag, NotifyFlag, CountGreaterThan, CountEquals, CountLessThan,
-                    ColumnNames, ColumnValues, ExcludeFlag
+                    ColumnNames, ColumnValues, ExcludeFlag, DefaultFlag
                 ) VALUES (
                     $queryName, $tnsName, $host, $port, $serviceName, $userId, $password, $query,
                     $enabledFlag, $notifyFlag, $countGreaterThan, $countEquals, $countLessThan,
-                    $columnNames, $columnValues, $excludeFlag
+                    $columnNames, $columnValues, $excludeFlag, $defaultFlag
                 )";
 
             AddQueryParameters(command, query);
@@ -164,6 +178,7 @@ namespace FACTOVA_QueryHelper
                     ColumnNames = $columnNames,
                     ColumnValues = $columnValues,
                     ExcludeFlag = $excludeFlag,
+                    DefaultFlag = $defaultFlag,
                     ModifiedDate = CURRENT_TIMESTAMP
                 WHERE Id = $id";
 
@@ -225,11 +240,11 @@ namespace FACTOVA_QueryHelper
                         INSERT INTO Queries (
                             QueryName, TnsName, Host, Port, ServiceName, UserId, Password, Query,
                             EnabledFlag, NotifyFlag, CountGreaterThan, CountEquals, CountLessThan,
-                            ColumnNames, ColumnValues, ExcludeFlag
+                            ColumnNames, ColumnValues, ExcludeFlag, DefaultFlag
                         ) VALUES (
                             $queryName, $tnsName, $host, $port, $serviceName, $userId, $password, $query,
                             $enabledFlag, $notifyFlag, $countGreaterThan, $countEquals, $countLessThan,
-                            $columnNames, $columnValues, $excludeFlag
+                            $columnNames, $columnValues, $excludeFlag, $defaultFlag
                         )";
 
                     AddQueryParameters(command, query);
@@ -266,6 +281,7 @@ namespace FACTOVA_QueryHelper
             command.Parameters.AddWithValue("$columnNames", query.ColumnNames ?? "");
             command.Parameters.AddWithValue("$columnValues", query.ColumnValues ?? "");
             command.Parameters.AddWithValue("$excludeFlag", query.ExcludeFlag ?? "N");
+            command.Parameters.AddWithValue("$defaultFlag", query.DefaultFlag ?? "N");
         }
 
         /// <summary>

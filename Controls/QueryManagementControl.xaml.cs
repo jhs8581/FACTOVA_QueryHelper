@@ -66,97 +66,9 @@ namespace FACTOVA_QueryHelper.Controls
 
         #region 이벤트 핸들러
 
-        private void ImportFromExcelButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_database == null) return;
-
-            string? filePath = FileDialogManager.OpenExcelFileDialog("Excel 쿼리 파일 선택");
-            if (filePath == null) return;
-
-            var result = MessageBox.Show(
-                "기존 데이터베이스의 쿼리를 모두 삭제하고 Excel 파일에서 가져오시겠습니까?\n\n" +
-                "• 예: 기존 데이터 삭제 후 가져오기 (덮어쓰기)\n" +
-                "• 아니오: 기존 데이터에 추가 (병합)\n" +
-                "• 취소: 작업 중단",
-                "가져오기 옵션",
-                MessageBoxButton.YesNoCancel,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Cancel) return;
-
-            try
-            {
-                UpdateStatus("Excel 파일에서 쿼리를 가져오는 중...", Colors.Orange);
-
-                // Excel 파일에서 쿼리 로드 (시작 행: 2)
-                var queries = ExcelManager.LoadQueries(filePath, null, 2);
-                bool clearExisting = result == MessageBoxResult.Yes;
-
-                _database.ImportFromExcel(queries, clearExisting);
-                LoadQueriesFromDatabase();
-
-                string mode = clearExisting ? "덮어쓰기" : "병합";
-                UpdateStatus($"Excel에서 {queries.Count}개 쿼리를 가져왔습니다 ({mode}).", Colors.Green);
-                MessageBox.Show($"{queries.Count}개의 쿼리를 성공적으로 가져왔습니다.\n\n모드: {mode}", "완료",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Excel 가져오기 실패:\n{ex.Message}", "오류",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-                UpdateStatus($"Excel 가져오기 실패: {ex.Message}", Colors.Red);
-            }
-        }
-
         private void LoadFromDbButton_Click(object sender, RoutedEventArgs e)
         {
             LoadQueriesFromDatabase();
-        }
-
-        private void ExportToExcelButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_database == null) return;
-
-            var queries = _database.GetAllQueries();
-            if (queries.Count == 0)
-            {
-                MessageBox.Show("내보낼 쿼리가 없습니다.", "알림",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            var dialog = new Microsoft.Win32.SaveFileDialog
-            {
-                Filter = "Excel Files (*.xlsx)|*.xlsx",
-                Title = "Excel 파일로 내보내기",
-                FileName = $"queries_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
-            };
-
-            if (dialog.ShowDialog() != true) return;
-
-            try
-            {
-                ExcelManager.ExportQueries(queries, dialog.FileName);
-
-                UpdateStatus($"{queries.Count}개 쿼리를 Excel로 내보냈습니다.", Colors.Green);
-                MessageBox.Show($"{queries.Count}개의 쿼리를 성공적으로 내보냈습니다.\n\n{dialog.FileName}", "완료",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-
-                // 파일 탐색기로 열기 확인
-                var result = MessageBox.Show("파일 탐색기로 파일을 열까요?", "확인",
-                    MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{dialog.FileName}\"");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Excel 내보내기 실패:\n{ex.Message}", "오류",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-                UpdateStatus($"Excel 내보내기 실패: {ex.Message}", Colors.Red);
-            }
         }
 
         private void DeleteQueryButton_Click(object sender, RoutedEventArgs e)
@@ -168,8 +80,10 @@ namespace FACTOVA_QueryHelper.Controls
                 return;
             }
 
+            var queryName = _selectedQuery.QueryName; // 삭제 전에 이름 저장
+            
             var result = MessageBox.Show(
-                $"'{_selectedQuery.QueryName}' 쿼리를 삭제하시겠습니까?\n\n" +
+                $"'{queryName}' 쿼리를 삭제하시겠습니까?\n\n" +
                 "이 작업은 되돌릴 수 없습니다!",
                 "삭제 확인",
                 MessageBoxButton.YesNo,
@@ -180,51 +94,15 @@ namespace FACTOVA_QueryHelper.Controls
                 try
                 {
                     _database?.DeleteQuery(_selectedQuery.RowNumber);
+                    _selectedQuery = null; // 선택 초기화
                     LoadQueriesFromDatabase();
-                    UpdateStatus($"'{_selectedQuery.QueryName}' 쿼리가 삭제되었습니다.", Colors.Orange);
+                    UpdateStatus($"'{queryName}' 쿼리가 삭제되었습니다.", Colors.Orange);
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"쿼리 삭제 실패:\n{ex.Message}", "오류",
                         MessageBoxButton.OK, MessageBoxImage.Error);
                     UpdateStatus($"쿼리 삭제 실패: {ex.Message}", Colors.Red);
-                }
-            }
-        }
-
-        private void ClearAllButton_Click(object sender, RoutedEventArgs e)
-        {
-            var queries = _database?.GetAllQueries();
-            if (queries == null || queries.Count == 0)
-            {
-                MessageBox.Show("삭제할 쿼리가 없습니다.", "알림",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            var result = MessageBox.Show(
-                $"모든 쿼리({queries.Count}개)를 삭제하시겠습니까?\n\n" +
-                "⚠️ 이 작업은 되돌릴 수 없습니다!\n\n" +
-                "삭제 전에 'Excel 내보내기'로 백업하는 것을 권장합니다.",
-                "전체 삭제 확인",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (result == MessageBoxResult.Yes)
-            {
-                try
-                {
-                    _database?.ClearAllQueries();
-                    LoadQueriesFromDatabase();
-                    UpdateStatus("모든 쿼리가 삭제되었습니다.", Colors.Orange);
-                    MessageBox.Show("모든 쿼리가 삭제되었습니다.", "완료",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"전체 삭제 실패:\n{ex.Message}", "오류",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                    UpdateStatus($"전체 삭제 실패: {ex.Message}", Colors.Red);
                 }
             }
         }
@@ -290,6 +168,66 @@ namespace FACTOVA_QueryHelper.Controls
                 _editingQuery = query;
                 EditModeBorder.Visibility = Visibility.Visible;
                 UpdateStatus("편집 모드: 변경 후 '저장' 버튼을 클릭하세요.", Colors.Orange);
+                
+                // 디폴트 컬럼 편집 시작 시 현재 값 저장
+                if (e.Column != null && e.Column.Header?.ToString() == "디폴트")
+                {
+                    // CellEditEnding 이벤트에서 처리
+                }
+            }
+        }
+
+        private void QueriesDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            // 디폴트 체크박스 변경 시 다른 모든 항목의 디폴트를 해제
+            if (e.Column != null && e.Column.Header?.ToString() == "디폴트" && !e.Cancel)
+            {
+                if (e.Row.Item is QueryItem changedQuery && e.EditingElement is CheckBox checkBox)
+                {
+                    // 체크박스가 체크되었는지 확인 (EndEdit 이후에 확인)
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        if (changedQuery.DefaultFlagBool && _queries != null)
+                        {
+                            // 다른 모든 쿼리의 디폴트 해제
+                            foreach (var query in _queries)
+                            {
+                                if (query != changedQuery && query.DefaultFlagBool)
+                                {
+                                    query.DefaultFlagBool = false;
+                                }
+                            }
+                            
+                            // 변경사항을 DB에 저장
+                            if (_database != null && changedQuery.RowNumber > 0)
+                            {
+                                try
+                                {
+                                    _database.UpdateQuery(changedQuery);
+                                    
+                                    // 다른 쿼리들도 업데이트
+                                    foreach (var query in _queries)
+                                    {
+                                        if (query != changedQuery && query.RowNumber > 0)
+                                        {
+                                            _database.UpdateQuery(query);
+                                        }
+                                    }
+                                    
+                                    UpdateStatus($"'{changedQuery.QueryName}'이(가) 디폴트 폼으로 설정되었습니다.", Colors.Green);
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show($"디폴트 설정 저장 실패:\n{ex.Message}", "오류",
+                                        MessageBoxButton.OK, MessageBoxImage.Error);
+                                }
+                            }
+                            
+                            // DataGrid 새로고침
+                            QueriesDataGrid.Items.Refresh();
+                        }
+                    }), System.Windows.Threading.DispatcherPriority.Background);
+                }
             }
         }
 

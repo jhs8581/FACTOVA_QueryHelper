@@ -31,6 +31,7 @@ namespace FACTOVA_QueryHelper
         public string ColumnNames { get; set; } = string.Empty; // L열: 체크할 컬럼명 (A,B,C 형식)
         public string ColumnValues { get; set; } = string.Empty; // M열: 체크할 컬럼값 (1,2,3 형식)
         public string ExcludeFlag { get; set; } = string.Empty; // N열: 'Y'이면 제외
+        public string DefaultFlag { get; set; } = string.Empty; // O열: 'Y'이면 디폴트 폼
 
         // DataGrid CheckBox 바인딩용 Bool 속성
         public bool EnabledFlagBool
@@ -52,6 +53,13 @@ namespace FACTOVA_QueryHelper
         {
             get => !string.Equals(ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase);
             set => ExcludeFlag = value ? "N" : "Y";
+        }
+
+        // 디폴트 폼 체크박스
+        public bool DefaultFlagBool
+        {
+            get => string.Equals(DefaultFlag, "Y", StringComparison.OrdinalIgnoreCase);
+            set => DefaultFlag = value ? "Y" : "N";
         }
     }
 
