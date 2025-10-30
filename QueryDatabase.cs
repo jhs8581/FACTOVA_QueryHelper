@@ -10,17 +10,14 @@ namespace FACTOVA_QueryHelper
     /// </summary>
     public class QueryDatabase
     {
-        private static readonly string DatabasePath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "FACTOVA_QueryHelper",
-            "queries.db"
-        );
-
         private readonly string _connectionString;
+        private readonly string _databasePath;
 
-        public QueryDatabase()
+        public QueryDatabase(string? customPath = null)
         {
-            _connectionString = $"Data Source={DatabasePath}";
+            // 사용자 지정 경로가 있으면 사용, 없으면 기본 경로 사용
+            _databasePath = string.IsNullOrWhiteSpace(customPath) ? GetDefaultDatabasePath() : customPath;
+            _connectionString = $"Data Source={_databasePath}";
             InitializeDatabase();
         }
 
@@ -29,7 +26,7 @@ namespace FACTOVA_QueryHelper
         /// </summary>
         private void InitializeDatabase()
         {
-            string directory = Path.GetDirectoryName(DatabasePath) ?? "";
+            string directory = Path.GetDirectoryName(_databasePath) ?? "";
             if (!Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
@@ -287,9 +284,21 @@ namespace FACTOVA_QueryHelper
         /// <summary>
         /// 데이터베이스 경로를 반환합니다.
         /// </summary>
-        public static string GetDatabasePath()
+        public string GetDatabasePath()
         {
-            return DatabasePath;
+            return _databasePath;
+        }
+        
+        /// <summary>
+        /// 기본 데이터베이스 경로를 반환합니다 (정적 메서드).
+        /// </summary>
+        public static string GetDefaultDatabasePath()
+        {
+            return Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "FACTOVA_QueryHelper",
+                "queries.db"
+            );
         }
     }
 }

@@ -20,6 +20,7 @@ namespace FACTOVA_QueryHelper
         public bool StopOnNotification { get; set; } = true; // 알림 시 자동 실행 중지 (기본값: true)
         public bool EnableAutoExecution { get; set; } = false; // 자동 실행 활성화 (기본값: false)
         public int FontSize { get; set; } = 11; // 폰트 크기 (기본값: 11)
+        public string DatabasePath { get; set; } = string.Empty; // DB 파일 경로 (기본값: 빈 문자열)
     }
 
     public class SettingsManager

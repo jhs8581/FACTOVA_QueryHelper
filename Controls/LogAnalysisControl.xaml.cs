@@ -47,8 +47,8 @@ namespace FACTOVA_QueryHelper.Controls
                 _sharedData.Settings,
                 CreateResultTab);
             
-            // QueryDatabase 초기화
-            _database = new QueryDatabase();
+            // QueryDatabase 초기화 (사용자 지정 경로 사용)
+            _database = new QueryDatabase(_sharedData.Settings.DatabasePath);
             
             LoadSettings();
         }

@@ -40,6 +40,12 @@ namespace FACTOVA_QueryHelper.Controls
             // 기본 경로 표시
             DefaultPathTextBlock.Text = SettingsManager.GetDefaultTnsPath();
             TnsPathTextBox.Text = _sharedData.Settings.TnsPath;
+            
+            // DB 기본 경로 표시
+            DefaultDatabasePathTextBlock.Text = QueryDatabase.GetDefaultDatabasePath();
+            DatabasePathTextBox.Text = string.IsNullOrWhiteSpace(_sharedData.Settings.DatabasePath) 
+                ? QueryDatabase.GetDefaultDatabasePath() 
+                : _sharedData.Settings.DatabasePath;
         }
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
@@ -55,10 +61,36 @@ namespace FACTOVA_QueryHelper.Controls
             }
         }
 
+        private void BrowseDatabaseButton_Click(object sender, RoutedEventArgs e)
+        {
+            var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "SQLite Database (*.db)|*.db|All Files (*.*)|*.*",
+                Title = "데이터베이스 파일 위치 선택",
+                FileName = "queries.db",
+                DefaultExt = ".db"
+            };
+
+            if (!string.IsNullOrWhiteSpace(DatabasePathTextBox.Text))
+            {
+                var directory = Path.GetDirectoryName(DatabasePathTextBox.Text);
+                if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
+                {
+                    saveFileDialog.InitialDirectory = directory;
+                }
+            }
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                DatabasePathTextBox.Text = saveFileDialog.FileName;
+            }
+        }
+
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
             TnsPathTextBox.Text = SettingsManager.GetDefaultTnsPath();
-            UpdateStatus("TNS 경로가 기본값으로 복원되었습니다.", Colors.Green);
+            DatabasePathTextBox.Text = QueryDatabase.GetDefaultDatabasePath();
+            UpdateStatus("설정이 기본값으로 복원되었습니다.", Colors.Green);
         }
 
         private void SaveSettingsButton_Click(object sender, RoutedEventArgs e)
@@ -80,7 +112,10 @@ namespace FACTOVA_QueryHelper.Controls
                     return;
             }
 
+            bool databasePathChanged = _sharedData.Settings.DatabasePath != DatabasePathTextBox.Text;
+
             _sharedData.Settings.TnsPath = TnsPathTextBox.Text;
+            _sharedData.Settings.DatabasePath = DatabasePathTextBox.Text;
             _sharedData.SaveSettingsCallback?.Invoke();
             
             // QueryExecutionManager 설정 업데이트
@@ -90,8 +125,22 @@ namespace FACTOVA_QueryHelper.Controls
             TnsPathChanged?.Invoke(this, EventArgs.Empty);
 
             UpdateStatus("설정이 저장되었습니다.", Colors.Green);
-            MessageBox.Show("설정이 저장되었습니다.", "완료",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            
+            if (databasePathChanged)
+            {
+                MessageBox.Show(
+                    "설정이 저장되었습니다.\n\n" +
+                    "?? 데이터베이스 파일 경로가 변경되었습니다.\n" +
+                    "변경사항을 적용하려면 프로그램을 재시작하세요.",
+                    "완료",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            else
+            {
+                MessageBox.Show("설정이 저장되었습니다.", "완료",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
 
         private void UpdateStatus(string message, Color color)

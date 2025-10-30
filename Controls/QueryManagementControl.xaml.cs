@@ -32,7 +32,7 @@ namespace FACTOVA_QueryHelper.Controls
         public void Initialize(SharedDataContext sharedData)
         {
             _sharedData = sharedData;
-            _database = new QueryDatabase();
+            _database = new QueryDatabase(sharedData.Settings.DatabasePath);
             LoadQueriesFromDatabase();
         }
 
@@ -109,7 +109,7 @@ namespace FACTOVA_QueryHelper.Controls
 
         private void ViewDbPathButton_Click(object sender, RoutedEventArgs e)
         {
-            var dbPath = QueryDatabase.GetDatabasePath();
+            var dbPath = _database?.GetDatabasePath() ?? QueryDatabase.GetDefaultDatabasePath();
             var message = new StringBuilder();
             message.AppendLine("데이터베이스 파일 위치:");
             message.AppendLine();
