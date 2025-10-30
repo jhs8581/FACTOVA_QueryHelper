@@ -6,6 +6,9 @@ on:
       - 'v*.*.*'  # v1.0.0, v1.1.0 등의 태그에 반응
   workflow_dispatch:  # 수동 실행 허용
 
+permissions:
+  contents: write  # 릴리즈 생성 및 파일 업로드 권한
+
 jobs:
   build:
     runs-on: windows-latest

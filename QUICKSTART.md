@@ -115,6 +115,31 @@ git push origin v1.1.0
 - 저장소 Settings → Actions → Allow all actions 확인
 - `.github/workflows/release.yml` 파일이 master 브랜치에 있는지 확인
 
+### "GitHub release failed with status: 403" 오류
+이 오류는 권한 문제입니다. 다음 두 가지 방법으로 해결할 수 있습니다:
+
+**방법 1: 워크플로우 권한 설정 (권장)**
+1. GitHub 저장소로 이동
+2. **Settings** → **Actions** → **General**
+3. **Workflow permissions** 섹션에서 **Read and write permissions** 선택
+4. **Save** 클릭
+5. 기존 태그 삭제 후 다시 푸시:
+   ```bash
+   git tag -d v0.0.9
+   git push origin :refs/tags/v0.0.9
+   git tag v0.0.9
+   git push origin v0.0.9
+   ```
+
+**방법 2: Personal Access Token 사용**
+1. GitHub 프로필 → Settings → Developer settings → Personal access tokens → Tokens (classic)
+2. **Generate new token (classic)** 클릭
+3. **repo** 권한 전체 선택
+4. 토큰 생성 후 복사
+5. 저장소 Settings → Secrets and variables → Actions → New repository secret
+6. Name: `GH_TOKEN`, Value: 복사한 토큰
+7. 워크플로우 파일에서 `GITHUB_TOKEN` 대신 `secrets.GH_TOKEN` 사용
+
 ### "빌드가 실패했어요"
 1. Actions 탭에서 실패한 워크플로우 클릭
 2. 로그에서 오류 메시지 확인
