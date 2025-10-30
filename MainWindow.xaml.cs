@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -34,8 +35,34 @@ namespace FACTOVA_QueryHelper
             
             _sharedData = new SharedDataContext();
             
+            // 윈도우 타이틀에 버전 정보 추가
+            SetWindowTitle();
+            
             Loaded += MainWindow_Loaded;
             Closing += MainWindow_Closing;
+        }
+
+        /// <summary>
+        /// 윈도우 타이틀에 버전 정보를 설정합니다.
+        /// </summary>
+        private void SetWindowTitle()
+        {
+            try
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var version = assembly.GetName().Version;
+                
+                if (version != null)
+                {
+                    // Major.Minor.Patch 형식으로 표시
+                    Title = $"FACTOVA Query Helper v{version.Major}.{version.Minor}.{version.Build}";
+                }
+            }
+            catch
+            {
+                // 버전 정보를 가져올 수 없으면 기본 타이틀 유지
+                Title = "FACTOVA Query Helper";
+            }
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)

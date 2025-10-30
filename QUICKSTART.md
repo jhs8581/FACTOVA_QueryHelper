@@ -115,6 +115,28 @@ git push origin v1.1.0
 - 저장소 Settings → Actions → Allow all actions 확인
 - `.github/workflows/release.yml` 파일이 master 브랜치에 있는지 확인
 
+### "저장소가 Private라서 업데이트 확인이 안돼요"
+Private 저장소에서는 자동 업데이트 확인이 제한됩니다. 다음 방법 중 선택하세요:
+
+**방법 1: 저장소를 Public으로 변경 (권장)**
+1. GitHub 저장소 → **Settings**
+2. 맨 아래 **Danger Zone**
+3. **Change visibility** → **Change to public**
+
+**방법 2: Personal Access Token 사용**
+1. GitHub 프로필 → Settings → Developer settings → Personal access tokens
+2. **Generate new token (classic)** 클릭
+3. **repo** 권한 선택하여 토큰 생성
+4. `UpdateChecker.cs` 파일의 `GitHubToken` 상수에 토큰 입력:
+   ```csharp
+   private const string GitHubToken = "ghp_xxxxxxxxxx";
+   ```
+5. ?? **주의**: 토큰을 GitHub에 커밋하지 마세요!
+
+**방법 3: 네트워크 공유 폴더 배포 (사내 전용)**
+- GitHub 대신 사내 네트워크 공유 폴더 사용
+- 자세한 내용: [NETWORK_DEPLOYMENT.md](NETWORK_DEPLOYMENT.md)
+
 ### "GitHub release failed with status: 403" 오류
 이 오류는 권한 문제입니다. 다음 두 가지 방법으로 해결할 수 있습니다:
 
@@ -149,6 +171,7 @@ git push origin v1.1.0
 - 인터넷 연결 확인
 - 설정 → 업데이트 설정에서 "자동 확인" 체크박스 확인
 - GitHub Releases 페이지에 릴리즈가 public으로 설정되어 있는지 확인
+- Private 저장소인 경우 Personal Access Token 설정 확인
 
 ## ?? 추가 자료
 

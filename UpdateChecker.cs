@@ -13,11 +13,23 @@ namespace FACTOVA_QueryHelper
     public class UpdateChecker
     {
         private const string UpdateUrl = "https://api.github.com/repos/jhs8581/FACTOVA_QueryHelper/releases/latest";
+        
+        // Private 저장소인 경우 Personal Access Token 필요
+        // Settings → Developer settings → Personal access tokens에서 생성
+        // 권한: repo (전체) 필요
+        private const string GitHubToken = ""; // 여기에 토큰 입력 (Private 저장소인 경우만)
+        
         private static readonly HttpClient _httpClient = new HttpClient();
 
         static UpdateChecker()
         {
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "FACTOVA_QueryHelper");
+            
+            // Private 저장소인 경우 인증 헤더 추가
+            if (!string.IsNullOrEmpty(GitHubToken))
+            {
+                _httpClient.DefaultRequestHeaders.Add("Authorization", $"token {GitHubToken}");
+            }
         }
 
         /// <summary>
@@ -62,6 +74,15 @@ namespace FACTOVA_QueryHelper
                 }
 
                 return new UpdateInfo { HasUpdate = false };
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                System.Diagnostics.Debug.WriteLine("릴리즈를 찾을 수 없음 (Private 저장소인 경우 토큰 필요)");
+                return new UpdateInfo 
+                { 
+                    HasUpdate = false, 
+                    ErrorMessage = "업데이트를 확인할 수 없습니다. (Private 저장소)" 
+                };
             }
             catch (Exception ex)
             {
