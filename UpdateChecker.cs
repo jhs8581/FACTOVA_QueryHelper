@@ -13,23 +13,12 @@ namespace FACTOVA_QueryHelper
     public class UpdateChecker
     {
         private const string UpdateUrl = "https://api.github.com/repos/jhs8581/FACTOVA_QueryHelper/releases/latest";
-        
-        // Private 저장소인 경우 Personal Access Token 필요
-        // Settings → Developer settings → Personal access tokens에서 생성
-        // 권한: repo (전체) 필요
-        private const string GitHubToken = ""; // 여기에 토큰 입력 (Private 저장소인 경우만)
-        
         private static readonly HttpClient _httpClient = new HttpClient();
 
         static UpdateChecker()
         {
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "FACTOVA_QueryHelper");
-            
-            // Private 저장소인 경우 인증 헤더 추가
-            if (!string.IsNullOrEmpty(GitHubToken))
-            {
-                _httpClient.DefaultRequestHeaders.Add("Authorization", $"token {GitHubToken}");
-            }
+            _httpClient.Timeout = TimeSpan.FromSeconds(10); // 타임아웃 설정
         }
 
         /// <summary>
@@ -39,8 +28,23 @@ namespace FACTOVA_QueryHelper
         {
             try
             {
-                var response = await _httpClient.GetStringAsync(UpdateUrl);
-                var release = JsonSerializer.Deserialize<GitHubRelease>(response);
+                var response = await _httpClient.GetAsync(UpdateUrl);
+                
+                // 상태 코드 확인
+                if (!response.IsSuccessStatusCode)
+                {
+                    var statusCode = (int)response.StatusCode;
+                    System.Diagnostics.Debug.WriteLine($"GitHub API 응답 실패: {statusCode} {response.ReasonPhrase}");
+                    
+                    return new UpdateInfo 
+                    { 
+                        HasUpdate = false, 
+                        ErrorMessage = $"업데이트 확인 실패 (HTTP {statusCode})" 
+                    };
+                }
+                
+                var json = await response.Content.ReadAsStringAsync();
+                var release = JsonSerializer.Deserialize<GitHubRelease>(json);
 
                 if (release == null)
                 {
@@ -75,19 +79,28 @@ namespace FACTOVA_QueryHelper
 
                 return new UpdateInfo { HasUpdate = false };
             }
-            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            catch (HttpRequestException ex)
             {
-                System.Diagnostics.Debug.WriteLine("릴리즈를 찾을 수 없음 (Private 저장소인 경우 토큰 필요)");
+                System.Diagnostics.Debug.WriteLine($"네트워크 오류: {ex.Message}");
                 return new UpdateInfo 
                 { 
                     HasUpdate = false, 
-                    ErrorMessage = "업데이트를 확인할 수 없습니다. (Private 저장소)" 
+                    ErrorMessage = "네트워크 연결을 확인해주세요." 
+                };
+            }
+            catch (TaskCanceledException)
+            {
+                System.Diagnostics.Debug.WriteLine("업데이트 확인 시간 초과");
+                return new UpdateInfo 
+                { 
+                    HasUpdate = false, 
+                    ErrorMessage = "업데이트 확인 시간 초과" 
                 };
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"업데이트 확인 실패: {ex.Message}");
-                return new UpdateInfo { HasUpdate = false, ErrorMessage = ex.Message };
+                return new UpdateInfo { HasUpdate = false, ErrorMessage = $"오류: {ex.Message}" };
             }
         }
 
