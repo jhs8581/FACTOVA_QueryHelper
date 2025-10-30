@@ -101,69 +101,90 @@
         </GroupBox>
 
         <!-- 쿼리 목록 DataGrid -->
-        <GroupBox Header="쿼리 목록 (셀 더블클릭: 편집 | 신규 추가: 하단 빈 행에서 입력)" Grid.Row="1" Padding="10">
-            <DataGrid x:Name="QueriesDataGrid" 
-                      AutoGenerateColumns="False"
-                      SelectionMode="Single"
-                      CanUserSortColumns="True"
-                      CanUserResizeColumns="True"
-                      CanUserAddRows="True"
-                      CanUserDeleteRows="False"
-                      AlternatingRowBackground="#FFF0F8FF"
-                      GridLinesVisibility="All"
-                      HeadersVisibility="All"
-                      SelectionChanged="QueriesDataGrid_SelectionChanged"
-                      CellEditEnding="QueriesDataGrid_CellEditEnding"
-                      InitializingNewItem="QueriesDataGrid_InitializingNewItem"
-                      FontSize="11">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Binding="{Binding RowNumber}" Width="50" IsReadOnly="True"/>
-                    <DataGridTextColumn Header="쿼리명" Binding="{Binding QueryName, UpdateSourceTrigger=PropertyChanged}" Width="200"/>
-                    <DataGridTextColumn Header="TNS" Binding="{Binding TnsName, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
-                    <DataGridTextColumn Header="Host" Binding="{Binding Host, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
-                    <DataGridTextColumn Header="Port" Binding="{Binding Port, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
-                    <DataGridTextColumn Header="Service" Binding="{Binding ServiceName, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
-                    <DataGridTextColumn Header="User ID" Binding="{Binding UserId, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
-                    
-                    <!-- Password 컬럼 - 별표로 표시 -->
-                    <DataGridTemplateColumn Header="Password" Width="100">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="********" Foreground="Gray"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                        <DataGridTemplateColumn.CellEditingTemplate>
-                            <DataTemplate>
-                                <PasswordBox x:Name="PasswordEditBox" 
-                                             PasswordChanged="PasswordEditBox_PasswordChanged"
-                                             Tag="{Binding}"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellEditingTemplate>
-                    </DataGridTemplateColumn>
-                    
-                    <!-- 쿼리 컬럼 - 버튼으로 편집 -->
-                    <DataGridTemplateColumn Header="SQL 쿼리" Width="120">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Button Content="📝 쿼리 편집" 
-                                        Click="EditQueryButton_InGrid_Click"
-                                        Tag="{Binding}"
-                                        HorizontalAlignment="Stretch"
-                                        ToolTip="클릭하여 쿼리 편집"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    
-                    <DataGridCheckBoxColumn Header="실행" Binding="{Binding EnabledFlagBool, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
-                    <DataGridCheckBoxColumn Header="알림" Binding="{Binding NotifyFlagBool, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
-                    <DataGridTextColumn Header="≥건수" Binding="{Binding CountGreaterThan, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
-                    <DataGridTextColumn Header="=건수" Binding="{Binding CountEquals, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
-                    <DataGridTextColumn Header="≤건수" Binding="{Binding CountLessThan, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
-                    <DataGridTextColumn Header="컬럼명" Binding="{Binding ColumnNames, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
-                    <DataGridTextColumn Header="컬럼값" Binding="{Binding ColumnValues, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
-                    <DataGridCheckBoxColumn Header="제외" Binding="{Binding ExcludeFlagBool, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
-                </DataGrid.Columns>
-            </DataGrid>
+        <GroupBox Header="쿼리 목록 (셀 더블클릭: 편집 | Ctrl+C: 복사)" Grid.Row="1" Padding="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- 편집 중 안내 -->
+                <Border Grid.Row="0" Background="#FFFFF3CD" Padding="10,5" Margin="0,0,0,10"
+                        x:Name="EditModeBorder" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="ℹ️ 편집 중입니다. " FontWeight="Bold" VerticalAlignment="Center"/>
+                        <TextBlock Text="필드를 수정한 후 " VerticalAlignment="Center"/>
+                        <Button x:Name="SaveEditButton" Content="💾 변경사항 저장" 
+                                Width="120" Height="25" Margin="5,0"
+                                Click="SaveEditButton_Click"
+                                Background="#FF28A745" 
+                                Foreground="White"
+                                FontWeight="Bold"/>
+                        <TextBlock Text=" 또는 " VerticalAlignment="Center"/>
+                        <Button x:Name="CancelEditButton" Content="❌ 취소" 
+                                Width="70" Height="25" Margin="5,0"
+                                Click="CancelEditButton_Click"/>
+                        <TextBlock Text="을 클릭하세요." VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+                
+                <DataGrid x:Name="QueriesDataGrid" 
+                          Grid.Row="1"
+                          AutoGenerateColumns="False"
+                          SelectionMode="Single"
+                          CanUserSortColumns="True"
+                          CanUserResizeColumns="True"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          AlternatingRowBackground="#FFF0F8FF"
+                          GridLinesVisibility="All"
+                          HeadersVisibility="All"
+                          SelectionChanged="QueriesDataGrid_SelectionChanged"
+                          BeginningEdit="QueriesDataGrid_BeginningEdit"
+                          FontSize="11">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" Binding="{Binding RowNumber}" Width="50" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="쿼리명" Binding="{Binding QueryName, UpdateSourceTrigger=PropertyChanged}" Width="200"/>
+                        <DataGridTextColumn Header="TNS" Binding="{Binding TnsName, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                        <DataGridTextColumn Header="Host" Binding="{Binding Host, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                        <DataGridTextColumn Header="Port" Binding="{Binding Port, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
+                        <DataGridTextColumn Header="Service" Binding="{Binding ServiceName, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                        <DataGridTextColumn Header="User ID" Binding="{Binding UserId, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                        
+                        <!-- Password 컬럼 - 일반 텍스트로 변경 (편집 가능) -->
+                        <DataGridTextColumn Header="Password" Binding="{Binding Password, UpdateSourceTrigger=PropertyChanged}" Width="100">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="********"/>
+                                    <Setter Property="Foreground" Value="Gray"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        
+                        <!-- 쿼리 컬럼 - 버튼으로 편집 -->
+                        <DataGridTemplateColumn Header="SQL 쿼리" Width="120">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="📝 쿼리 편집" 
+                                            Click="EditQueryButton_InGrid_Click"
+                                            Tag="{Binding}"
+                                            HorizontalAlignment="Stretch"
+                                            ToolTip="클릭하여 쿼리 편집"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        
+                        <DataGridCheckBoxColumn Header="실행" Binding="{Binding EnabledFlagBool, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
+                        <DataGridCheckBoxColumn Header="알림" Binding="{Binding NotifyFlagBool, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
+                        <DataGridTextColumn Header="≥건수" Binding="{Binding CountGreaterThan, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
+                        <DataGridTextColumn Header="=건수" Binding="{Binding CountEquals, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
+                        <DataGridTextColumn Header="≤건수" Binding="{Binding CountLessThan, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
+                        <DataGridTextColumn Header="컬럼명" Binding="{Binding ColumnNames, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                        <DataGridTextColumn Header="컬럼값" Binding="{Binding ColumnValues, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                        <DataGridCheckBoxColumn Header="제외" Binding="{Binding ExcludeFlagBool, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
         </GroupBox>
 
         <!-- 하단 상태바 -->

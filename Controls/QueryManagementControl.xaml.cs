@@ -19,6 +19,7 @@ namespace FACTOVA_QueryHelper.Controls
         private QueryDatabase? _database;
         private QueryItem? _selectedQuery;
         private System.Collections.ObjectModel.ObservableCollection<QueryItem>? _queries;
+        private QueryItem? _editingQuery; // 현재 편집 중인 쿼리
 
         public QueryManagementControl()
         {
@@ -292,9 +293,206 @@ namespace FACTOVA_QueryHelper.Controls
             EditQueryButton.IsEnabled = hasSelection;
             DeleteQueryButton.IsEnabled = hasSelection;
             
-            if (hasSelection)
+            if (hasSelection && _selectedQuery != null)
             {
-                UpdateStatus($"선택됨: {_selectedQuery!.QueryName}", Colors.Blue);
+                UpdateStatus($"선택됨: {_selectedQuery.QueryName}", Colors.Blue);
+            }
+        }
+
+        private void QueriesDataGrid_BeginningEdit(object sender, System.Windows.Controls.DataGridBeginningEditEventArgs e)
+        {
+            if (e.Row.Item is QueryItem query)
+            {
+                _editingQuery = query;
+                EditModeBorder.Visibility = Visibility.Visible;
+                UpdateStatus("편집 모드: 변경 후 '저장' 버튼을 클릭하세요.", Colors.Orange);
+            }
+        }
+
+        private void SaveEditButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_editingQuery == null) return;
+
+            try
+            {
+                // 신규 항목인 경우
+                if (_editingQuery.RowNumber == 0)
+                {
+                    // 필수 필드 검증
+                    if (string.IsNullOrWhiteSpace(_editingQuery.QueryName))
+                    {
+                        MessageBox.Show("쿼리명을 입력하세요.", "입력 오류",
+                            MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(_editingQuery.UserId))
+                    {
+                        MessageBox.Show("User ID를 입력하세요.", "입력 오류",
+                            MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(_editingQuery.Password))
+                    {
+                        MessageBox.Show("Password를 입력하세요.", "입력 오류",
+                            MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(_editingQuery.TnsName) && string.IsNullOrWhiteSpace(_editingQuery.Host))
+                    {
+                        MessageBox.Show("TNS 또는 Host를 입력하세요.", "입력 오류",
+                            MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    // DB에 추가
+                    _database?.AddQuery(_editingQuery);
+                    
+                    // 목록 새로고침하여 ID 가져오기
+                    LoadQueriesFromDatabase();
+                    
+                    UpdateStatus($"'{_editingQuery.QueryName}' 쿼리가 추가되었습니다.", Colors.Green);
+                    MessageBox.Show(
+                        $"'{_editingQuery.QueryName}' 쿼리가 성공적으로 추가되었습니다.\n\n" +
+                        "이제 '📝 쿼리 편집' 버튼을 클릭하여\n" +
+                        "SQL 쿼리를 입력할 수 있습니다.",
+                        "추가 완료",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+                else
+                {
+                    // 기존 항목 업데이트
+                    _database?.UpdateQuery(_editingQuery);
+                    LoadQueriesFromDatabase();
+                    UpdateStatus($"'{_editingQuery.QueryName}' 쿼리가 수정되었습니다.", Colors.Green);
+                }
+
+                // 편집 모드 종료
+                _editingQuery = null;
+                EditModeBorder.Visibility = Visibility.Collapsed;
+                QueriesDataGrid.CommitEdit();
+                QueriesDataGrid.CommitEdit(); // Row도 Commit
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"쿼리 저장 실패:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                UpdateStatus($"쿼리 저장 실패: {ex.Message}", Colors.Red);
+            }
+        }
+
+        private void CancelEditButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_editingQuery == null) return;
+
+            // 신규 항목이면 제거
+            if (_editingQuery.RowNumber == 0)
+            {
+                _queries?.Remove(_editingQuery);
+            }
+            else
+            {
+                // 기존 항목은 원래 상태로 복원
+                LoadQueriesFromDatabase();
+            }
+
+            // 편집 모드 종료
+            _editingQuery = null;
+            EditModeBorder.Visibility = Visibility.Collapsed;
+            QueriesDataGrid.CancelEdit();
+            QueriesDataGrid.CancelEdit(); // Row도 Cancel
+            
+            UpdateStatus("편집이 취소되었습니다.", Colors.Gray);
+        }
+
+        private void AddQueryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_queries == null) return;
+
+            // 새 쿼리 항목 생성
+            var newQuery = new QueryItem
+            {
+                RowNumber = 0, // 아직 저장되지 않음
+                QueryName = "",
+                TnsName = "",
+                Host = "",
+                Port = "1521",
+                ServiceName = "",
+                UserId = "",
+                Password = "",
+                Query = "",
+                EnabledFlag = "Y",
+                NotifyFlag = "N",
+                ExcludeFlag = "N",
+                CountGreaterThan = "",
+                CountEquals = "",
+                CountLessThan = "",
+                ColumnNames = "",
+                ColumnValues = ""
+            };
+
+            // ObservableCollection에 추가
+            _queries.Add(newQuery);
+
+            // 새로 추가된 행으로 스크롤 및 선택
+            QueriesDataGrid.SelectedItem = newQuery;
+            QueriesDataGrid.ScrollIntoView(newQuery);
+            
+            // 첫 번째 편집 가능한 셀로 포커스 이동 (쿼리명)
+            QueriesDataGrid.CurrentCell = new System.Windows.Controls.DataGridCellInfo(
+                newQuery, 
+                QueriesDataGrid.Columns[1]); // 쿼리명 컬럼
+            
+            QueriesDataGrid.BeginEdit();
+
+            UpdateStatus("새 쿼리 항목이 추가되었습니다. 정보를 입력하세요.", Colors.Blue);
+        }
+
+        private void EditQueryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_selectedQuery == null)
+            {
+                MessageBox.Show("수정할 쿼리를 선택하세요.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // 신규 항목인 경우
+            if (_selectedQuery.RowNumber == 0)
+            {
+                MessageBox.Show(
+                    "신규 쿼리는 먼저 기본 정보를 입력하고 저장한 후\n" +
+                    "쿼리를 편집할 수 있습니다.\n\n" +
+                    "순서:\n" +
+                    "1. 쿼리명, TNS/Host, User ID, Password 입력\n" +
+                    "2. '💾 변경사항 저장' 버튼 클릭\n" +
+                    "3. '✏️ 수정' 버튼이나 '📝 쿼리 편집' 버튼 클릭",
+                    "안내",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            // 쿼리 편집 창 열기
+            var window = new QueryTextEditWindow(_selectedQuery.Query);
+            if (window.ShowDialog() == true)
+            {
+                _selectedQuery.Query = window.QueryText;
+                
+                try
+                {
+                    _database?.UpdateQuery(_selectedQuery);
+                    UpdateStatus($"'{_selectedQuery.QueryName}' 쿼리가 수정되었습니다.", Colors.Green);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"쿼리 저장 실패:\n{ex.Message}", "오류",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    UpdateStatus($"쿼리 저장 실패: {ex.Message}", Colors.Red);
+                }
             }
         }
 
@@ -310,7 +508,7 @@ namespace FACTOVA_QueryHelper.Controls
                         "쿼리를 편집할 수 있습니다.\n\n" +
                         "순서:\n" +
                         "1. 쿼리명, TNS/Host, User ID, Password 입력\n" +
-                        "2. Enter 또는 다른 셀 클릭으로 저장\n" +
+                        "2. '💾 변경사항 저장' 버튼 클릭\n" +
                         "3. '📝 쿼리 편집' 버튼 클릭",
                         "안내",
                         MessageBoxButton.OK,
@@ -335,147 +533,6 @@ namespace FACTOVA_QueryHelper.Controls
                         UpdateStatus($"쿼리 저장 실패: {ex.Message}", Colors.Red);
                         LoadQueriesFromDatabase(); // 원래 상태로 복원
                     }
-                }
-            }
-        }
-
-        private void QueriesDataGrid_InitializingNewItem(object sender, System.Windows.Controls.InitializingNewItemEventArgs e)
-        {
-            if (e.NewItem is QueryItem newQuery)
-            {
-                // 신규 항목 기본값 설정
-                newQuery.RowNumber = 0; // 아직 저장되지 않음
-                newQuery.EnabledFlag = "Y";
-                newQuery.NotifyFlag = "N";
-                newQuery.ExcludeFlag = "N";
-                newQuery.Port = "1521";
-            }
-        }
-
-        private void PasswordEditBox_PasswordChanged(object sender, RoutedEventArgs e)
-        {
-            if (sender is System.Windows.Controls.PasswordBox passwordBox && passwordBox.Tag is QueryItem query)
-            {
-                query.Password = passwordBox.Password;
-            }
-        }
-
-        private void QueriesDataGrid_CellEditEnding(object sender, System.Windows.Controls.DataGridCellEditEndingEventArgs e)
-        {
-            if (e.EditAction == System.Windows.Controls.DataGridEditAction.Commit)
-            {
-                // 편집이 완료된 후 DB에 저장
-                Dispatcher.InvokeAsync(() =>
-                {
-                    if (e.Row.Item is QueryItem query)
-                    {
-                        try
-                        {
-                            // 신규 항목인 경우
-                            if (query.RowNumber == 0)
-                            {
-                                // 필수 필드 검증
-                                if (string.IsNullOrWhiteSpace(query.QueryName))
-                                {
-                                    MessageBox.Show("쿼리명을 입력하세요.", "입력 오류",
-                                        MessageBoxButton.OK, MessageBoxImage.Warning);
-                                    _queries?.Remove(query);
-                                    return;
-                                }
-
-                                if (string.IsNullOrWhiteSpace(query.UserId))
-                                {
-                                    MessageBox.Show("User ID를 입력하세요.", "입력 오류",
-                                        MessageBoxButton.OK, MessageBoxImage.Warning);
-                                    _queries?.Remove(query);
-                                    return;
-                                }
-
-                                if (string.IsNullOrWhiteSpace(query.TnsName) && string.IsNullOrWhiteSpace(query.Host))
-                                {
-                                    MessageBox.Show("TNS 또는 Host를 입력하세요.", "입력 오류",
-                                        MessageBoxButton.OK, MessageBoxImage.Warning);
-                                    _queries?.Remove(query);
-                                    return;
-                                }
-
-                                // DB에 추가
-                                _database?.AddQuery(query);
-                                
-                                // 목록 새로고침하여 ID 가져오기
-                                LoadQueriesFromDatabase();
-                                
-                                UpdateStatus($"'{query.QueryName}' 쿼리가 추가되었습니다.", Colors.Green);
-                                MessageBox.Show(
-                                    $"'{query.QueryName}' 쿼리가 성공적으로 추가되었습니다.\n\n" +
-                                    "이제 '📝 쿼리 편집' 버튼을 클릭하여\n" +
-                                    "SQL 쿼리를 입력할 수 있습니다.",
-                                    "추가 완료",
-                                    MessageBoxButton.OK,
-                                    MessageBoxImage.Information);
-                            }
-                            else
-                            {
-                                // 기존 항목 업데이트
-                                _database?.UpdateQuery(query);
-                                UpdateStatus($"'{query.QueryName}' 쿼리가 수정되었습니다.", Colors.Green);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show($"쿼리 저장 실패:\n{ex.Message}", "오류",
-                                MessageBoxButton.OK, MessageBoxImage.Error);
-                            UpdateStatus($"쿼리 저장 실패: {ex.Message}", Colors.Red);
-                            LoadQueriesFromDatabase(); // 원래 상태로 복원
-                        }
-                    }
-                }, System.Windows.Threading.DispatcherPriority.Background);
-            }
-        }
-
-        private void AddQueryButton_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show(
-                "신규 쿼리 추가 방법:\n\n" +
-                "1. DataGrid 하단의 빈 행(*)을 클릭\n" +
-                "2. 쿼리명, TNS/Host, User ID, Password 입력\n" +
-                "3. Enter 또는 다른 셀 클릭으로 저장\n" +
-                "4. 저장 후 '📝 쿼리 편집' 버튼으로 SQL 입력\n\n" +
-                "필수 입력:\n" +
-                "- 쿼리명\n" +
-                "- TNS 또는 Host\n" +
-                "- User ID\n" +
-                "- Password",
-                "쿼리 추가 안내",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-        }
-
-        private void EditQueryButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_selectedQuery == null)
-            {
-                MessageBox.Show("수정할 쿼리를 선택하세요.", "알림",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            // 선택된 쿼리의 '쿼리 편집' 버튼 클릭과 동일한 동작
-            var window = new QueryTextEditWindow(_selectedQuery.Query);
-            if (window.ShowDialog() == true)
-            {
-                _selectedQuery.Query = window.QueryText;
-                
-                try
-                {
-                    _database?.UpdateQuery(_selectedQuery);
-                    UpdateStatus($"'{_selectedQuery.QueryName}' 쿼리가 수정되었습니다.", Colors.Green);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"쿼리 저장 실패:\n{ex.Message}", "오류",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                    UpdateStatus($"쿼리 저장 실패: {ex.Message}", Colors.Red);
                 }
             }
         }
