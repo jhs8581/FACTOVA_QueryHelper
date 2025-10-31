@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using FACTOVA_QueryHelper.Database;
+using FACTOVA_QueryHelper.SFC;
 
 namespace FACTOVA_QueryHelper.Controls
 {

@@ -4,11 +4,12 @@ using System.Data;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using FACTOVA_QueryHelper.Database;
 
-namespace FACTOVA_QueryHelper
+namespace FACTOVA_QueryHelper.SFC
 {
     /// <summary>
-    /// SFC ���� ���� �� ��� ó���� ����ϴ� Ŭ����
+    /// SFC 쿼리 관리 및 결과 처리를 담당하는 클래스
     /// </summary>
     public class SfcQueryManager
     {

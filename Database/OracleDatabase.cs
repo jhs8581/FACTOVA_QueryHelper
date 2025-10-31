@@ -3,7 +3,7 @@ using System;
 using System.Data;
 using System.Threading.Tasks;
 
-namespace FACTOVA_QueryHelper
+namespace FACTOVA_QueryHelper.Database
 {
     public class OracleDatabase
     {

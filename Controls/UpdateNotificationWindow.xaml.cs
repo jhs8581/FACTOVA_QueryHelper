@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Windows;
 
-namespace FACTOVA_QueryHelper
+namespace FACTOVA_QueryHelper.Controls
 {
     /// <summary>
     /// UpdateNotificationWindow.xaml에 대한 상호 작용 논리

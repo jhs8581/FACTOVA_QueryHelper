@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace FACTOVA_QueryHelper
+namespace FACTOVA_QueryHelper.Database
 {
     /// <summary>
     /// SQLite 데이터베이스를 관리하는 클래스

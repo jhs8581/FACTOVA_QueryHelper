@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 
-namespace FACTOVA_QueryHelper
+namespace FACTOVA_QueryHelper.Controls
 {
     /// <summary>
     /// ¾Ë¸² ÆË¾÷ Ã¢

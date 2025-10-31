@@ -8,7 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace FACTOVA_QueryHelper
+namespace FACTOVA_QueryHelper.Database
 {
     /// <summary>
     /// 쿼리 실행 및 결과 관리를 담당하는 클래스

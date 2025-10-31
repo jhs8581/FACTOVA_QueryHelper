@@ -9,6 +9,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using FACTOVA_QueryHelper.Controls;
+using FACTOVA_QueryHelper.SFC;
 
 namespace FACTOVA_QueryHelper
 {
