@@ -16,6 +16,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Windows\**" />
+    <EmbeddedResource Remove="Windows\**" />
+    <None Remove="Windows\**" />
+    <Page Remove="Windows\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Icons\free-icon-database-4248443.ico" />
   </ItemGroup>
 
@@ -34,7 +41,6 @@
 
   <ItemGroup>
     <Folder Include="ExampleExcel\" />
-    <Folder Include="Windows\" />
   </ItemGroup>
 
   <ItemGroup>
