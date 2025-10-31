@@ -89,9 +89,6 @@ namespace FACTOVA_QueryHelper
             
             // 설정 탭의 TNS 경로 변경 이벤트 구독
             this.SettingsControl.TnsPathChanged += (s, args) => LoadTnsEntries();
-
-            // 업데이트 확인 (비동기)
-            _ = CheckForUpdatesAsync();
         }
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
@@ -138,44 +135,6 @@ namespace FACTOVA_QueryHelper
         {
             // 메인 윈도우에는 상태바가 없으므로 디버그 출력만 수행
             System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss}] {message}");
-        }
-
-        /// <summary>
-        /// 애플리케이션 시작 시 업데이트를 확인합니다.
-        /// </summary>
-        private async System.Threading.Tasks.Task CheckForUpdatesAsync()
-        {
-            // 설정에서 자동 확인이 비활성화되어 있으면 건너뛰기
-            if (!_sharedData.Settings.CheckUpdateOnStartup)
-            {
-                return;
-            }
-
-            try
-            {
-                // UI가 완전히 로드된 후 약간 지연
-                await System.Threading.Tasks.Task.Delay(1000);
-
-                var updateInfo = await UpdateChecker.CheckForUpdatesAsync();
-
-                if (updateInfo.HasUpdate)
-                {
-                    // UI 스레드에서 업데이트 알림 창 표시
-                    Dispatcher.Invoke(() =>
-                    {
-                        var updateWindow = new UpdateNotificationWindow(updateInfo)
-                        {
-                            Owner = this
-                        };
-                        updateWindow.ShowDialog();
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                // 업데이트 확인 실패는 조용히 무시
-                System.Diagnostics.Debug.WriteLine($"업데이트 확인 중 오류: {ex.Message}");
-            }
         }
     }
 }

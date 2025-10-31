@@ -21,7 +21,9 @@ namespace FACTOVA_QueryHelper
         public bool EnableAutoExecution { get; set; } = false; // 자동 실행 활성화 (기본값: false)
         public int FontSize { get; set; } = 11; // 폰트 크기 (기본값: 11)
         public string DatabasePath { get; set; } = string.Empty; // DB 파일 경로 (기본값: 빈 문자열)
-        public bool CheckUpdateOnStartup { get; set; } = true; // 시작 시 업데이트 확인 (기본값: true)
+        public bool CheckUpdateOnStartup { get; set; } = false; // 시작 시 업데이트 확인 (기본값: false로 변경!)
+        public string UpdateSource { get; set; } = "GitHub"; // 업데이트 소스: "GitHub" 또는 "Network"
+        public string NetworkUpdatePath { get; set; } = @"\\서버\FACTOVA_Apps\QueryHelper\latest"; // 네트워크 업데이트 경로
     }
 
     public class SettingsManager

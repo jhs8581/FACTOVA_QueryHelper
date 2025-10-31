@@ -6,11 +6,12 @@
         xmlns:local="clr-namespace:FACTOVA_QueryHelper"
         xmlns:controls="clr-namespace:FACTOVA_QueryHelper.Controls"
         mc:Ignorable="d"
-        Title="FACTOVA Query Helper" Height="700" Width="1200">
+        Title="FACTOVA Query Helper" Height="900" Width="1200"
+        WindowStartupLocation="CenterScreen">
     <Grid>
         <TabControl x:Name="MainTabControl" Margin="10">
-            <!-- 로그분석 탭 -->
-            <TabItem Header="로그분석">
+            <!-- 쿼리 실행 탭 -->
+            <TabItem Header="쿼리 실행">
                 <controls:LogAnalysisControl x:Name="LogAnalysisControl"/>
             </TabItem>
 

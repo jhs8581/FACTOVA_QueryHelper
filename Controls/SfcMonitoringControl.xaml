@@ -4,152 +4,314 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="1200">
-    <Grid Margin="10">
+             d:DesignHeight="700" d:DesignWidth="1200"
+             Background="#FFF8F9FA">
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Expander Grid.Row="0" Margin="0,0,0,10" 
-                  IsExpanded="True"
-                  BorderBrush="#FF0078D7" 
-                  BorderThickness="1">
-            <Expander.Header>
-                <TextBlock Text="모니터링 설정 - 클릭하여 펼치기/접기" 
-                           FontWeight="Bold" 
-                           FontSize="13"
-                           Foreground="#FF0078D7"/>
-            </Expander.Header>
-            
-            <Border Background="#FFF8F9FA" 
-                    Padding="15"
-                    CornerRadius="0,0,5,5">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="200"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="150"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="120"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="200"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Text="TNS:" VerticalAlignment="Center" Grid.Column="0" Margin="0,0,10,0"/>
-                        <ComboBox x:Name="SfcTnsComboBox" Grid.Column="1" Margin="5" VerticalAlignment="Center"/>
-
-                        <TextBlock Text="조회 날짜:" VerticalAlignment="Center" Grid.Column="2" Margin="20,0,10,0"/>
-                        <DatePicker x:Name="ConfigDatePicker" Grid.Column="3" Margin="5" VerticalAlignment="Center"/>
-
-                        <TextBlock Text="User ID:" VerticalAlignment="Center" Grid.Column="4" Margin="20,0,10,0"/>
-                        <TextBox x:Name="SfcUserIdTextBox" Grid.Column="5" Margin="5" VerticalAlignment="Center"
-                                 ToolTip="Oracle 사용자 ID"/>
-
-                        <TextBlock Text="Password:" VerticalAlignment="Center" Grid.Column="6" Margin="20,0,10,0"/>
-                        <PasswordBox x:Name="SfcPasswordBox" Grid.Column="7" Margin="5" VerticalAlignment="Center"
-                                     ToolTip="Oracle 비밀번호"/>
-                    </Grid>
-
-                    <Grid Grid.Row="1" Margin="0,10,0,0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        
-                        <DockPanel Grid.Row="0" Margin="0,0,0,5">
-                            <TextBlock Text="쿼리" FontWeight="Bold" Margin="0,0,10,0" VerticalAlignment="Center" DockPanel.Dock="Left"/>
-                            <Button x:Name="ResetSfcQueryButton" Content="초기화" 
-                                    Width="80" Height="25" 
-                                    Click="ResetSfcQueryButton_Click"
-                                    HorizontalAlignment="Right"
-                                    DockPanel.Dock="Right"/>
-                        </DockPanel>
-                        
-                        <TextBox x:Name="SfcQueryTextBox" 
-                                 Grid.Row="1"
-                                 TextWrapping="Wrap" 
-                                 AcceptsReturn="True"
-                                 VerticalScrollBarVisibility="Auto"
-                                 Height="80"
-                                 FontFamily="Consolas"
-                                 Text="SELECT * FROM TB_SFC_MAINFRAME_CONFIG_N A WHERE A.TRANSACTION_TYPE_CODE = 'LOGIN_AUTO' AND SFC_MODE = 'PROD' AND A.CONFIG_REGISTER_YMD = @CONFIG_REGISTER_YMD AND PC_IP_ADDR IN (@PC_IP_ADDR)"/>
-                    </Grid>
-
-                    <Grid Grid.Row="2" Margin="0,10,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Text="Excel 파일:" VerticalAlignment="Center" Grid.Column="0" Margin="0,0,10,0"/>
-                        <TextBox x:Name="SfcExcelFilePathTextBox" Grid.Column="1" Margin="5" 
-                                 IsReadOnly="True" VerticalAlignment="Center"/>
-                        <Button x:Name="BrowseSfcExcelButton" Grid.Column="2" Content="찾아보기..." 
-                                Width="100" Height="30" Margin="5"
-                                Click="BrowseSfcExcelButton_Click"/>
-                        <Button x:Name="LoadSfcExcelButton" Grid.Column="3" Content="Excel 로드" 
-                                Width="100" Height="30" Margin="5"
-                                Click="LoadSfcExcelButton_Click"
-                                Background="#FF0078D7" 
-                                Foreground="White"
-                                FontWeight="Bold"
-                                IsEnabled="False"/>
-                        <Button x:Name="ExecuteSfcQueryButton" Grid.Column="4" Content="쿼리 조회" 
-                                Width="100" Height="30" Margin="5"
-                                Click="ExecuteSfcQueryButton_Click"
-                                Background="#FF28A745" 
-                                Foreground="White"
-                                FontWeight="Bold"
-                                IsEnabled="False"/>
-                    </Grid>
-                </Grid>
-            </Border>
-        </Expander>
-
-        <GroupBox Header="필터링" Grid.Row="1" Padding="10" Margin="0,0,0,10">
+        <!-- 모니터링 설정 카드 -->
+        <Border Grid.Row="0" 
+                Background="White" 
+                BorderBrush="#FFE0E0E0" 
+                BorderThickness="1" 
+                CornerRadius="8"
+                Padding="15"
+                Margin="0,0,0,15">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,5">
-                    <TextBlock Text="IP 주소:" VerticalAlignment="Center" Width="80" Margin="0,0,5,0"/>
-                    <TextBox x:Name="FilterIpTextBox" Width="120" Margin="5" VerticalAlignment="Center"
-                             TextChanged="ApplyFilter"
-                             ToolTip="IP 주소로 필터링 (부분 일치)"/>
+                <!-- 헤더 -->
+                <TextBlock Grid.Row="0" 
+                           Text="⚙️ 모니터링 설정" 
+                           FontSize="16" 
+                           FontWeight="Bold"
+                           Foreground="#FF0078D7"
+                           Margin="0,0,0,15"/>
 
-                    <TextBlock Text="설비 ID:" VerticalAlignment="Center" Width="80" Margin="20,0,5,0"/>
-                    <TextBox x:Name="FilterEquipmentIdTextBox" Width="120" Margin="5" VerticalAlignment="Center"
-                             TextChanged="ApplyFilter"
-                             ToolTip="설비 ID로 필터링 (부분 일치)"/>
+                <!-- 첫 번째 행: TNS, 날짜, 인증 정보 -->
+                <Grid Grid.Row="1" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="220"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="설비명:" VerticalAlignment="Center" Width="80" Margin="20,0,5,0"/>
-                    <TextBox x:Name="FilterEquipmentNameTextBox" Width="150" Margin="5" VerticalAlignment="Center"
+                    <TextBlock Text="TNS:" 
+                               VerticalAlignment="Center" 
+                               Grid.Column="0" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,10,0"/>
+                    <ComboBox x:Name="SfcTnsComboBox" 
+                              Grid.Column="1" 
+                              Height="32"
+                              VerticalAlignment="Center"
+                              Margin="0,0,15,0"/>
+
+                    <TextBlock Text="조회 날짜:" 
+                               VerticalAlignment="Center" 
+                               Grid.Column="2" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,10,0"/>
+                    <DatePicker x:Name="ConfigDatePicker" 
+                                Grid.Column="3" 
+                                Height="32"
+                                VerticalAlignment="Center"
+                                Margin="0,0,15,0"/>
+
+                    <TextBlock Text="User ID:" 
+                               VerticalAlignment="Center" 
+                               Grid.Column="4" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,10,0"/>
+                    <TextBox x:Name="SfcUserIdTextBox" 
+                             Grid.Column="5" 
+                             Height="32"
+                             VerticalAlignment="Center"
+                             VerticalContentAlignment="Center"
+                             ToolTip="Oracle 사용자 ID"
+                             Margin="0,0,15,0"/>
+
+                    <TextBlock Text="Password:" 
+                               VerticalAlignment="Center" 
+                               Grid.Column="6" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,10,0"/>
+                    <PasswordBox x:Name="SfcPasswordBox" 
+                                 Grid.Column="7" 
+                                 Height="32"
+                                 VerticalAlignment="Center"
+                                 VerticalContentAlignment="Center"
+                                 ToolTip="Oracle 비밀번호"/>
+                </Grid>
+
+                <!-- 두 번째 행: 쿼리 -->
+                <Grid Grid.Row="2" Margin="0,0,0,10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <DockPanel Grid.Row="0" Margin="0,0,0,8">
+                        <TextBlock Text="쿼리" 
+                                   FontWeight="Bold" 
+                                   FontSize="13"
+                                   Margin="0,0,10,0" 
+                                   VerticalAlignment="Center" 
+                                   DockPanel.Dock="Left"/>
+                        <Button x:Name="ResetSfcQueryButton" 
+                                Content="초기화" 
+                                Width="90" 
+                                Height="28" 
+                                Click="ResetSfcQueryButton_Click"
+                                Background="#FF6C757D"
+                                Foreground="White"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                FontWeight="SemiBold"
+                                HorizontalAlignment="Right"
+                                DockPanel.Dock="Right"/>
+                    </DockPanel>
+
+                    <Border Grid.Row="1"
+                            Background="#FFF8F9FA"
+                            BorderBrush="#FFE0E0E0"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                        <TextBox x:Name="SfcQueryTextBox" 
+                                 TextWrapping="Wrap" 
+                                 AcceptsReturn="True"
+                                 VerticalScrollBarVisibility="Auto"
+                                 Height="90"
+                                 FontFamily="Consolas"
+                                 FontSize="11"
+                                 Padding="8"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 Text="SELECT * FROM TB_SFC_MAINFRAME_CONFIG_N A WHERE A.TRANSACTION_TYPE_CODE = 'LOGIN_AUTO' AND SFC_MODE = 'PROD' AND A.CONFIG_REGISTER_YMD = @CONFIG_REGISTER_YMD AND PC_IP_ADDR IN (@PC_IP_ADDR)"/>
+                    </Border>
+                </Grid>
+
+                <!-- 세 번째 행: Excel 파일 및 실행 버튼 -->
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Excel 파일:" 
+                               VerticalAlignment="Center" 
+                               Grid.Column="0" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,10,0"/>
+                    
+                    <Border Grid.Column="1"
+                            Background="#FFF8F9FA"
+                            BorderBrush="#FFE0E0E0"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Margin="0,0,10,0">
+                        <TextBox x:Name="SfcExcelFilePathTextBox" 
+                                 Height="32"
+                                 IsReadOnly="True" 
+                                 VerticalAlignment="Center"
+                                 VerticalContentAlignment="Center"
+                                 BorderThickness="0"
+                                 Background="Transparent"
+                                 Padding="8,0"/>
+                    </Border>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <Button x:Name="BrowseSfcExcelButton" 
+                                Width="120" 
+                                Height="36"
+                                Click="BrowseSfcExcelButton_Click"
+                                Background="#FF6C757D"
+                                Foreground="White"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                FontWeight="SemiBold"
+                                Margin="0,0,10,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📁" FontSize="14" Margin="0,0,5,0"/>
+                                <TextBlock Text="찾아보기"/>
+                            </StackPanel>
+                        </Button>
+                        
+                        <Button x:Name="LoadSfcExcelButton" 
+                                Width="120" 
+                                Height="36"
+                                Click="LoadSfcExcelButton_Click"
+                                Background="#FF0078D7" 
+                                Foreground="White"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                FontWeight="Bold"
+                                IsEnabled="False"
+                                Margin="0,0,10,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📊" FontSize="14" Margin="0,0,5,0"/>
+                                <TextBlock Text="Excel 로드"/>
+                            </StackPanel>
+                        </Button>
+                        
+                        <Button x:Name="ExecuteSfcQueryButton" 
+                                Width="120" 
+                                Height="36"
+                                Click="ExecuteSfcQueryButton_Click"
+                                Background="#FF28A745" 
+                                Foreground="White"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                FontWeight="Bold"
+                                IsEnabled="False">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="▶️" FontSize="14" Margin="0,0,5,0"/>
+                                <TextBlock Text="쿼리 조회"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- 필터링 카드 -->
+        <Border Grid.Row="1" 
+                Background="White" 
+                BorderBrush="#FFE0E0E0" 
+                BorderThickness="1" 
+                CornerRadius="8"
+                Padding="15"
+                Margin="0,0,0,15">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- 헤더 -->
+                <TextBlock Grid.Row="0" 
+                           Text="🔍 필터링" 
+                           FontSize="16" 
+                           FontWeight="Bold"
+                           Foreground="#FF0078D7"
+                           Margin="0,0,0,15"/>
+
+                <!-- 첫 번째 필터 행 -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBlock Text="IP 주소:" 
+                               VerticalAlignment="Center" 
+                               Width="90" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,10,0"/>
+                    <TextBox x:Name="FilterIpTextBox" 
+                             Width="140" 
+                             Height="32"
+                             VerticalAlignment="Center"
+                             VerticalContentAlignment="Center"
+                             TextChanged="ApplyFilter"
+                             ToolTip="IP 주소로 필터링 (부분 일치)"
+                             Margin="0,0,20,0"/>
+
+                    <TextBlock Text="설비 ID:" 
+                               VerticalAlignment="Center" 
+                               Width="90" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,10,0"/>
+                    <TextBox x:Name="FilterEquipmentIdTextBox" 
+                             Width="140" 
+                             Height="32"
+                             VerticalAlignment="Center"
+                             VerticalContentAlignment="Center"
+                             TextChanged="ApplyFilter"
+                             ToolTip="설비 ID로 필터링 (부분 일치)"
+                             Margin="0,0,20,0"/>
+
+                    <TextBlock Text="설비명:" 
+                               VerticalAlignment="Center" 
+                               Width="90" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,10,0"/>
+                    <TextBox x:Name="FilterEquipmentNameTextBox" 
+                             Width="170" 
+                             Height="32"
+                             VerticalAlignment="Center"
+                             VerticalContentAlignment="Center"
                              TextChanged="ApplyFilter"
                              ToolTip="설비명으로 필터링 (부분 일치)"/>
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Grid.Row="1">
-                    <TextBlock Text="상태:" VerticalAlignment="Center" Width="80" Margin="0,0,5,0"/>
-                    <ComboBox x:Name="FilterStatusComboBox" Width="200" Margin="5" VerticalAlignment="Center"
+                <!-- 두 번째 필터 행 -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal">
+                    <TextBlock Text="상태:" 
+                               VerticalAlignment="Center" 
+                               Width="90" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,10,0"/>
+                    <ComboBox x:Name="FilterStatusComboBox" 
+                              Width="220" 
+                              Height="32"
+                              VerticalAlignment="Center"
                               IsEditable="True"
                               IsReadOnly="True"
-                              DropDownClosed="ApplyFilter">
+                              DropDownClosed="ApplyFilter"
+                              Margin="0,0,20,0">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <CheckBox Content="{Binding Text}" 
@@ -160,11 +322,19 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
 
-                    <TextBlock Text="BIZACTOR:" VerticalAlignment="Center" Width="80" Margin="20,0,5,0"/>
-                    <ComboBox x:Name="FilterBizActorComboBox" Width="200" Margin="5" VerticalAlignment="Center"
+                    <TextBlock Text="BIZACTOR:" 
+                               VerticalAlignment="Center" 
+                               Width="90" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,10,0"/>
+                    <ComboBox x:Name="FilterBizActorComboBox" 
+                              Width="220" 
+                              Height="32"
+                              VerticalAlignment="Center"
                               IsEditable="True"
                               IsReadOnly="True"
-                              DropDownClosed="ApplyFilter">
+                              DropDownClosed="ApplyFilter"
+                              Margin="0,0,20,0">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <CheckBox Content="{Binding Text}" 
@@ -175,45 +345,132 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
 
-                    <Button x:Name="ClearFilterButton" Content="필터 초기화" 
-                            Width="100" Height="25" Margin="20,0,0,0"
-                            Click="ClearFilterButton_Click"/>
+                    <Button x:Name="ClearFilterButton" 
+                            Width="120" 
+                            Height="34"
+                            Click="ClearFilterButton_Click"
+                            Background="#FFDC3545"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            FontWeight="SemiBold"
+                            Margin="0,0,15,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🗑️" Margin="0,0,5,0"/>
+                            <TextBlock Text="필터 초기화"/>
+                        </StackPanel>
+                    </Button>
 
                     <TextBlock x:Name="FilterStatusTextBlock" 
                                VerticalAlignment="Center" 
-                               Margin="20,0,0,0"
-                               FontSize="11"
-                               Foreground="Gray"/>
+                               FontSize="12"
+                               Foreground="#FF6C757D"
+                               FontStyle="Italic"/>
                 </StackPanel>
             </Grid>
-        </GroupBox>
+        </Border>
 
-        <GroupBox Header="모니터링 결과" Grid.Row="2" Padding="10">
-            <DataGrid x:Name="SfcMonitorDataGrid" 
-                      AutoGenerateColumns="False" 
-                      IsReadOnly="True"
-                      GridLinesVisibility="All"
-                      AlternatingRowBackground="LightGray"
-                      CanUserAddRows="False">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="IP 주소" Binding="{Binding IpAddress}" Width="150"/>
-                    <DataGridTextColumn Header="설비 ID" Binding="{Binding EquipmentId}" Width="150"/>
-                    <DataGridTextColumn Header="설비명" Binding="{Binding EquipmentName}" Width="200"/>
-                    <DataGridTextColumn Header="상태" Binding="{Binding Status}" Width="100"/>
-                    <DataGridTextColumn Header="BIZACTOR" Binding="{Binding BizActor}" Width="100">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Style.Triggers>
-                                    <Trigger Property="Text" Value="RPT">
-                                        <Setter Property="Foreground" Value="Red"/>
-                                        <Setter Property="FontWeight" Value="Bold"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-                </DataGrid.Columns>
-            </DataGrid>
-        </GroupBox>
+        <!-- 모니터링 결과 카드 -->
+        <Border Grid.Row="2" 
+                Background="White" 
+                BorderBrush="#FFE0E0E0" 
+                BorderThickness="1" 
+                CornerRadius="8"
+                Padding="15">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- 결과 헤더 -->
+                <TextBlock Grid.Row="0" 
+                           Text="📊 모니터링 결과" 
+                           FontSize="16" 
+                           FontWeight="Bold"
+                           Foreground="#FF0078D7"
+                           Margin="0,0,0,10"/>
+
+                <!-- DataGrid -->
+                <DataGrid x:Name="SfcMonitorDataGrid" 
+                          Grid.Row="1"
+                          AutoGenerateColumns="False" 
+                          IsReadOnly="True"
+                          GridLinesVisibility="All"
+                          AlternatingRowBackground="#FFF8F9FA"
+                          CanUserAddRows="False"
+                          HeadersVisibility="All"
+                          RowHeight="35"
+                          FontSize="11"
+                          BorderThickness="1"
+                          BorderBrush="#FFE0E0E0">
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="#FF0078D7"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="Height" Value="35"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            <Setter Property="BorderBrush" Value="#FF0056A0"/>
+                            <Setter Property="BorderThickness" Value="0,0,1,0"/>
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+                    <DataGrid.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="BorderBrush" Value="#FFE0E0E0"/>
+                            <Setter Property="BorderThickness" Value="0,0,1,0"/>
+                            <Setter Property="Padding" Value="8,5"/>
+                        </Style>
+                    </DataGrid.CellStyle>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="IP 주소" Binding="{Binding IpAddress}" Width="150"/>
+                        <DataGridTextColumn Header="설비 ID" Binding="{Binding EquipmentId}" Width="150"/>
+                        <DataGridTextColumn Header="설비명" Binding="{Binding EquipmentName}" Width="200"/>
+                        <DataGridTextColumn Header="상태" Binding="{Binding Status}" Width="100"/>
+                        <DataGridTextColumn Header="BIZACTOR" Binding="{Binding BizActor}" Width="120">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="Text" Value="RPT">
+                                            <Setter Property="Foreground" Value="#FFDC3545"/>
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+
+        <!-- 하단 상태바 -->
+        <Border Grid.Row="3" 
+                Background="White" 
+                BorderBrush="#FFE0E0E0" 
+                BorderThickness="1" 
+                CornerRadius="8"
+                Padding="15,10"
+                Margin="0,15,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0"
+                           Text="💡 " 
+                           FontSize="14"
+                           VerticalAlignment="Center"/>
+                
+                <TextBlock Grid.Column="1"
+                           Text="준비됨 - Excel 파일을 선택하고 로드한 후 쿼리를 조회하세요." 
+                           FontSize="12"
+                           Foreground="#FF6C757D"
+                           VerticalAlignment="Center"
+                           Margin="5,0,0,0"/>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

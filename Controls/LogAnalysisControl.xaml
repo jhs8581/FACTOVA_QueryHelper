@@ -5,158 +5,280 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" 
              d:DesignHeight="700" d:DesignWidth="1200"
-             Background="White">
-    <Grid Margin="10">
+             Background="#FFF8F9FA">
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <GroupBox Header="쿼리 설정" Grid.Row="0" Padding="10" Margin="0,0,0,10">
+        <!-- 상단 쿼리 설정 -->
+        <Border Grid.Row="0" 
+                Background="White" 
+                BorderBrush="#FFE0E0E0" 
+                BorderThickness="1" 
+                CornerRadius="8"
+                Padding="15"
+                Margin="0,0,0,15">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- 첫 번째 행: DB 로드 버튼 -->
-                <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,10">
-                    <Button x:Name="LoadFromDbButton" Content="💾 DB에서 쿼리 로드" 
-                            Width="150" Height="35" Margin="0,0,15,0"
+                <!-- 첫 번째 행: DB 로드, 실행 버튼, 자동 실행 옵션 -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+                    <Button x:Name="LoadFromDbButton" 
+                            Width="160" Height="40"
                             Click="LoadFromDbButton_Click"
                             Background="#FF28A745" 
                             Foreground="White"
+                            BorderThickness="0"
+                            Cursor="Hand"
                             FontWeight="Bold"
                             FontSize="14"
-                            ToolTip="데이터베이스에서 쿼리 목록 로드"/>
+                            Margin="0,0,10,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="💾" FontSize="16" Margin="0,0,8,0"/>
+                            <TextBlock Text="DB에서 쿼리 로드"/>
+                        </StackPanel>
+                    </Button>
                     
-                    <TextBlock Text="로드된 쿼리:" VerticalAlignment="Center" Margin="10,0,10,0" FontWeight="Bold"/>
-                    <TextBlock x:Name="LoadedQueriesTextBlock" Text="0개" VerticalAlignment="Center" 
-                               FontWeight="Bold" Foreground="#FF0078D7" FontSize="16"/>
+                    <Button x:Name="ToggleAutoQueryButton" 
+                            Content="실행" 
+                            Width="100" Height="40"
+                            Click="ToggleAutoQueryButton_Click"
+                            Background="#FF0078D7" 
+                            Foreground="White"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            FontWeight="Bold"
+                            FontSize="14"
+                            IsEnabled="False"
+                            Margin="0,0,20,0"/>
+                    
+                    <Rectangle Width="1" Height="30" Fill="#FFE0E0E0" Margin="0,0,20,0"/>
+                    
+                    <CheckBox x:Name="EnableAutoExecutionCheckBox" 
+                              Content="자동 실행" 
+                              VerticalAlignment="Center"
+                              FontWeight="SemiBold"
+                              Margin="0,0,15,0"
+                              IsChecked="False"
+                              Checked="EnableAutoExecutionCheckBox_Changed"
+                              Unchecked="EnableAutoExecutionCheckBox_Changed"/>
+                    
+                    <TextBlock Text="실행 주기:" 
+                               VerticalAlignment="Center" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,10,0"/>
+                    <TextBox x:Name="QueryIntervalTextBox" 
+                             Width="70" 
+                             Height="32"
+                             Text="60" 
+                             VerticalAlignment="Center"
+                             VerticalContentAlignment="Center"
+                             TextAlignment="Center"
+                             IsEnabled="False"
+                             FontWeight="Bold"/>
+                    <TextBlock Text="초" 
+                               VerticalAlignment="Center" 
+                               FontWeight="SemiBold"
+                               Margin="5,0,20,0"/>
+                    
+                    <CheckBox x:Name="StopOnNotificationCheckBox" 
+                              Content="⚠️ 알림 시 자동 실행 중지" 
+                              VerticalAlignment="Center"
+                              FontWeight="SemiBold"
+                              Foreground="#FFDC3545"
+                              IsChecked="True"
+                              Checked="StopOnNotificationCheckBox_Changed"
+                              Unchecked="StopOnNotificationCheckBox_Changed"
+                              Margin="0,0,20,0"/>
+                    
+                    <Border x:Name="AutoQueryCountdownBorder"
+                            Background="#FFFFEAA7" 
+                            BorderBrush="#FFFFC107" 
+                            BorderThickness="2" 
+                            CornerRadius="6" 
+                            Padding="12,8"
+                            VerticalAlignment="Center"
+                            Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⏱️ 다음 실행까지: " 
+                                       FontSize="12" 
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock x:Name="AutoQueryCountdownTextBlock" 
+                                       FontSize="12" 
+                                       FontWeight="Bold" 
+                                       Foreground="#FFFFC107"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
-                <!-- 두 번째 행: 쿼리 실행 옵션 -->
-                <Grid Grid.Row="1" Margin="0,10,0,0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <!-- 두 번째 행: 쿼리 선택 및 디폴트 폼 -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                    <TextBlock Text="실행할 쿼리:" 
+                               VerticalAlignment="Center" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,10,0"/>
+                    <ComboBox x:Name="QueryFilterComboBox" 
+                              Width="300" 
+                              Height="32"
+                              VerticalAlignment="Center"
+                              IsEditable="True"
+                              IsReadOnly="True"
+                              Margin="0,0,20,0"
+                              DropDownClosed="QueryFilterComboBox_DropDownClosed">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding Text}" 
+                                          IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                          Checked="QueryFilterCheckBox_Changed"
+                                          Unchecked="QueryFilterCheckBox_Changed"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
-                    <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,5">
-                        <TextBlock Text="실행할 쿼리:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <ComboBox x:Name="QueryFilterComboBox" Width="300" Margin="5,0,10,0" VerticalAlignment="Center"
-                                  IsEditable="True"
-                                  IsReadOnly="True"
-                                  DropDownClosed="QueryFilterComboBox_DropDownClosed">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <CheckBox Content="{Binding Text}" 
-                                              IsChecked="{Binding IsChecked, Mode=TwoWay}"
-                                              Checked="QueryFilterCheckBox_Changed"
-                                              Unchecked="QueryFilterCheckBox_Changed"/>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-
-                        <TextBlock Text="디폴트 폼:" VerticalAlignment="Center" Margin="20,0,10,0"/>
-                        <ComboBox x:Name="DefaultFormComboBox" Width="200" Margin="5,0,10,0" VerticalAlignment="Center"
-                                  DisplayMemberPath="Text"
-                                  ToolTip="디폴트로 설정할 폼을 선택하세요"/>
-                        
-                        <Button x:Name="ClearResultsButton" Content="결과 초기화" 
-                                Width="100" Height="30" Margin="20,0,10,0"
-                                Click="ClearResultsButton_Click"/>
-                        
-                        <!-- 폰트 크기 조절 -->
-                        <TextBlock Text="폰트 크기:" VerticalAlignment="Center" Margin="20,0,10,0"/>
-                        <Button x:Name="DecreaseFontButton" Content="-" 
-                                Width="30" Height="30" Margin="0,0,5,0"
-                                Click="DecreaseFontButton_Click"
-                                ToolTip="폰트 크기 감소"/>
-                        <TextBlock x:Name="FontSizeTextBlock" Text="11" 
-                                   VerticalAlignment="Center" 
-                                   FontWeight="Bold"
-                                   Foreground="#FF0078D7"
-                                   MinWidth="25"
-                                   TextAlignment="Center"/>
-                        <Button x:Name="IncreaseFontButton" Content="+" 
-                                Width="30" Height="30" Margin="5,0,0,0"
-                                Click="IncreaseFontButton_Click"
-                                ToolTip="폰트 크기 증가"/>
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal" Grid.Row="1">
-                        <CheckBox x:Name="EnableAutoExecutionCheckBox" 
-                                  Content="자동 실행" 
-                                  VerticalAlignment="Center"
-                                  Margin="5,0,15,0"
-                                  IsChecked="False"
-                                  Checked="EnableAutoExecutionCheckBox_Changed"
-                                  Unchecked="EnableAutoExecutionCheckBox_Changed"
-                                  ToolTip="체크하면 주기적으로 자동 실행됩니다"/>
-                        
-                        <TextBlock Text="실행 주기:" VerticalAlignment="Center" Margin="5,0,10,0"/>
-                        <TextBox x:Name="QueryIntervalTextBox" Width="60" Text="60" VerticalAlignment="Center"
-                                 IsEnabled="False"
-                                 ToolTip="쿼리 실행 주기 (초)"/>
-                        <TextBlock Text="초" VerticalAlignment="Center" Margin="5,0,10,0"/>
-                        
-                        <Button x:Name="ToggleAutoQueryButton" Content="실행" 
-                                Width="100" Height="30" Margin="5,0,15,0"
-                                Click="ToggleAutoQueryButton_Click"
-                                Background="#FF0078D7" 
-                                Foreground="White"
-                                FontWeight="Bold"
-                                IsEnabled="False"/>
-                        
-                        <CheckBox x:Name="StopOnNotificationCheckBox" 
-                                  Content="알림 시 자동 실행 중지" 
-                                  VerticalAlignment="Center"
-                                  Margin="0,0,15,0"
-                                  IsChecked="True"
-                                  Checked="StopOnNotificationCheckBox_Changed"
-                                  Unchecked="StopOnNotificationCheckBox_Changed"
-                                  ToolTip="체크하면 알림 팝업이 표시될 때 자동 실행이 중지됩니다"/>
-                        
-                        <Border x:Name="AutoQueryCountdownBorder"
-                                Background="#FFF0F8FF" 
-                                BorderBrush="#FF0078D7" 
-                                BorderThickness="1" 
-                                CornerRadius="3" 
-                                Padding="8,4"
-                                VerticalAlignment="Center"
-                                Visibility="Collapsed">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="다음 실행까지: " 
-                                           FontSize="11" 
-                                           VerticalAlignment="Center"/>
-                                <TextBlock x:Name="AutoQueryCountdownTextBlock" 
-                                           FontSize="11" 
-                                           FontWeight="Bold" 
-                                           Foreground="#FF0078D7"
-                                           VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
-                </Grid>
+                    <TextBlock Text="디폴트 폼:" 
+                               VerticalAlignment="Center" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,10,0"/>
+                    <ComboBox x:Name="DefaultFormComboBox" 
+                              Width="300" 
+                              Height="32"
+                              VerticalAlignment="Center"
+                              DisplayMemberPath="Text"/>
+                </StackPanel>
             </Grid>
-        </GroupBox>
+        </Border>
 
-        <GroupBox Header="쿼리 결과" Grid.Row="1" Padding="10">
+        <!-- 쿼리 결과 -->
+        <Border Grid.Row="1" 
+                Background="White" 
+                BorderBrush="#FFE0E0E0" 
+                BorderThickness="1" 
+                CornerRadius="8"
+                Padding="15">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <TabControl x:Name="ResultTabControl" Grid.Row="0"/>
+                <!-- 결과 헤더 + 컨트롤 -->
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Grid.Column="0"
+                               x:Name="ResultTitleTextBlock"
+                               Text="쿼리 결과" 
+                               FontSize="16" 
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"/>
+                    
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <!-- 폰트 크기 조절 -->
+                        <Border Background="#FFF0F8FF" 
+                                BorderBrush="#FF0078D7" 
+                                BorderThickness="1" 
+                                CornerRadius="6"
+                                Padding="10,5"
+                                Margin="0,0,10,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="폰트:" 
+                                           VerticalAlignment="Center" 
+                                           FontWeight="SemiBold"
+                                           Margin="0,0,8,0"/>
+                                <Button x:Name="DecreaseFontButton" 
+                                        Content="-" 
+                                        Width="28" Height="28"
+                                        Click="DecreaseFontButton_Click"
+                                        Background="#FF6C757D"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        Cursor="Hand"
+                                        FontWeight="Bold"
+                                        Margin="0,0,5,0"/>
+                                <TextBlock x:Name="FontSizeTextBlock" 
+                                           Text="11" 
+                                           VerticalAlignment="Center" 
+                                           FontWeight="Bold"
+                                           Foreground="#FF0078D7"
+                                           MinWidth="25"
+                                           TextAlignment="Center"/>
+                                <Button x:Name="IncreaseFontButton" 
+                                        Content="+" 
+                                        Width="28" Height="28"
+                                        Click="IncreaseFontButton_Click"
+                                        Background="#FF6C757D"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        Cursor="Hand"
+                                        FontWeight="Bold"
+                                        Margin="5,0,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- 결과 초기화 -->
+                        <Button x:Name="ClearResultsButton" 
+                                Width="110" Height="34"
+                                Click="ClearResultsButton_Click"
+                                Background="#FFDC3545"
+                                Foreground="White"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                FontWeight="SemiBold">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🗑️" Margin="0,0,5,0"/>
+                                <TextBlock Text="결과 초기화"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
 
-                <TextBlock x:Name="StatusTextBlock" 
-                           Grid.Row="1" 
-                           Margin="0,5,0,0" 
-                           FontSize="11"
-                           Foreground="Gray"/>
+                <TabControl x:Name="ResultTabControl" 
+                            Grid.Row="1"
+                            BorderThickness="0"/>
             </Grid>
-        </GroupBox>
+        </Border>
+
+        <!-- 하단 상태바 -->
+        <Border Grid.Row="2" 
+                Background="White" 
+                BorderBrush="#FFE0E0E0" 
+                BorderThickness="1" 
+                CornerRadius="8"
+                Padding="15,10"
+                Margin="0,15,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0"
+                           Text="💡 " 
+                           FontSize="14"
+                           VerticalAlignment="Center"/>
+                
+                <TextBlock x:Name="StatusTextBlock" 
+                           Grid.Column="1"
+                           Text="준비됨" 
+                           FontSize="12"
+                           Foreground="#FF6C757D"
+                           VerticalAlignment="Center"
+                           Margin="5,0,0,0"/>
+            </Grid>
+        </Border>
+        
+        <!-- Hidden TextBlock for LoadedQueries count (for code compatibility) -->
+        <TextBlock x:Name="LoadedQueriesTextBlock" Visibility="Collapsed"/>
     </Grid>
 </UserControl>

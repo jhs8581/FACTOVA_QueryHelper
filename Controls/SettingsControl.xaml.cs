@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -7,13 +7,13 @@ using System.Windows.Media;
 namespace FACTOVA_QueryHelper.Controls
 {
     /// <summary>
-    /// SettingsControl.xaml¿¡ ´ëÇÑ »óÈ£ ÀÛ¿ë ³í¸®
+    /// SettingsControl.xamlì— ëŒ€í•œ ìƒí˜¸ ì‘ìš© ë…¼ë¦¬
     /// </summary>
     public partial class SettingsControl : UserControl
     {
         private SharedDataContext? _sharedData;
         
-        // TNS °æ·Î º¯°æ ÀÌº¥Æ®
+        // TNS ê²½ë¡œ ë³€ê²½ ì´ë²¤íŠ¸
         public event EventHandler? TnsPathChanged;
 
         public SettingsControl()
@@ -22,7 +22,7 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         /// <summary>
-        /// °øÀ¯ µ¥ÀÌÅÍ ÄÁÅØ½ºÆ®¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        /// ê³µìœ  ë°ì´í„° ì»¨í…ìŠ¤íŠ¸ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         /// </summary>
         public void Initialize(SharedDataContext sharedData)
         {
@@ -31,24 +31,25 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         /// <summary>
-        /// ¼³Á¤À» ·ÎµåÇÕ´Ï´Ù.
+        /// ì„¤ì •ì„ ë¡œë“œí•©ë‹ˆë‹¤.
         /// </summary>
         private void LoadSettings()
         {
             if (_sharedData == null) return;
 
-            // ±âº» °æ·Î Ç¥½Ã
+            // ê¸°ë³¸ ê²½ë¡œ í‘œì‹œ
             DefaultPathTextBlock.Text = SettingsManager.GetDefaultTnsPath();
             TnsPathTextBox.Text = _sharedData.Settings.TnsPath;
             
-            // DB ±âº» °æ·Î Ç¥½Ã
+            // DB ê¸°ë³¸ ê²½ë¡œ í‘œì‹œ
             DefaultDatabasePathTextBlock.Text = QueryDatabase.GetDefaultDatabasePath();
             DatabasePathTextBox.Text = string.IsNullOrWhiteSpace(_sharedData.Settings.DatabasePath) 
                 ? QueryDatabase.GetDefaultDatabasePath() 
                 : _sharedData.Settings.DatabasePath;
             
-            // ¾÷µ¥ÀÌÆ® ÀÚµ¿ È®ÀÎ ¼³Á¤ ·Îµå
-            CheckUpdateOnStartupCheckBox.IsChecked = _sharedData.Settings.CheckUpdateOnStartup;
+            // í˜„ì¬ ë²„ì „ í‘œì‹œ
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            CurrentVersionTextBlock.Text = $"v{version}";
         }
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
@@ -69,7 +70,7 @@ namespace FACTOVA_QueryHelper.Controls
             var saveFileDialog = new Microsoft.Win32.SaveFileDialog
             {
                 Filter = "SQLite Database (*.db)|*.db|All Files (*.*)|*.*",
-                Title = "µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏ À§Ä¡ ¼±ÅÃ",
+                Title = "ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ ìœ„ì¹˜ ì„ íƒ",
                 FileName = "queries.db",
                 DefaultExt = ".db"
             };
@@ -93,21 +94,21 @@ namespace FACTOVA_QueryHelper.Controls
         {
             TnsPathTextBox.Text = SettingsManager.GetDefaultTnsPath();
             DatabasePathTextBox.Text = QueryDatabase.GetDefaultDatabasePath();
-            UpdateStatus("¼³Á¤ÀÌ ±âº»°ªÀ¸·Î º¹¿øµÇ¾ú½À´Ï´Ù.", Colors.Green);
+            UpdateStatus("ì„¤ì •ì´ ê¸°ë³¸ê°’ìœ¼ë¡œ ë³µì›ë˜ì—ˆìŠµë‹ˆë‹¤.", Colors.Green);
         }
 
         private void SaveSettingsButton_Click(object sender, RoutedEventArgs e)
         {
             if (_sharedData == null) return;
 
-            if (!ValidationHelper.ValidateNotEmpty(TnsPathTextBox.Text, "TNS ÆÄÀÏ °æ·Î"))
+            if (!ValidationHelper.ValidateNotEmpty(TnsPathTextBox.Text, "TNS íŒŒì¼ ê²½ë¡œ"))
                 return;
 
             if (!FileDialogManager.FileExists(TnsPathTextBox.Text))
             {
                 var result = MessageBox.Show(
-                    "ÁöÁ¤ÇÑ ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù.\n±×·¡µµ ÀúÀåÇÏ½Ã°Ú½À´Ï±î?",
-                    "È®ÀÎ",
+                    "ì§€ì •í•œ íŒŒì¼ì´ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.\nê·¸ë˜ë„ ì €ì¥í•˜ì‹œê² ìŠµë‹ˆê¹Œ?",
+                    "í™•ì¸",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question);
 
@@ -121,91 +122,215 @@ namespace FACTOVA_QueryHelper.Controls
             _sharedData.Settings.DatabasePath = DatabasePathTextBox.Text;
             _sharedData.SaveSettingsCallback?.Invoke();
             
-            // QueryExecutionManager ¼³Á¤ ¾÷µ¥ÀÌÆ®
+            // QueryExecutionManager ì„¤ì • ì—…ë°ì´íŠ¸
             _sharedData.QueryExecutionManager?.UpdateSettings(_sharedData.Settings);
             
-            // TNS °æ·Î º¯°æ ÀÌº¥Æ® ¹ß»ı
+            // TNS ê²½ë¡œ ë³€ê²½ ì´ë²¤íŠ¸ ë°œìƒ
             TnsPathChanged?.Invoke(this, EventArgs.Empty);
 
-            UpdateStatus("¼³Á¤ÀÌ ÀúÀåµÇ¾ú½À´Ï´Ù.", Colors.Green);
+            UpdateStatus("ì„¤ì •ì´ ì €ì¥ë˜ì—ˆìŠµë‹ˆë‹¤.", Colors.Green);
             
             if (databasePathChanged)
             {
                 MessageBox.Show(
-                    "¼³Á¤ÀÌ ÀúÀåµÇ¾ú½À´Ï´Ù.\n\n" +
-                    "?? µ¥ÀÌÅÍº£ÀÌ½º ÆÄÀÏ °æ·Î°¡ º¯°æµÇ¾ú½À´Ï´Ù.\n" +
-                    "º¯°æ»çÇ×À» Àû¿ëÇÏ·Á¸é ÇÁ·Î±×·¥À» Àç½ÃÀÛÇÏ¼¼¿ä.",
-                    "¿Ï·á",
+                    "ì„¤ì •ì´ ì €ì¥ë˜ì—ˆìŠµë‹ˆë‹¤.\n\n" +
+                    "âš ï¸ ë°ì´í„°ë² ì´ìŠ¤ íŒŒì¼ ê²½ë¡œê°€ ë³€ê²½ë˜ì—ˆìŠµë‹ˆë‹¤.\n" +
+                    "ë³€ê²½ì‚¬í•­ì„ ì ìš©í•˜ë ¤ë©´ í”„ë¡œê·¸ë¨ì„ ì¬ì‹œì‘í•˜ì„¸ìš”.",
+                    "ì™„ë£Œ",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }
             else
             {
-                MessageBox.Show("¼³Á¤ÀÌ ÀúÀåµÇ¾ú½À´Ï´Ù.", "¿Ï·á",
+                MessageBox.Show("ì„¤ì •ì´ ì €ì¥ë˜ì—ˆìŠµë‹ˆë‹¤.", "ì™„ë£Œ",
                     MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
-        private void CheckUpdateOnStartupCheckBox_Changed(object sender, RoutedEventArgs e)
+        private async void CheckUpdateButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_sharedData == null) return;
-
-            // Ã¼Å©¹Ú½º »óÅÂ¸¦ ¼³Á¤¿¡ ÀúÀå
-            _sharedData.Settings.CheckUpdateOnStartup = CheckUpdateOnStartupCheckBox.IsChecked ?? true;
-            _sharedData.SaveSettingsCallback?.Invoke();
-
-            System.Diagnostics.Debug.WriteLine($"¾÷µ¥ÀÌÆ® ÀÚµ¿ È®ÀÎ ¼³Á¤ º¯°æ: {_sharedData.Settings.CheckUpdateOnStartup}");
-        }
-
-        private async void CheckUpdateNowButton_Click(object sender, RoutedEventArgs e)
-        {
-            CheckUpdateNowButton.IsEnabled = false;
-            CheckUpdateNowButton.Content = "È®ÀÎ Áß...";
-            UpdateStatus("¾÷µ¥ÀÌÆ®¸¦ È®ÀÎÇÏ´Â Áß...", Colors.Blue);
-
             try
             {
-                var updateInfo = await UpdateChecker.CheckForUpdatesAsync();
+                CheckUpdateButton.IsEnabled = false;
+                CheckUpdateButton.Content = "ğŸ”„ í™•ì¸ ì¤‘...";
+                LastCheckTextBlock.Text = "ì—…ë°ì´íŠ¸ í™•ì¸ ì¤‘...";
+                HideUpdateStatus(); // ì´ì „ ìƒíƒœ ìˆ¨ê¸°ê¸°
+
+                System.Diagnostics.Debug.WriteLine("=== Manual Update Check Started (force refresh) ===");
+                
+                // ğŸ”¥ forceCheck = true: ìºì‹œ ë¬´ì‹œí•˜ê³  ê°•ì œë¡œ API í˜¸ì¶œ
+                var updateInfo = await UpdateChecker.CheckForUpdatesAsync(forceCheck: true);
+                
+                var now = DateTime.Now;
+                LastCheckTextBlock.Text = $"ë§ˆì§€ë§‰ í™•ì¸: {now:yyyy-MM-dd HH:mm:ss}";
+
+                System.Diagnostics.Debug.WriteLine($"=== Manual Update Check Result ===");
+                System.Diagnostics.Debug.WriteLine($"   updateInfo is null: {updateInfo == null}");
+
+                if (updateInfo == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("âŒ Update check returned null (should not happen)");
+                    
+                    ShowUpdateStatus(
+                        "âŒ",
+                        "ì—…ë°ì´íŠ¸ í™•ì¸ ì‹¤íŒ¨",
+                        "ì—…ë°ì´íŠ¸ë¥¼ í™•ì¸í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.\n\n" +
+                        "ê°€ëŠ¥í•œ ì›ì¸:\n" +
+                        "â€¢ ì¸í„°ë„· ì—°ê²° í™•ì¸\n" +
+                        "â€¢ ë°©í™”ë²½ì—ì„œ GitHub API ì ‘ê·¼ í—ˆìš©\n" +
+                        "â€¢ GitHub ì„œë¹„ìŠ¤ ìƒíƒœ í™•ì¸",
+                        "#DC3545",
+                        "#F8D7DA");
+                    return;
+                }
+
+                System.Diagnostics.Debug.WriteLine($"   Current: {updateInfo.CurrentVersion}");
+                System.Diagnostics.Debug.WriteLine($"   Latest: {updateInfo.LatestVersion}");
+                System.Diagnostics.Debug.WriteLine($"   HasUpdate: {updateInfo.HasUpdate}");
+                System.Diagnostics.Debug.WriteLine($"   ErrorMessage: {updateInfo.ErrorMessage ?? "None"}");
+
+                // ğŸ”¥ Rate Limit ì •ë³´ ì—…ë°ì´íŠ¸
+                UpdateRateLimitDisplay();
+
+                // ğŸ”¥ ì—ëŸ¬ê°€ ìˆëŠ” ê²½ìš°
+                if (!string.IsNullOrEmpty(updateInfo.ErrorMessage))
+                {
+                    System.Diagnostics.Debug.WriteLine($"âš ï¸ Update check completed with error");
+                    
+                    ShowUpdateStatus(
+                        "âš ï¸",
+                        "ì—…ë°ì´íŠ¸ í™•ì¸ ì¤‘ ë¬¸ì œ ë°œìƒ",
+                        $"í˜„ì¬ ë²„ì „: {updateInfo.CurrentVersion}\n" +
+                        $"GitHub ë¦´ë¦¬ì¦ˆ: {updateInfo.LatestVersion}\n\n" +
+                        $"ì˜¤ë¥˜:\n{updateInfo.ErrorMessage}\n\n" +
+                        "í˜„ì¬ ë²„ì „ì„ ê³„ì† ì‚¬ìš©í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.",
+                        "#FFC107",
+                        "#FFF3CD");
+                    return;
+                }
 
                 if (updateInfo.HasUpdate)
                 {
-                    UpdateStatus($"»õ ¹öÀü {updateInfo.LatestVersion}ÀÌ ÀÖ½À´Ï´Ù.", Colors.Green);
+                    System.Diagnostics.Debug.WriteLine("ğŸ‰ Update available!");
                     
+                    ShowUpdateStatus(
+                        "ğŸ‰",
+                        "ìƒˆë¡œìš´ ë²„ì „ì´ ìˆìŠµë‹ˆë‹¤!",
+                        $"í˜„ì¬ ë²„ì „: {updateInfo.CurrentVersion}\n" +
+                        $"ìµœì‹  ë²„ì „: {updateInfo.LatestVersion}\n\n" +
+                        $"ì•„ë˜ ë²„íŠ¼ì„ í´ë¦­í•˜ì—¬ ì—…ë°ì´íŠ¸í•˜ì„¸ìš”.",
+                        "#0078D7",
+                        "#D1E7FF");
+                    
+                    // UpdateNotificationWindow í‘œì‹œ
                     var updateWindow = new UpdateNotificationWindow(updateInfo)
                     {
                         Owner = Window.GetWindow(this)
                     };
+                    
                     updateWindow.ShowDialog();
-                }
-                else if (!string.IsNullOrEmpty(updateInfo.ErrorMessage))
-                {
-                    UpdateStatus($"¾÷µ¥ÀÌÆ® È®ÀÎ ½ÇÆĞ: {updateInfo.ErrorMessage}", Colors.Red);
-                    MessageBox.Show($"¾÷µ¥ÀÌÆ®¸¦ È®ÀÎÇÒ ¼ö ¾ø½À´Ï´Ù:\n{updateInfo.ErrorMessage}", 
-                        "¿À·ù", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
                 else
                 {
-                    UpdateStatus("ÃÖ½Å ¹öÀüÀ» »ç¿ë ÁßÀÔ´Ï´Ù.", Colors.Green);
-                    MessageBox.Show("ÇöÀç ÃÖ½Å ¹öÀüÀ» »ç¿ëÇÏ°í ÀÖ½À´Ï´Ù.", 
-                        "¾÷µ¥ÀÌÆ®", MessageBoxButton.OK, MessageBoxImage.Information);
+                    System.Diagnostics.Debug.WriteLine("âœ… Already up to date");
+                    
+                    ShowUpdateStatus(
+                        "âœ…",
+                        "ìµœì‹  ë²„ì „ì…ë‹ˆë‹¤",
+                        $"í˜„ì¬ ë²„ì „: {updateInfo.CurrentVersion}\n\n" +
+                        "ìµœì‹  ë²„ì „ì„ ì‚¬ìš© ì¤‘ì…ë‹ˆë‹¤.",
+                        "#28A745",
+                        "#D4EDDA");
                 }
             }
             catch (Exception ex)
             {
-                UpdateStatus($"¾÷µ¥ÀÌÆ® È®ÀÎ Áß ¿À·ù: {ex.Message}", Colors.Red);
-                MessageBox.Show($"¾÷µ¥ÀÌÆ® È®ÀÎ Áß ¿À·ù°¡ ¹ß»ıÇß½À´Ï´Ù:\n{ex.Message}", 
-                    "¿À·ù", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Diagnostics.Debug.WriteLine($"âŒ Exception in CheckUpdateButton_Click:");
+                System.Diagnostics.Debug.WriteLine($"   Type: {ex.GetType().Name}");
+                System.Diagnostics.Debug.WriteLine($"   Message: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"   StackTrace: {ex.StackTrace}");
+                
+                LastCheckTextBlock.Text = "í™•ì¸ ì‹¤íŒ¨";
+                
+                ShowUpdateStatus(
+                    "âŒ",
+                    "ì—…ë°ì´íŠ¸ í™•ì¸ ì˜¤ë¥˜",
+                    $"ì˜¤ë¥˜: {ex.GetType().Name}\n" +
+                    $"ë©”ì‹œì§€: {ex.Message}\n\n" +
+                    "Output ì°½ì˜ ë””ë²„ê·¸ íƒ­ì—ì„œ ìì„¸í•œ ë¡œê·¸ë¥¼ í™•ì¸í•˜ì„¸ìš”.",
+                    "#DC3545",
+                    "#F8D7DA");
             }
             finally
             {
-                CheckUpdateNowButton.IsEnabled = true;
-                CheckUpdateNowButton.Content = "Áö±İ ¾÷µ¥ÀÌÆ® È®ÀÎ";
+                CheckUpdateButton.IsEnabled = true;
+                CheckUpdateButton.Content = "ğŸ”„ ì§€ê¸ˆ ì—…ë°ì´íŠ¸ í™•ì¸";
+            }
+        }
+
+        /// <summary>
+        /// ì—…ë°ì´íŠ¸ ìƒíƒœ íŒ¨ë„ì„ ìˆ¨ê¹ë‹ˆë‹¤.
+        /// </summary>
+        private void HideUpdateStatus()
+        {
+            UpdateStatusPanel.Visibility = Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// ì—…ë°ì´íŠ¸ ìƒíƒœ íŒ¨ë„ì„ í‘œì‹œí•©ë‹ˆë‹¤.
+        /// </summary>
+        private void ShowUpdateStatus(string icon, string title, string message, string borderColor, string backgroundColor)
+        {
+            UpdateStatusPanel.Visibility = Visibility.Visible;
+            UpdateStatusIcon.Text = icon;
+            UpdateStatusTitle.Text = title;
+            UpdateStatusMessage.Text = message;
+            UpdateStatusPanel.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(borderColor));
+            UpdateStatusPanel.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(backgroundColor));
+        }
+
+        /// <summary>
+        /// Rate Limit ì •ë³´ë¥¼ ì—…ë°ì´íŠ¸í•©ë‹ˆë‹¤.
+        /// </summary>
+        private void UpdateRateLimitDisplay()
+        {
+            var rateLimitInfo = UpdateChecker.GetLastRateLimitInfo();
+            
+            if (rateLimitInfo != null)
+            {
+                int remaining = rateLimitInfo.Remaining;
+                int limit = rateLimitInfo.Limit;
+                int minutesUntilReset = rateLimitInfo.MinutesUntilReset;
+                
+                RateLimitTextBlock.Text = $"API í˜¸ì¶œ ì œí•œ: {remaining}/{limit} ë‚¨ìŒ ({minutesUntilReset}ë¶„ í›„ ë¦¬ì…‹)";
+                
+                // ë‚¨ì€ íšŸìˆ˜ì— ë”°ë¼ ìƒ‰ìƒ ë³€ê²½
+                if (remaining == 0)
+                {
+                    RateLimitTextBlock.Foreground = new SolidColorBrush(Colors.Red);
+                }
+                else if (remaining < 10)
+                {
+                    RateLimitTextBlock.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFFF9800"));
+                }
+                else
+                {
+                    RateLimitTextBlock.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF666666"));
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"Rate Limit UI ì—…ë°ì´íŠ¸: {remaining}/{limit} (ë¦¬ì…‹: {minutesUntilReset}ë¶„ í›„)");
+            }
+            else
+            {
+                // Rate Limit ì •ë³´ê°€ ì—†ìœ¼ë©´ ê¸°ë³¸ ë©”ì‹œì§€
+                RateLimitTextBlock.Text = "API í˜¸ì¶œ ì œí•œ: GitHub APIëŠ” ì‹œê°„ë‹¹ 60íšŒ ì œí•œ";
+                RateLimitTextBlock.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF666666"));
             }
         }
 
         private void UpdateStatus(string message, Color color)
         {
-            // ¸ŞÀÎ À©µµ¿ì »óÅÂ¹Ù ¾÷µ¥ÀÌÆ®
+            // ë©”ì¸ ìœˆë„ìš° ìƒíƒœë°” ì—…ë°ì´íŠ¸
             _sharedData?.UpdateStatusCallback?.Invoke(message, color);
         }
     }
