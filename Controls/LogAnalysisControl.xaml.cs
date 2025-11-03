@@ -912,66 +912,55 @@ namespace FACTOVA_QueryHelper.Controls
                     FontSize = fontSize,
                     RowHeight = 35,
                     BorderThickness = new Thickness(1),
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224))
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224)),
+                    ColumnWidth = DataGridLength.Auto,  // 자동 너비 조정
+                    MinColumnWidth = 80  // 최소 컬럼 너비
                 };
 
-                // AutoGeneratingColumn 이벤트 핸들러 추가 (언더스코어 표시)
+                // AutoGeneratingColumn 이벤트 핸들러 추가 (언더스코어 표시 및 가독성 개선)
                 dataGrid.AutoGeneratingColumn += (s, e) =>
                 {
+                    // 컬럼 최소 너비 설정
+                    e.Column.MinWidth = 80;
+                    
                     if (e.Column is DataGridTextColumn textColumn)
                     {
-                        // RecognizesAccessKey를 False로 설정하여 언더스코어를 표시
-                        var style = new Style(typeof(DataGridColumnHeader));
-                        style.Setters.Add(new Setter(DataGridColumnHeader.BackgroundProperty, new SolidColorBrush(Color.FromRgb(0, 120, 215))));
-                        style.Setters.Add(new Setter(DataGridColumnHeader.ForegroundProperty, new SolidColorBrush(Colors.White)));
-                        style.Setters.Add(new Setter(DataGridColumnHeader.FontWeightProperty, FontWeights.Bold));
-                        style.Setters.Add(new Setter(DataGridColumnHeader.HeightProperty, 35.0));
-                        style.Setters.Add(new Setter(DataGridColumnHeader.HorizontalContentAlignmentProperty, HorizontalAlignment.Center));
-                        style.Setters.Add(new Setter(DataGridColumnHeader.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(0, 86, 160))));
-                        style.Setters.Add(new Setter(DataGridColumnHeader.BorderThicknessProperty, new Thickness(0, 0, 1, 0)));
-                        
-                        // 헤더 템플릿 설정 (언더스코어를 표시하기 위해)
-                        var headerTemplate = new DataTemplate();
-                        var factory = new FrameworkElementFactory(typeof(TextBlock));
-                        factory.SetBinding(TextBlock.TextProperty, new System.Windows.Data.Binding("Content")
-                        {
-                            RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent)
-                        });
-                        factory.SetValue(TextBlock.TextWrappingProperty, TextWrapping.NoWrap);
-                        // RecognizesAccessKey를 False로 설정하여 언더스코어가 사라지지 않도록 함
-                        factory.SetValue(TextBlock.TextProperty, e.Column.Header.ToString().Replace("_", "__"));
-                        headerTemplate.VisualTree = factory;
-                        
-                        style.Setters.Add(new Setter(DataGridColumnHeader.ContentTemplateProperty, headerTemplate));
-                        e.Column.HeaderStyle = style;
+                        // 텍스트 컬럼 스타일 설정
+                        var elementStyle = new Style(typeof(TextBlock));
+                        elementStyle.Setters.Add(new Setter(TextBlock.PaddingProperty, new Thickness(8, 5, 8, 5)));
+                        elementStyle.Setters.Add(new Setter(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis));
+                        textColumn.ElementStyle = elementStyle;
                     }
-                    else
-                    {
-                        // 다른 열 타입에도 동일한 헤더 스타일 적용
-                        var style = new Style(typeof(DataGridColumnHeader));
-                        style.Setters.Add(new Setter(DataGridColumnHeader.BackgroundProperty, new SolidColorBrush(Color.FromRgb(0, 120, 215))));
-                        style.Setters.Add(new Setter(DataGridColumnHeader.ForegroundProperty, new SolidColorBrush(Colors.White)));
-                        style.Setters.Add(new Setter(DataGridColumnHeader.FontWeightProperty, FontWeights.Bold));
-                        style.Setters.Add(new Setter(DataGridColumnHeader.HeightProperty, 35.0));
-                        style.Setters.Add(new Setter(DataGridColumnHeader.HorizontalContentAlignmentProperty, HorizontalAlignment.Center));
-                        style.Setters.Add(new Setter(DataGridColumnHeader.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(0, 86, 160))));
-                        style.Setters.Add(new Setter(DataGridColumnHeader.BorderThicknessProperty, new Thickness(0, 0, 1, 0)));
-                        
-                        var headerTemplate = new DataTemplate();
-                        var factory = new FrameworkElementFactory(typeof(TextBlock));
-                        factory.SetValue(TextBlock.TextProperty, e.Column.Header.ToString().Replace("_", "__"));
-                        headerTemplate.VisualTree = factory;
-                        
-                        style.Setters.Add(new Setter(DataGridColumnHeader.ContentTemplateProperty, headerTemplate));
-                        e.Column.HeaderStyle = style;
-                    }
+                    
+                    // 헤더 스타일 설정
+                    var style = new Style(typeof(DataGridColumnHeader));
+                    style.Setters.Add(new Setter(DataGridColumnHeader.BackgroundProperty, new SolidColorBrush(Color.FromRgb(0, 120, 215))));
+                    style.Setters.Add(new Setter(DataGridColumnHeader.ForegroundProperty, new SolidColorBrush(Colors.White)));
+                    style.Setters.Add(new Setter(DataGridColumnHeader.FontWeightProperty, FontWeights.Bold));
+                    style.Setters.Add(new Setter(DataGridColumnHeader.HeightProperty, 40.0));  // 높이 증가
+                    style.Setters.Add(new Setter(DataGridColumnHeader.PaddingProperty, new Thickness(12, 8, 12, 8)));  // 패딩 증가
+                    style.Setters.Add(new Setter(DataGridColumnHeader.HorizontalContentAlignmentProperty, HorizontalAlignment.Center));
+                    style.Setters.Add(new Setter(DataGridColumnHeader.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(0, 86, 160))));
+                    style.Setters.Add(new Setter(DataGridColumnHeader.BorderThicknessProperty, new Thickness(0, 0, 1, 0)));
+                    
+                    // 헤더 템플릿 설정 (언더스코어 표시 및 텍스트 줄바꿈 지원)
+                    var headerTemplate = new DataTemplate();
+                    var factory = new FrameworkElementFactory(typeof(TextBlock));
+                    factory.SetValue(TextBlock.TextProperty, e.Column.Header.ToString().Replace("_", "__"));
+                    factory.SetValue(TextBlock.TextWrappingProperty, TextWrapping.Wrap);  // 텍스트 줄바꿈
+                    factory.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.Center);
+                    factory.SetValue(TextBlock.PaddingProperty, new Thickness(5));
+                    headerTemplate.VisualTree = factory;
+                    
+                    style.Setters.Add(new Setter(DataGridColumnHeader.ContentTemplateProperty, headerTemplate));
+                    e.Column.HeaderStyle = style;
                 };
 
                 // DataGrid 셀 스타일 적용 (SFC 모니터링과 동일)
                 var cellStyle = new Style(typeof(DataGridCell));
                 cellStyle.Setters.Add(new Setter(DataGridCell.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(224, 224, 224))));
                 cellStyle.Setters.Add(new Setter(DataGridCell.BorderThicknessProperty, new Thickness(0, 0, 1, 0)));
-                cellStyle.Setters.Add(new Setter(DataGridCell.PaddingProperty, new Thickness(8, 5, 8, 5)));
+                cellStyle.Setters.Add(new Setter(DataGridCell.PaddingProperty, new Thickness(10, 5, 10, 5)));  // 셀 패딩 증가
                 dataGrid.CellStyle = cellStyle;
 
                 // 컨텍스트 메뉴 추가
