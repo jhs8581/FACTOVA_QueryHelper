@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -7,7 +7,7 @@ using System.Windows.Interop;
 namespace FACTOVA_QueryHelper.Controls
 {
     /// <summary>
-    /// ¾Ë¸² ÆË¾÷ Ã¢
+    /// ì•Œë¦¼ íŒì—… ì°½
     /// </summary>
     public partial class NotificationWindow : Window
     {
@@ -36,20 +36,20 @@ namespace FACTOVA_QueryHelper.Controls
         {
             InitializeComponent();
             
-            // ÇÑ±Û ÅØ½ºÆ® ¼³Á¤ (ÄÚµåºñÇÏÀÎµå¿¡¼­)
-            Title = "Á¶È¸ °á°ú ¾Ë¸²";
-            HeaderTextBlock.Text = "¾Ë¸²ÀÌ ÀÖ½À´Ï´Ù:";
-            OkButton.Content = "È®ÀÎ";
+            // í•œê¸€ í…ìŠ¤íŠ¸ ì„¤ì • (ì½”ë“œë¹„í•˜ì¸ë“œì—ì„œ)
+            Title = "ì¡°íšŒ ê²°ê³¼ ì•Œë¦¼";
+            HeaderTextBlock.Text = "ì•Œë¦¼ì´ ìˆìŠµë‹ˆë‹¤:";
+            OkButton.Content = "í™•ì¸";
             
             NotificationsItemsControl.ItemsSource = notifications;
             
-            // Ã¢ÀÌ ·ÎµåµÈ ÈÄ ÀÛ¾÷Ç¥½ÃÁÙ ±ôºıÀÓ ½ÃÀÛ
+            // ì°½ì´ ë¡œë“œëœ í›„ ì‘ì—…í‘œì‹œì¤„ ê¹œë¹¡ì„ ì‹œì‘
             Loaded += NotificationWindow_Loaded;
         }
 
         private void NotificationWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            // Ã¢À» ÀÛ¾÷Ç¥½ÃÁÙ¿¡¼­ ±ôºıÀÌ°Ô ¸¸µé±â
+            // ì°½ì„ ì‘ì—…í‘œì‹œì¤„ì—ì„œ ê¹œë¹¡ì´ê²Œ ë§Œë“¤ê¸°
             FlashWindow();
         }
 
@@ -65,7 +65,7 @@ namespace FACTOVA_QueryHelper.Controls
                         cbSize = (uint)Marshal.SizeOf<FLASHWINFO>(),
                         hwnd = helper.Handle,
                         dwFlags = FLASHW_ALL | FLASHW_TIMERNOFG,
-                        uCount = 5, // 5¹ø ±ôºıÀÓ
+                        uCount = 5, // 5ë²ˆ ê¹œë¹¡ì„
                         dwTimeout = 0
                     };
 
@@ -74,7 +74,7 @@ namespace FACTOVA_QueryHelper.Controls
             }
             catch
             {
-                // ±ôºıÀÓ ½ÇÆĞ ½Ã ¹«½Ã
+                // ê¹œë¹¡ì„ ì‹¤íŒ¨ ì‹œ ë¬´ì‹œ
             }
         }
 

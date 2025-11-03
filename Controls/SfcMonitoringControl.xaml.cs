@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -10,7 +10,7 @@ using System.Windows.Media;
 namespace FACTOVA_QueryHelper.Controls
 {
     /// <summary>
-    /// SfcMonitoringControl.xaml¿¡ ´ëÇÑ »óÈ£ ÀÛ¿ë ³í¸®
+    /// SfcMonitoringControl.xamlì— ëŒ€í•œ ìƒí˜¸ ì‘ìš© ë…¼ë¦¬
     /// </summary>
     public partial class SfcMonitoringControl : UserControl
     {
@@ -33,7 +33,7 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         /// <summary>
-        /// °øÀ¯ µ¥ÀÌÅÍ ÄÁÅØ½ºÆ®¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        /// ê³µìœ  ë°ì´í„° ì»¨í…ìŠ¤íŠ¸ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         /// </summary>
         public void Initialize(SharedDataContext sharedData)
         {
@@ -41,18 +41,18 @@ namespace FACTOVA_QueryHelper.Controls
             LoadSettings();
             InitializeFilterComboBoxes();
             
-            // µ¥ÀÌÅÍ±×¸®µå ¹ÙÀÎµù
+            // ë°ì´í„°ê·¸ë¦¬ë“œ ë°”ì¸ë”©
             SfcMonitorDataGrid.ItemsSource = _sfcFilteredList;
         }
 
         /// <summary>
-        /// ¼³Á¤À» ·ÎµåÇÕ´Ï´Ù.
+        /// ì„¤ì •ì„ ë¡œë“œí•©ë‹ˆë‹¤.
         /// </summary>
         private void LoadSettings()
         {
             if (_sharedData == null) return;
 
-            // SFC Excel ÆÄÀÏ °æ·Î ·Îµå
+            // SFC Excel íŒŒì¼ ê²½ë¡œ ë¡œë“œ
             if (!string.IsNullOrWhiteSpace(_sharedData.Settings.SfcExcelFilePath) && 
                 File.Exists(_sharedData.Settings.SfcExcelFilePath))
             {
@@ -60,17 +60,17 @@ namespace FACTOVA_QueryHelper.Controls
                 LoadSfcExcelButton.IsEnabled = true;
             }
 
-            // Äõ¸® ·Îµå
+            // ì¿¼ë¦¬ ë¡œë“œ
             SfcQueryTextBox.Text = DEFAULT_SFC_QUERY;
 
-            // SFC °èÁ¤ Á¤º¸ ·Îµå
+            // SFC ê³„ì • ì •ë³´ ë¡œë“œ
             SfcUserIdTextBox.Text = _sharedData.Settings.SfcUserId;
             SfcPasswordBox.Password = _sharedData.Settings.SfcPassword;
 
-            // SFC Á¶È¸ ³¯Â¥¸¦ ¿À´Ã·Î ¼³Á¤
+            // SFC ì¡°íšŒ ë‚ ì§œë¥¼ ì˜¤ëŠ˜ë¡œ ì„¤ì •
             ConfigDatePicker.SelectedDate = DateTime.Today;
 
-            // SFC TNS ÄŞº¸¹Ú½º ¼³Á¤
+            // SFC TNS ì½¤ë³´ë°•ìŠ¤ ì„¤ì •
             LoadSfcTnsComboBox();
         }
 
@@ -80,7 +80,7 @@ namespace FACTOVA_QueryHelper.Controls
 
             SfcTnsComboBox.ItemsSource = _sharedData.TnsEntries.Select(t => t.Name).ToList();
             
-            // ÀúÀåµÈ TNS ÀÌ¸§ÀÌ ÀÖÀ¸¸é ÇØ´ç Ç×¸ñ ¼±ÅÃ
+            // ì €ì¥ëœ TNS ì´ë¦„ì´ ìˆìœ¼ë©´ í•´ë‹¹ í•­ëª© ì„ íƒ
             if (!string.IsNullOrWhiteSpace(_sharedData.Settings.SfcTnsName))
             {
                 var savedIndex = _sharedData.TnsEntries.FindIndex(t => t.Name == _sharedData.Settings.SfcTnsName);
@@ -101,20 +101,20 @@ namespace FACTOVA_QueryHelper.Controls
 
         private void InitializeFilterComboBoxes()
         {
-            // »óÅÂ ÇÊÅÍ ÃÊ±âÈ­ (±âº»°ª: OFF¸¸ ¼±ÅÃ)
-            _statusFilterItems.Add(new CheckableComboBoxItem { Text = "ÀüÃ¼", IsChecked = false });
+            // ìƒíƒœ í•„í„° ì´ˆê¸°í™” (ê¸°ë³¸ê°’: OFFë§Œ ì„ íƒ)
+            _statusFilterItems.Add(new CheckableComboBoxItem { Text = "ì „ì²´", IsChecked = false });
             _statusFilterItems.Add(new CheckableComboBoxItem { Text = "ON", IsChecked = false });
             _statusFilterItems.Add(new CheckableComboBoxItem { Text = "OFF", IsChecked = true });
             FilterStatusComboBox.ItemsSource = _statusFilterItems;
 
-            // BIZACTOR ÇÊÅÍ ÃÊ±âÈ­
-            _bizActorFilterItems.Add(new CheckableComboBoxItem { Text = "ÀüÃ¼", IsChecked = true });
+            // BIZACTOR í•„í„° ì´ˆê¸°í™”
+            _bizActorFilterItems.Add(new CheckableComboBoxItem { Text = "ì „ì²´", IsChecked = true });
             _bizActorFilterItems.Add(new CheckableComboBoxItem { Text = "SQL", IsChecked = false });
             _bizActorFilterItems.Add(new CheckableComboBoxItem { Text = "WIP", IsChecked = false });
             _bizActorFilterItems.Add(new CheckableComboBoxItem { Text = "RPT", IsChecked = false });
             FilterBizActorComboBox.ItemsSource = _bizActorFilterItems;
 
-            // SFC ÇÊÅÍ ¸Å´ÏÀú ÃÊ±âÈ­
+            // SFC í•„í„° ë§¤ë‹ˆì € ì´ˆê¸°í™”
             if (_sharedData != null)
             {
                 _sharedData.SfcFilterManager = new SfcFilterManager(
@@ -124,24 +124,24 @@ namespace FACTOVA_QueryHelper.Controls
                     _bizActorFilterItems);
             }
 
-            // ÄŞº¸¹Ú½º ÅØ½ºÆ® ÃÊ±âÈ­
+            // ì½¤ë³´ë°•ìŠ¤ í…ìŠ¤íŠ¸ ì´ˆê¸°í™”
             UpdateFilterComboBoxText();
         }
 
-        #region Excel ÆÄÀÏ ¹× Äõ¸® ½ÇÇà
+        #region Excel íŒŒì¼ ë° ì¿¼ë¦¬ ì‹¤í–‰
 
         private void BrowseSfcExcelButton_Click(object sender, RoutedEventArgs e)
         {
             if (_sharedData == null) return;
 
-            string? filePath = FileDialogManager.OpenExcelFileDialog("SFC ¼³ºñ ¸ñ·Ï Excel ÆÄÀÏ ¼±ÅÃ");
+            string? filePath = FileDialogManager.OpenExcelFileDialog("SFC ì„¤ë¹„ ëª©ë¡ Excel íŒŒì¼ ì„ íƒ");
 
             if (filePath != null)
             {
                 SfcExcelFilePathTextBox.Text = filePath;
                 LoadSfcExcelButton.IsEnabled = true;
                 
-                // ¼³Á¤ ÀúÀå
+                // ì„¤ì • ì €ì¥
                 _sharedData.Settings.SfcExcelFilePath = filePath;
                 _sharedData.SaveSettingsCallback?.Invoke();
             }
@@ -149,14 +149,14 @@ namespace FACTOVA_QueryHelper.Controls
 
         private void LoadSfcExcelButton_Click(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("=== SFC Excel ·Îµå ½ÃÀÛ ===");
-            System.Diagnostics.Debug.WriteLine($"Excel ÆÄÀÏ °æ·Î: {SfcExcelFilePathTextBox.Text}");
+            System.Diagnostics.Debug.WriteLine("=== SFC Excel ë¡œë“œ ì‹œì‘ ===");
+            System.Diagnostics.Debug.WriteLine($"Excel íŒŒì¼ ê²½ë¡œ: {SfcExcelFilePathTextBox.Text}");
 
             try
             {
                 var equipmentList = ExcelManager.LoadSfcEquipmentList(SfcExcelFilePathTextBox.Text);
                 
-                System.Diagnostics.Debug.WriteLine($"·ÎµåµÈ ¼³ºñ ¼ö: {equipmentList.Count}°³");
+                System.Diagnostics.Debug.WriteLine($"ë¡œë“œëœ ì„¤ë¹„ ìˆ˜: {equipmentList.Count}ê°œ");
 
                 _sfcEquipmentList.Clear();
                 foreach (var item in equipmentList)
@@ -166,25 +166,25 @@ namespace FACTOVA_QueryHelper.Controls
 
                 ExecuteSfcQueryButton.IsEnabled = _sfcEquipmentList.Count > 0;
                 ApplySfcFilter();
-                UpdateStatus($"{_sfcEquipmentList.Count}°³ÀÇ ¼³ºñ Á¤º¸¸¦ ·ÎµåÇß½À´Ï´Ù.", Colors.Green);
+                UpdateStatus($"{_sfcEquipmentList.Count}ê°œì˜ ì„¤ë¹„ ì •ë³´ë¥¼ ë¡œë“œí–ˆìŠµë‹ˆë‹¤.", Colors.Green);
                 
-                System.Diagnostics.Debug.WriteLine("=== SFC Excel ·Îµå ¿Ï·á ===");
+                System.Diagnostics.Debug.WriteLine("=== SFC Excel ë¡œë“œ ì™„ë£Œ ===");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"=== SFC Excel ·Îµå ½ÇÆĞ ===");
-                System.Diagnostics.Debug.WriteLine($"¿À·ù ¸Ş½ÃÁö: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"=== SFC Excel ë¡œë“œ ì‹¤íŒ¨ ===");
+                System.Diagnostics.Debug.WriteLine($"ì˜¤ë¥˜ ë©”ì‹œì§€: {ex.Message}");
 
                 var errorMessage = new StringBuilder();
-                errorMessage.AppendLine($"Excel ÆÄÀÏ ·Îµå ½ÇÆĞ: {ex.Message}");
+                errorMessage.AppendLine($"Excel íŒŒì¼ ë¡œë“œ ì‹¤íŒ¨: {ex.Message}");
                 errorMessage.AppendLine();
-                errorMessage.AppendLine("»ó¼¼ Á¤º¸:");
-                errorMessage.AppendLine($"- Excel ÆÄÀÏ: {SfcExcelFilePathTextBox.Text}");
-                errorMessage.AppendLine($"- ÆÄÀÏ Á¸Àç: {File.Exists(SfcExcelFilePathTextBox.Text)}");
+                errorMessage.AppendLine("ìƒì„¸ ì •ë³´:");
+                errorMessage.AppendLine($"- Excel íŒŒì¼: {SfcExcelFilePathTextBox.Text}");
+                errorMessage.AppendLine($"- íŒŒì¼ ì¡´ì¬: {File.Exists(SfcExcelFilePathTextBox.Text)}");
 
-                MessageBox.Show(errorMessage.ToString(), "SFC Excel ·Îµå ¿À·ù",
+                MessageBox.Show(errorMessage.ToString(), "SFC Excel ë¡œë“œ ì˜¤ë¥˜",
                     MessageBoxButton.OK, MessageBoxImage.Error);
-                UpdateStatus($"Excel ÆÄÀÏ ·Îµå ½ÇÆĞ: {ex.Message}", Colors.Red);
+                UpdateStatus($"Excel íŒŒì¼ ë¡œë“œ ì‹¤íŒ¨: {ex.Message}", Colors.Red);
             }
         }
 
@@ -192,14 +192,14 @@ namespace FACTOVA_QueryHelper.Controls
         {
             if (_sharedData?.SfcQueryManager == null) return;
 
-            // ÀÔ·Â°ª °ËÁõ
-            if (!ValidationHelper.ValidateListNotEmpty(_sfcEquipmentList.ToList(), "¼³ºñ ¸ñ·Ï"))
+            // ì…ë ¥ê°’ ê²€ì¦
+            if (!ValidationHelper.ValidateListNotEmpty(_sfcEquipmentList.ToList(), "ì„¤ë¹„ ëª©ë¡"))
                 return;
 
             if (!ValidationHelper.ValidateSelection(SfcTnsComboBox.SelectedItem, "TNS"))
                 return;
 
-            if (!ValidationHelper.ValidateSelection(ConfigDatePicker.SelectedDate, "Á¶È¸ ³¯Â¥"))
+            if (!ValidationHelper.ValidateSelection(ConfigDatePicker.SelectedDate, "ì¡°íšŒ ë‚ ì§œ"))
                 return;
 
             string userId = SfcUserIdTextBox.Text?.Trim() ?? "";
@@ -221,13 +221,13 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 ExecuteSfcQueryButton.IsEnabled = false;
                 
-                // ¼³Á¤ ÀúÀå
+                // ì„¤ì • ì €ì¥
                 _sharedData.Settings.SfcUserId = userId;
                 _sharedData.Settings.SfcPassword = password;
                 _sharedData.Settings.SfcTnsName = SfcTnsComboBox.SelectedItem?.ToString() ?? "";
                 _sharedData.SaveSettingsCallback?.Invoke();
 
-                // SfcQueryManager¸¦ »ç¿ëÇÏ¿© Äõ¸® ½ÇÇà
+                // SfcQueryManagerë¥¼ ì‚¬ìš©í•˜ì—¬ ì¿¼ë¦¬ ì‹¤í–‰
                 var result = await _sharedData.SfcQueryManager.ExecuteQueryAsync(
                     SfcTnsComboBox.SelectedItem.ToString() ?? "",
                     userId,
@@ -238,23 +238,23 @@ namespace FACTOVA_QueryHelper.Controls
 
                 if (result != null)
                 {
-                    // °á°ú Ã³¸®
+                    // ê²°ê³¼ ì²˜ë¦¬
                     _sharedData.SfcQueryManager.ProcessQueryResult(result, _sfcEquipmentList.ToList());
 
-                    // UI ¾÷µ¥ÀÌÆ®
+                    // UI ì—…ë°ì´íŠ¸
                     SfcMonitorDataGrid.Items.Refresh();
                     ApplySfcDataGridRowStyle();
                     ApplySfcFilter();
 
-                    // OFF »óÅÂÀÎ ¼³ºñ ¾Ë¸²
+                    // OFF ìƒíƒœì¸ ì„¤ë¹„ ì•Œë¦¼
                     ShowOffEquipmentNotification();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Äõ¸® ½ÇÇà ½ÇÆĞ:\n{ex.Message}", "¿À·ù",
+                MessageBox.Show($"ì¿¼ë¦¬ ì‹¤í–‰ ì‹¤íŒ¨:\n{ex.Message}", "ì˜¤ë¥˜",
                     MessageBoxButton.OK, MessageBoxImage.Error);
-                UpdateStatus($"Äõ¸® ½ÇÇà ½ÇÆĞ: {ex.Message}", Colors.Red);
+                UpdateStatus($"ì¿¼ë¦¬ ì‹¤í–‰ ì‹¤íŒ¨: {ex.Message}", Colors.Red);
             }
             finally
             {
@@ -265,7 +265,7 @@ namespace FACTOVA_QueryHelper.Controls
         private void ResetSfcQueryButton_Click(object sender, RoutedEventArgs e)
         {
             SfcQueryTextBox.Text = DEFAULT_SFC_QUERY;
-            UpdateStatus("SFC Äõ¸®°¡ ±âº»°ªÀ¸·Î ÃÊ±âÈ­µÇ¾ú½À´Ï´Ù.", Colors.Green);
+            UpdateStatus("SFC ì¿¼ë¦¬ê°€ ê¸°ë³¸ê°’ìœ¼ë¡œ ì´ˆê¸°í™”ë˜ì—ˆìŠµë‹ˆë‹¤.", Colors.Green);
         }
 
         private void ShowOffEquipmentNotification()
@@ -275,7 +275,7 @@ namespace FACTOVA_QueryHelper.Controls
             if (offEquipments.Count > 0)
             {
                 var message = new StringBuilder();
-                message.AppendLine($"OFF »óÅÂ ¼³ºñ {offEquipments.Count}°³ ¹ß°ß");
+                message.AppendLine($"OFF ìƒíƒœ ì„¤ë¹„ {offEquipments.Count}ê°œ ë°œê²¬");
                 message.AppendLine();
 
                 foreach (var equipment in offEquipments)
@@ -283,14 +283,14 @@ namespace FACTOVA_QueryHelper.Controls
                     message.AppendLine($"{equipment.EquipmentName} ({equipment.IpAddress})");
                 }
 
-                MessageBox.Show(message.ToString(), "SFC ¼³ºñ »óÅÂ ¾Ë¸²",
+                MessageBox.Show(message.ToString(), "SFC ì„¤ë¹„ ìƒíƒœ ì•Œë¦¼",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
         #endregion
 
-        #region ÇÊÅÍ¸µ °ü·Ã ¸Ş¼­µå
+        #region í•„í„°ë§ ê´€ë ¨ ë©”ì„œë“œ
 
         private void FilterCheckBox_Changed(object sender, RoutedEventArgs e)
         {
@@ -316,10 +316,10 @@ namespace FACTOVA_QueryHelper.Controls
                 FilterEquipmentNameTextBox == null)
                 return;
 
-            // ÄŞº¸¹Ú½º ÅØ½ºÆ® ¾÷µ¥ÀÌÆ®
+            // ì½¤ë³´ë°•ìŠ¤ í…ìŠ¤íŠ¸ ì—…ë°ì´íŠ¸
             UpdateFilterComboBoxText();
 
-            // ÇÊÅÍ Á¶°Ç »ı¼º
+            // í•„í„° ì¡°ê±´ ìƒì„±
             var criteria = new SfcFilterManager.FilterCriteria
             {
                 IpAddress = FilterIpTextBox.Text,
@@ -327,10 +327,10 @@ namespace FACTOVA_QueryHelper.Controls
                 EquipmentName = FilterEquipmentNameTextBox.Text
             };
 
-            // ÇÊÅÍ Àû¿ë
+            // í•„í„° ì ìš©
             var result = _sharedData.SfcFilterManager.ApplyFilter(criteria);
 
-            // ÇÊÅÍ »óÅÂ ¾÷µ¥ÀÌÆ®
+            // í•„í„° ìƒíƒœ ì—…ë°ì´íŠ¸
             UpdateFilterStatus(result);
         }
 
@@ -359,18 +359,18 @@ namespace FACTOVA_QueryHelper.Controls
             if (_sharedData?.SfcFilterManager == null)
                 return;
 
-            // ÅØ½ºÆ® ÇÊÅÍ ÃÊ±âÈ­
+            // í…ìŠ¤íŠ¸ í•„í„° ì´ˆê¸°í™”
             FilterIpTextBox.Text = "";
             FilterEquipmentIdTextBox.Text = "";
             FilterEquipmentNameTextBox.Text = "";
 
-            // ÇÊÅÍ ¸Å´ÏÀú¸¦ »ç¿ëÇÏ¿© ÃÊ±âÈ­
+            // í•„í„° ë§¤ë‹ˆì €ë¥¼ ì‚¬ìš©í•˜ì—¬ ì´ˆê¸°í™”
             _sharedData.SfcFilterManager.ClearAllFilters();
             UpdateFilterComboBoxText();
 
-            // ÇÊÅÍ Àû¿ë
+            // í•„í„° ì ìš©
             ApplySfcFilter();
-            UpdateStatus("ÇÊÅÍ°¡ ÃÊ±âÈ­µÇ¾ú½À´Ï´Ù.", Colors.Green);
+            UpdateStatus("í•„í„°ê°€ ì´ˆê¸°í™”ë˜ì—ˆìŠµë‹ˆë‹¤.", Colors.Green);
         }
 
         private void ApplySfcDataGridRowStyle()
@@ -394,11 +394,11 @@ namespace FACTOVA_QueryHelper.Controls
 
         #endregion
 
-        #region À¯Æ¿¸®Æ¼ ¸Ş¼­µå
+        #region ìœ í‹¸ë¦¬í‹° ë©”ì„œë“œ
 
         private void UpdateStatus(string message, Color color)
         {
-            // ¸ŞÀÎ À©µµ¿ì »óÅÂ¹Ù ¾÷µ¥ÀÌÆ®
+            // ë©”ì¸ ìœˆë„ìš° ìƒíƒœë°” ì—…ë°ì´íŠ¸
             _sharedData?.UpdateStatusCallback?.Invoke(message, color);
         }
 

@@ -1,11 +1,11 @@
-using System;
+ï»¿using System;
 using System.Diagnostics;
 using System.Windows;
 
 namespace FACTOVA_QueryHelper.Controls
 {
     /// <summary>
-    /// UpdateNotificationWindow.xaml¿¡ ´ëÇÑ »óÈ£ ÀÛ¿ë ³í¸®
+    /// UpdateNotificationWindow.xamlì— ëŒ€í•œ ìƒí˜¸ ì‘ìš© ë…¼ë¦¬
     /// </summary>
     public partial class UpdateNotificationWindow : Window
     {
@@ -22,20 +22,20 @@ namespace FACTOVA_QueryHelper.Controls
 
         private void InitializeContent()
         {
-            // ¹öÀü Á¤º¸ Ç¥½Ã
-            VersionInfoTextBlock.Text = $"ÇöÀç: {_updateInfo.CurrentVersion} ¡æ ÃÖ½Å: {_updateInfo.LatestVersion}";
+            // ë²„ì „ ì •ë³´ í‘œì‹œ
+            VersionInfoTextBlock.Text = $"í˜„ì¬: {_updateInfo.CurrentVersion} â†’ ìµœì‹ : {_updateInfo.LatestVersion}";
 
-            // ¸±¸®Áî ³ëÆ® Ç¥½Ã
+            // ë¦´ë¦¬ì¦ˆ ë…¸íŠ¸ í‘œì‹œ
             if (!string.IsNullOrWhiteSpace(_updateInfo.ReleaseNotes))
             {
                 ReleaseNotesTextBlock.Text = _updateInfo.ReleaseNotes;
             }
             else
             {
-                ReleaseNotesTextBlock.Text = "»õ·Î¿î ¹öÀüÀÌ Ãâ½ÃµÇ¾ú½À´Ï´Ù.";
+                ReleaseNotesTextBlock.Text = "ìƒˆë¡œìš´ ë²„ì „ì´ ì¶œì‹œë˜ì—ˆìŠµë‹ˆë‹¤.";
             }
 
-            // ¼³Á¤¿¡¼­ ÀÚµ¿ È®ÀÎ ¿É¼Ç ·Îµå
+            // ì„¤ì •ì—ì„œ ìë™ í™•ì¸ ì˜µì…˜ ë¡œë“œ
             var settings = SettingsManager.LoadSettings();
             AutoCheckCheckBox.IsChecked = settings.CheckUpdateOnStartup;
         }
@@ -44,10 +44,10 @@ namespace FACTOVA_QueryHelper.Controls
         {
             try
             {
-                // ÀÚµ¿ È®ÀÎ ¼³Á¤ ÀúÀå
+                // ìë™ í™•ì¸ ì„¤ì • ì €ì¥
                 SaveAutoCheckSetting();
 
-                // ´Ù¿î·Îµå URL ¿­±â
+                // ë‹¤ìš´ë¡œë“œ URL ì—´ê¸°
                 if (!string.IsNullOrEmpty(_updateInfo.DownloadUrl))
                 {
                     Process.Start(new ProcessStartInfo
@@ -62,14 +62,14 @@ namespace FACTOVA_QueryHelper.Controls
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"´Ù¿î·Îµå ÆäÀÌÁö¸¦ ¿­ ¼ö ¾ø½À´Ï´Ù:\n{ex.Message}", 
-                    "¿À·ù", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"ë‹¤ìš´ë¡œë“œ í˜ì´ì§€ë¥¼ ì—´ ìˆ˜ ì—†ìŠµë‹ˆë‹¤:\n{ex.Message}", 
+                    "ì˜¤ë¥˜", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private void LaterButton_Click(object sender, RoutedEventArgs e)
         {
-            // ÀÚµ¿ È®ÀÎ ¼³Á¤ ÀúÀå
+            // ìë™ í™•ì¸ ì„¤ì • ì €ì¥
             SaveAutoCheckSetting();
 
             DialogResult = false;

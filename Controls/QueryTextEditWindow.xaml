@@ -1,4 +1,4 @@
-<Window x:Class="FACTOVA_QueryHelper.Controls.QueryTextEditWindow"
+﻿<Window x:Class="FACTOVA_QueryHelper.Controls.QueryTextEditWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="SQL Query Edit" Height="500" Width="700"
