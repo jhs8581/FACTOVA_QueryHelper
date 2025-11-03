@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*.*.*'  # v1.0.0, v1.1.0 등의 태그에 반응
+      - 'v*.*.*'  # v1.0.0, v1.1.0 형식 태그에 반응
   workflow_dispatch:  # 수동 실행 허용
 
 permissions:
@@ -34,6 +34,7 @@ jobs:
           -p:PublishSingleFile=true `
           -p:IncludeNativeLibrariesForSelfExtract=true `
           -p:EnableCompressionInSingleFile=true `
+          -p:InvariantGlobalization=false `
           --output ./publish
     
     - name: Get version from tag
@@ -47,6 +48,8 @@ jobs:
     - name: Create ZIP archive
       shell: pwsh
       run: |
+        [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+        $PSDefaultParameterValues['*:Encoding'] = 'utf8'
         $version = "${{ steps.get_version.outputs.VERSION }}"
         Compress-Archive -Path ./publish/* -DestinationPath "FACTOVA_QueryHelper_$version.zip"
     
@@ -69,7 +72,7 @@ jobs:
           3. .NET 8 Runtime이 필요하지 않습니다 (자체 포함).
           
           ### 변경 사항
-          - 이 버전의 변경 사항을 여기에 작성하세요.
+          - 이 버전의 변경 사항은 여기에 작성하세요.
         draft: false
         prerelease: false
       env:
