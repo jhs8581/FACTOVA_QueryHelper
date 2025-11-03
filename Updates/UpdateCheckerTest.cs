@@ -1,17 +1,17 @@
-using System;
+ï»¿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace FACTOVA_QueryHelper
 {
     /// <summary>
-    /// ¾÷µ¥ÀÌÆ® È®ÀÎ Å×½ºÆ® ÇÁ·Î±×·¥
+    /// ì—…ë°ì´íŠ¸ í™•ì¸ í…ŒìŠ¤íŠ¸ í”„ë¡œê·¸ë¨
     /// </summary>
     class UpdateCheckerTest
     {
         static async Task Main(string[] args)
         {
-            Console.WriteLine("=== GitHub API Å×½ºÆ® ===");
+            Console.WriteLine("=== GitHub API í…ŒìŠ¤íŠ¸ ===");
             Console.WriteLine();
             
             var client = new HttpClient();
@@ -19,31 +19,31 @@ namespace FACTOVA_QueryHelper
             
             try
             {
-                Console.WriteLine("¿äÃ» URL: https://api.github.com/repos/jhs8581/FACTOVA_QueryHelper/releases/latest");
-                Console.WriteLine("¿äÃ» Áß...");
+                Console.WriteLine("ìš”ì²­ URL: https://api.github.com/repos/jhs8581/FACTOVA_QueryHelper/releases/latest");
+                Console.WriteLine("ìš”ì²­ ì¤‘...");
                 Console.WriteLine();
                 
                 var response = await client.GetAsync("https://api.github.com/repos/jhs8581/FACTOVA_QueryHelper/releases/latest");
                 
-                Console.WriteLine($"»óÅÂ ÄÚµå: {(int)response.StatusCode} {response.StatusCode}");
-                Console.WriteLine($"¼º°ø ¿©ºÎ: {response.IsSuccessStatusCode}");
+                Console.WriteLine($"ìƒíƒœ ì½”ë“œ: {(int)response.StatusCode} {response.StatusCode}");
+                Console.WriteLine($"ì„±ê³µ ì—¬ë¶€: {response.IsSuccessStatusCode}");
                 Console.WriteLine();
                 
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine("ÀÀ´ä ³»¿ë (Ã¹ 500ÀÚ):");
+                    Console.WriteLine("ì‘ë‹µ ë‚´ìš© (ì²« 500ì):");
                     Console.WriteLine(content.Substring(0, Math.Min(500, content.Length)));
                 }
                 else
                 {
-                    Console.WriteLine("¿À·ù ÀÀ´ä:");
+                    Console.WriteLine("ì˜¤ë¥˜ ì‘ë‹µ:");
                     var content = await response.Content.ReadAsStringAsync();
                     Console.WriteLine(content);
                 }
                 
                 Console.WriteLine();
-                Console.WriteLine("=== Rate Limit È®ÀÎ ===");
+                Console.WriteLine("=== Rate Limit í™•ì¸ ===");
                 var rateLimitResponse = await client.GetAsync("https://api.github.com/rate_limit");
                 if (rateLimitResponse.IsSuccessStatusCode)
                 {
@@ -53,17 +53,17 @@ namespace FACTOVA_QueryHelper
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"¿¹¿Ü ¹ß»ı: {ex.GetType().Name}");
-                Console.WriteLine($"¸Ş½ÃÁö: {ex.Message}");
+                Console.WriteLine($"ì˜ˆì™¸ ë°œìƒ: {ex.GetType().Name}");
+                Console.WriteLine($"ë©”ì‹œì§€: {ex.Message}");
                 
                 if (ex.InnerException != null)
                 {
-                    Console.WriteLine($"³»ºÎ ¿¹¿Ü: {ex.InnerException.Message}");
+                    Console.WriteLine($"ë‚´ë¶€ ì˜ˆì™¸: {ex.InnerException.Message}");
                 }
             }
             
             Console.WriteLine();
-            Console.WriteLine("¾Æ¹« Å°³ª ´©¸£¸é Á¾·áµË´Ï´Ù...");
+            Console.WriteLine("ì•„ë¬´ í‚¤ë‚˜ ëˆ„ë¥´ë©´ ì¢…ë£Œë©ë‹ˆë‹¤...");
             Console.ReadKey();
         }
     }

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace FACTOVA_QueryHelper
 {
     /// <summary>
-    /// GitHub Releases¸¦ ÅëÇÑ ÀÚµ¿ ¾÷µ¥ÀÌÆ® È®ÀÎ Å¬·¡½º
+    /// GitHub Releasesë¥¼ í†µí•œ ìë™ ì—…ë°ì´íŠ¸ í™•ì¸ í´ë˜ìŠ¤
     /// </summary>
     public class UpdateChecker
     {
@@ -21,20 +21,20 @@ namespace FACTOVA_QueryHelper
             "update_cache.json"
         );
         
-        // Ä³½Ã À¯È¿ ½Ã°£ (1½Ã°£)
+        // ìºì‹œ ìœ íš¨ ì‹œê°„ (1ì‹œê°„)
         private static readonly TimeSpan CacheValidDuration = TimeSpan.FromHours(1);
 
-        // ?? Rate Limit Á¤º¸ ÀúÀå
+        // ?? Rate Limit ì •ë³´ ì €ì¥
         private static RateLimitInfo? _lastRateLimitInfo;
 
         static UpdateChecker()
         {
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "FACTOVA_QueryHelper");
-            _httpClient.Timeout = TimeSpan.FromSeconds(10); // Å¸ÀÓ¾Æ¿ô ¼³Á¤
+            _httpClient.Timeout = TimeSpan.FromSeconds(10); // íƒ€ì„ì•„ì›ƒ ì„¤ì •
         }
 
         /// <summary>
-        /// ¸¶Áö¸·À¸·Î ¹ŞÀº Rate Limit Á¤º¸¸¦ ¹İÈ¯ÇÕ´Ï´Ù.
+        /// ë§ˆì§€ë§‰ìœ¼ë¡œ ë°›ì€ Rate Limit ì •ë³´ë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
         /// </summary>
         public static RateLimitInfo? GetLastRateLimitInfo()
         {
@@ -42,47 +42,47 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// ÃÖ½Å ¹öÀüÀ» È®ÀÎÇÕ´Ï´Ù.
+        /// ìµœì‹  ë²„ì „ì„ í™•ì¸í•©ë‹ˆë‹¤.
         /// </summary>
         public static async Task<UpdateInfo> CheckForUpdatesAsync(bool forceCheck = false)
         {
-            // °­Á¦ È®ÀÎÀÌ ¾Æ´Ï¸é Ä³½Ã È®ÀÎ
+            // ê°•ì œ í™•ì¸ì´ ì•„ë‹ˆë©´ ìºì‹œ í™•ì¸
             if (!forceCheck)
             {
                 var cachedInfo = LoadCache();
                 if (cachedInfo != null && (DateTime.Now - cachedInfo.CheckTime) < CacheValidDuration)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[UpdateChecker] Ä³½Ã »ç¿ë (¸¶Áö¸· È®ÀÎ: {cachedInfo.CheckTime:HH:mm:ss})");
+                    System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ìºì‹œ ì‚¬ìš© (ë§ˆì§€ë§‰ í™•ì¸: {cachedInfo.CheckTime:HH:mm:ss})");
                     return cachedInfo.UpdateInfo;
                 }
             }
 
             try
             {
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ¾÷µ¥ÀÌÆ® È®ÀÎ ½ÃÀÛ: {UpdateUrl}");
+                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ì—…ë°ì´íŠ¸ í™•ì¸ ì‹œì‘: {UpdateUrl}");
                 
                 var response = await _httpClient.GetAsync(UpdateUrl);
                 
-                // ?? Rate Limit Á¤º¸ ÃßÃâ
+                // ?? Rate Limit ì •ë³´ ì¶”ì¶œ
                 ExtractRateLimitInfo(response);
                 
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ÀÀ´ä ÄÚµå: {(int)response.StatusCode} {response.StatusCode}");
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ¼º°ø ¿©ºÎ: {response.IsSuccessStatusCode}");
+                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ì‘ë‹µ ì½”ë“œ: {(int)response.StatusCode} {response.StatusCode}");
+                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ì„±ê³µ ì—¬ë¶€: {response.IsSuccessStatusCode}");
                 
-                // »óÅÂ ÄÚµå È®ÀÎ
+                // ìƒíƒœ ì½”ë“œ í™•ì¸
                 if (!response.IsSuccessStatusCode)
                 {
                     var statusCode = (int)response.StatusCode;
                     var errorContent = await response.Content.ReadAsStringAsync();
                     
-                    System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ¿À·ù ÀÀ´ä: {errorContent}");
+                    System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ì˜¤ë¥˜ ì‘ë‹µ: {errorContent}");
                     
-                    // »ç¿ëÀÚ¿¡°Ô ´õ Ä£ÀıÇÑ ¸Ş½ÃÁö
+                    // ì‚¬ìš©ìì—ê²Œ ë” ì¹œì ˆí•œ ë©”ì‹œì§€
                     string errorMessage = statusCode switch
                     {
-                        403 => "GitHub API ¿äÃ» Á¦ÇÑ¿¡ µµ´ŞÇß½À´Ï´Ù. Àá½Ã ÈÄ ´Ù½Ã ½ÃµµÇØÁÖ¼¼¿ä.\n(¾à 1½Ã°£ ÈÄ ÀÚµ¿ º¹±¸)",
-                        404 => "¸±¸®Áî¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù. ÀúÀå¼Ò¿¡ ¸±¸®Áî°¡ ÀÖ´ÂÁö È®ÀÎÇÏ¼¼¿ä.",
-                        _ => $"¾÷µ¥ÀÌÆ® È®ÀÎ ½ÇÆĞ (HTTP {statusCode})"
+                        403 => "GitHub API ìš”ì²­ ì œí•œì— ë„ë‹¬í–ˆìŠµë‹ˆë‹¤. ì ì‹œ í›„ ë‹¤ì‹œ ì‹œë„í•´ì£¼ì„¸ìš”.\n(ì•½ 1ì‹œê°„ í›„ ìë™ ë³µêµ¬)",
+                        404 => "ë¦´ë¦¬ì¦ˆë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. ì €ì¥ì†Œì— ë¦´ë¦¬ì¦ˆê°€ ìˆëŠ”ì§€ í™•ì¸í•˜ì„¸ìš”.",
+                        _ => $"ì—…ë°ì´íŠ¸ í™•ì¸ ì‹¤íŒ¨ (HTTP {statusCode})"
                     };
                     
                     var result = new UpdateInfo 
@@ -91,42 +91,42 @@ namespace FACTOVA_QueryHelper
                         ErrorMessage = errorMessage
                     };
                     
-                    // ½ÇÆĞÇØµµ Ä³½Ã ÀúÀå (Àç½Ãµµ ¹æÁö)
+                    // ì‹¤íŒ¨í•´ë„ ìºì‹œ ì €ì¥ (ì¬ì‹œë„ ë°©ì§€)
                     SaveCache(result);
                     
                     return result;
                 }
                 
                 var json = await response.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ÀÀ´ä ±æÀÌ: {json.Length} bytes");
+                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ì‘ë‹µ ê¸¸ì´: {json.Length} bytes");
                 
                 var release = JsonSerializer.Deserialize<GitHubRelease>(json);
 
                 if (release == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("[UpdateChecker] ¸±¸®Áî ÆÄ½Ì ½ÇÆĞ");
+                    System.Diagnostics.Debug.WriteLine("[UpdateChecker] ë¦´ë¦¬ì¦ˆ íŒŒì‹± ì‹¤íŒ¨");
                     return new UpdateInfo { HasUpdate = false };
                 }
 
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ÃÖ½Å ¹öÀü: {release.TagName}");
+                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ìµœì‹  ë²„ì „: {release.TagName}");
                 
                 var currentVersion = GetCurrentVersion();
                 var latestVersion = ParseVersion(release.TagName);
 
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ÇöÀç ¹öÀü: {currentVersion}, ÃÖ½Å ¹öÀü: {latestVersion}");
+                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] í˜„ì¬ ë²„ì „: {currentVersion}, ìµœì‹  ë²„ì „: {latestVersion}");
 
                 UpdateInfo updateInfo;
                 
                 if (latestVersion > currentVersion)
                 {
-                    // .exe ÆÄÀÏ Ã£±â
+                    // .exe íŒŒì¼ ì°¾ê¸°
                     string? downloadUrl = null;
                     foreach (var asset in release.Assets)
                     {
                         if (asset.Name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                         {
                             downloadUrl = asset.BrowserDownloadUrl;
-                            System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ´Ù¿î·Îµå URL: {downloadUrl}");
+                            System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ë‹¤ìš´ë¡œë“œ URL: {downloadUrl}");
                             break;
                         }
                     }
@@ -142,42 +142,42 @@ namespace FACTOVA_QueryHelper
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("[UpdateChecker] ÀÌ¹Ì ÃÖ½Å ¹öÀü »ç¿ë Áß");
+                    System.Diagnostics.Debug.WriteLine("[UpdateChecker] ì´ë¯¸ ìµœì‹  ë²„ì „ ì‚¬ìš© ì¤‘");
                     updateInfo = new UpdateInfo { HasUpdate = false };
                 }
                 
-                // ¼º°ø ½Ã Ä³½Ã ÀúÀå
+                // ì„±ê³µ ì‹œ ìºì‹œ ì €ì¥
                 SaveCache(updateInfo);
                 
                 return updateInfo;
             }
             catch (HttpRequestException ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ³×Æ®¿öÅ© ¿À·ù: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ë„¤íŠ¸ì›Œí¬ ì˜¤ë¥˜: {ex.Message}");
                 return new UpdateInfo 
                 { 
                     HasUpdate = false, 
-                    ErrorMessage = "³×Æ®¿öÅ© ¿¬°áÀ» È®ÀÎÇØÁÖ¼¼¿ä." 
+                    ErrorMessage = "ë„¤íŠ¸ì›Œí¬ ì—°ê²°ì„ í™•ì¸í•´ì£¼ì„¸ìš”." 
                 };
             }
             catch (TaskCanceledException)
             {
-                System.Diagnostics.Debug.WriteLine("[UpdateChecker] ¾÷µ¥ÀÌÆ® È®ÀÎ ½Ã°£ ÃÊ°ú");
+                System.Diagnostics.Debug.WriteLine("[UpdateChecker] ì—…ë°ì´íŠ¸ í™•ì¸ ì‹œê°„ ì´ˆê³¼");
                 return new UpdateInfo 
                 { 
                     HasUpdate = false, 
-                    ErrorMessage = "¾÷µ¥ÀÌÆ® È®ÀÎ ½Ã°£ ÃÊ°ú" 
+                    ErrorMessage = "ì—…ë°ì´íŠ¸ í™•ì¸ ì‹œê°„ ì´ˆê³¼" 
                 };
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ¿¹¿Ü ¹ß»ı: {ex.GetType().Name} - {ex.Message}");
-                return new UpdateInfo { HasUpdate = false, ErrorMessage = $"¿À·ù: {ex.Message}" };
+                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ì˜ˆì™¸ ë°œìƒ: {ex.GetType().Name} - {ex.Message}");
+                return new UpdateInfo { HasUpdate = false, ErrorMessage = $"ì˜¤ë¥˜: {ex.Message}" };
             }
         }
 
         /// <summary>
-        /// ÀÀ´ä Çì´õ¿¡¼­ Rate Limit Á¤º¸¸¦ ÃßÃâÇÕ´Ï´Ù.
+        /// ì‘ë‹µ í—¤ë”ì—ì„œ Rate Limit ì •ë³´ë¥¼ ì¶”ì¶œí•©ë‹ˆë‹¤.
         /// </summary>
         private static void ExtractRateLimitInfo(HttpResponseMessage response)
         {
@@ -208,16 +208,16 @@ namespace FACTOVA_QueryHelper
                 _lastRateLimitInfo = rateLimitInfo;
 
                 System.Diagnostics.Debug.WriteLine($"[UpdateChecker] Rate Limit: {rateLimitInfo.Remaining}/{rateLimitInfo.Limit} " +
-                    $"(¸®¼Â: {rateLimitInfo.ResetTime:HH:mm:ss})");
+                    $"(ë¦¬ì…‹: {rateLimitInfo.ResetTime:HH:mm:ss})");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] Rate Limit Á¤º¸ ÃßÃâ ½ÇÆĞ: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] Rate Limit ì •ë³´ ì¶”ì¶œ ì‹¤íŒ¨: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Ä³½Ã ÀúÀå
+        /// ìºì‹œ ì €ì¥
         /// </summary>
         private static void SaveCache(UpdateInfo updateInfo)
         {
@@ -238,16 +238,16 @@ namespace FACTOVA_QueryHelper
                 var json = JsonSerializer.Serialize(cache, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(CacheFilePath, json);
                 
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] Ä³½Ã ÀúÀå: {CacheFilePath}");
+                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ìºì‹œ ì €ì¥: {CacheFilePath}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] Ä³½Ã ÀúÀå ½ÇÆĞ: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ìºì‹œ ì €ì¥ ì‹¤íŒ¨: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Ä³½Ã ·Îµå
+        /// ìºì‹œ ë¡œë“œ
         /// </summary>
         private static UpdateCache? LoadCache()
         {
@@ -265,13 +265,13 @@ namespace FACTOVA_QueryHelper
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] Ä³½Ã ·Îµå ½ÇÆĞ: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] ìºì‹œ ë¡œë“œ ì‹¤íŒ¨: {ex.Message}");
                 return null;
             }
         }
 
         /// <summary>
-        /// ÇöÀç ¾ÖÇÃ¸®ÄÉÀÌ¼Ç ¹öÀüÀ» °¡Á®¿É´Ï´Ù.
+        /// í˜„ì¬ ì• í”Œë¦¬ì¼€ì´ì…˜ ë²„ì „ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
         /// </summary>
         private static Version GetCurrentVersion()
         {
@@ -281,7 +281,7 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// GitHub ÅÂ±× ÀÌ¸§¿¡¼­ ¹öÀüÀ» ÆÄ½ÌÇÕ´Ï´Ù. (¿¹: "v1.0.0" -> Version(1,0,0))
+        /// GitHub íƒœê·¸ ì´ë¦„ì—ì„œ ë²„ì „ì„ íŒŒì‹±í•©ë‹ˆë‹¤. (ì˜ˆ: "v1.0.0" -> Version(1,0,0))
         /// </summary>
         private static Version ParseVersion(string tagName)
         {
@@ -295,7 +295,7 @@ namespace FACTOVA_QueryHelper
     }
 
     /// <summary>
-    /// Rate Limit Á¤º¸
+    /// Rate Limit ì •ë³´
     /// </summary>
     public class RateLimitInfo
     {
@@ -307,7 +307,7 @@ namespace FACTOVA_QueryHelper
     }
 
     /// <summary>
-    /// ¾÷µ¥ÀÌÆ® Ä³½Ã
+    /// ì—…ë°ì´íŠ¸ ìºì‹œ
     /// </summary>
     public class UpdateCache
     {
@@ -319,7 +319,7 @@ namespace FACTOVA_QueryHelper
     }
 
     /// <summary>
-    /// ¾÷µ¥ÀÌÆ® Á¤º¸
+    /// ì—…ë°ì´íŠ¸ ì •ë³´
     /// </summary>
     public class UpdateInfo
     {
@@ -332,7 +332,7 @@ namespace FACTOVA_QueryHelper
     }
 
     /// <summary>
-    /// GitHub Release API ÀÀ´ä ¸ğµ¨
+    /// GitHub Release API ì‘ë‹µ ëª¨ë¸
     /// </summary>
     public class GitHubRelease
     {
@@ -353,7 +353,7 @@ namespace FACTOVA_QueryHelper
     }
 
     /// <summary>
-    /// GitHub Release Asset ¸ğµ¨
+    /// GitHub Release Asset ëª¨ë¸
     /// </summary>
     public class GitHubReleaseAsset
     {

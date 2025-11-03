@@ -9,41 +9,41 @@ using OfficeOpenXml;
 namespace FACTOVA_QueryHelper
 {
     /// <summary>
-    /// Excel ���� ������ ����ϴ� Ŭ����
+    /// Excel 占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙求占?클占쏙옙占쏙옙
     /// </summary>
     public class ExcelManager
     {
         /// <summary>
-        /// Excel ���Ͽ��� ���� ����� �ε��մϴ�.
-        /// N�� ���� ������� ��� ������ �ε��մϴ�.
+        /// Excel 占쏙옙占싹울옙占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙占?占싸듸옙占쌌니댐옙.
+        /// N占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙占?占쏙옙占?占쏙옙占쏙옙占쏙옙 占싸듸옙占쌌니댐옙.
         /// </summary>
         public static List<QueryItem> LoadQueries(string filePath, string? sheetName, int startRow)
         {
             var queries = ExcelQueryReader.ReadQueriesFromExcel(
                 filePath,
                 sheetName,
-                "F",     // ���� (�ʼ�)
-                "D",     // �� �̸� (�ʼ�)
-                "",      // ���� �� ��� �� ��
-                "A",     // TNS (����)
-                "B",     // User ID (����)
-                "C",     // Password (����)
+                "F",     // 占쏙옙占쏙옙 (占십쇽옙)
+                "D",     // 占쏙옙 占싱몌옙 (占십쇽옙)
+                "",      // 占쏙옙占쏙옙 占쏙옙 占쏙옙占?占쏙옙 占쏙옙
+                "A",     // TNS (占쏙옙占쏙옙)
+                "B",     // User ID (占쏙옙占쏙옙)
+                "C",     // Password (占쏙옙占쏙옙)
                 startRow,
-                "G",  // ���� ����
-                "H",  // �˸� ����
-                "I",  // �̻�
-                "J",  // ����
-                "K",  // ����
-                "L",  // �÷���
-                "M",  // �÷���
-                "N"); // �⺻ Ȱ��ȭ ����
+                "G",  // 占쏙옙占쏙옙 占쏙옙占쏙옙
+                "H",  // 占싯몌옙 占쏙옙占쏙옙
+                "I",  // 占싱삼옙
+                "J",  // 占쏙옙占쏙옙
+                "K",  // 占쏙옙占쏙옙
+                "L",  // 占시뤄옙占쏙옙
+                "M",  // 占시뤄옙占쏙옙
+                "N"); // 占썩본 활占쏙옙화 占쏙옙占쏙옙
 
-            // N�� ���͸� ���� - ��� ���� ��ȯ
+            // N占쏙옙 占쏙옙占싶몌옙 占쏙옙占쏙옙 - 占쏙옙占?占쏙옙占쏙옙 占쏙옙환
             return queries;
         }
 
         /// <summary>
-        /// Excel ������ ��Ʈ ����� �����ɴϴ�.
+        /// Excel 占쏙옙占쏙옙占쏙옙 占쏙옙트 占쏙옙占쏙옙占?占쏙옙占쏙옙占심니댐옙.
         /// </summary>
         public static List<string> GetSheetNames(string filePath)
         {
@@ -51,7 +51,7 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// SFC Excel ���Ͽ��� ���� ������ �ε��մϴ�.
+        /// SFC Excel 占쏙옙占싹울옙占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙 占싸듸옙占쌌니댐옙.
         /// </summary>
         public static List<SfcEquipmentInfo> LoadSfcEquipmentList(string filePath)
         {
@@ -59,7 +59,7 @@ namespace FACTOVA_QueryHelper
 
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException("Excel ������ ã�� �� �����ϴ�.", filePath);
+                throw new FileNotFoundException("Excel 占쏙옙占쏙옙占쏙옙 찾占쏙옙 占쏙옙 占쏙옙占쏙옙占싹댐옙.", filePath);
             }
 
             using (var package = new ExcelPackage(new FileInfo(filePath)))
@@ -67,7 +67,7 @@ namespace FACTOVA_QueryHelper
                 var worksheet = package.Workbook.Worksheets[0];
                 int rowCount = worksheet.Dimension?.End.Row ?? 0;
 
-                // 2����� ������ �б� (1���� ���)
+                // 2占쏙옙占쏙옙占?占쏙옙占쏙옙占쏙옙 占싻깍옙 (1占쏙옙占쏙옙 占쏙옙占?
                 for (int row = 2; row <= rowCount; row++)
                 {
                     var ipAddress = worksheet.Cells[row, 1].Text?.Trim();

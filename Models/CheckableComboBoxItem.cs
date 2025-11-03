@@ -1,9 +1,9 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace FACTOVA_QueryHelper
 {
     /// <summary>
-    /// üũ�ڽ��� �ִ� ComboBox ������
+    /// 체크占쌘쏙옙占쏙옙 占쌍댐옙 ComboBox 占쏙옙占쏙옙占쏙옙
     /// </summary>
     public class CheckableComboBoxItem : INotifyPropertyChanged
     {

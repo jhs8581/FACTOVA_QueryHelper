@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using FACTOVA_QueryHelper.Database;
@@ -7,7 +7,7 @@ using FACTOVA_QueryHelper.SFC;
 namespace FACTOVA_QueryHelper.Controls
 {
     /// <summary>
-    /// ¸ğµç UserControl¿¡¼­ °øÀ¯ÇÏ´Â µ¥ÀÌÅÍ ÄÁÅØ½ºÆ®
+    /// ëª¨ë“  UserControlì—ì„œ ê³µìœ í•˜ëŠ” ë°ì´í„° ì»¨í…ìŠ¤íŠ¸
     /// </summary>
     public class SharedDataContext
     {
@@ -16,15 +16,15 @@ namespace FACTOVA_QueryHelper.Controls
         public List<QueryItem> LoadedQueries { get; set; }
         public ObservableCollection<CheckableComboBoxItem> QueryFilterItems { get; set; }
         
-        // °¢ ÄÁÆ®·Ñ¿¡¼­ »ç¿ëÇÏ´Â Managerµé
+        // ê° ì»¨íŠ¸ë¡¤ì—ì„œ ì‚¬ìš©í•˜ëŠ” Managerë“¤
         public QueryExecutionManager? QueryExecutionManager { get; set; }
         public SfcQueryManager? SfcQueryManager { get; set; }
         public SfcFilterManager? SfcFilterManager { get; set; }
         
-        // »óÅÂ ¾÷µ¥ÀÌÆ® Äİ¹é
+        // ìƒíƒœ ì—…ë°ì´íŠ¸ ì½œë°±
         public Action<string, System.Windows.Media.Color>? UpdateStatusCallback { get; set; }
         
-        // ¼³Á¤ ÀúÀå Äİ¹é
+        // ì„¤ì • ì €ì¥ ì½œë°±
         public Action? SaveSettingsCallback { get; set; }
 
         public SharedDataContext()

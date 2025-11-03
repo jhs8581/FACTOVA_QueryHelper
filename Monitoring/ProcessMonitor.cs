@@ -23,7 +23,7 @@ namespace FACTOVA_QueryHelper
         public int ProcessId { get; set; }
         public string ExecutablePath { get; set; } = string.Empty;
         public DateTime StartTime { get; set; }
-        public long WorkingSetSize { get; set; } // �޸� ��뷮 (bytes)
+        public long WorkingSetSize { get; set; } // 占쌨몌옙 占쏙옙酉?(bytes)
     }
 
     public class MonitorResult
@@ -69,41 +69,41 @@ namespace FACTOVA_QueryHelper
 
             try
             {
-                // ���� ȣ��Ʈ�� ����ִ��� Ȯ��
+                // 占쏙옙占쏙옙 호占쏙옙트占쏙옙 占쏙옙占쏙옙獵占쏙옙占?확占쏙옙
                 bool isHostAlive = await CheckHostAvailability(target.IpAddress);
                 if (!isHostAlive)
                 {
                     result.IsRunning = false;
-                    result.Status = "ȣ��Ʈ ���� �Ұ�";
-                    result.ErrorMessage = "ȣ��Ʈ�� ������ �� �����ϴ�. ��Ʈ��ũ ������ Ȯ���ϼ���.";
+                    result.Status = "호占쏙옙트 占쏙옙占쏙옙 占쌀곤옙";
+                    result.ErrorMessage = "호占쏙옙트占쏙옙 占쏙옙占쏙옙占쏙옙 占쏙옙 占쏙옙占쏙옙占싹댐옙. 占쏙옙트占쏙옙크 占쏙옙占쏙옙占쏙옙 확占쏙옙占싹쇽옙占쏙옙.";
                     return result;
                 }
 
-                // WMI�� ���� ���� ���μ��� Ȯ��
+                // WMI占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙占싸쇽옙占쏙옙 확占쏙옙
                 var processes = await GetRemoteProcessesAsync(target);
                 result.Processes = processes;
 
                 if (processes.Count > 0)
                 {
                     result.IsRunning = true;
-                    result.Status = $"���� �� ({processes.Count}�� ���μ���)";
+                    result.Status = $"占쏙옙占쏙옙 占쏙옙 ({processes.Count}占쏙옙 占쏙옙占싸쇽옙占쏙옙)";
                 }
                 else
                 {
                     result.IsRunning = false;
-                    result.Status = "���� ���� �ƴ�";
+                    result.Status = "占쏙옙占쏙옙 占쏙옙占쏙옙 占싣댐옙";
                 }
             }
             catch (UnauthorizedAccessException)
             {
                 result.IsRunning = false;
-                result.Status = "���� ���� ����";
-                result.ErrorMessage = "��� �ý��ۿ� ������ ������ �����ϴ�. ������ ������ Ȯ���ϼ���.";
+                result.Status = "占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙";
+                result.ErrorMessage = "占쏙옙占?占시쏙옙占쌜울옙 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占싹댐옙. 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙 확占쏙옙占싹쇽옙占쏙옙.";
             }
             catch (Exception ex)
             {
                 result.IsRunning = false;
-                result.Status = "���� �߻�";
+                result.Status = "占쏙옙占쏙옙 占쌩삼옙";
                 result.ErrorMessage = ex.Message;
             }
 
@@ -130,7 +130,7 @@ namespace FACTOVA_QueryHelper
                     ManagementScope scope = new ManagementScope($"\\\\{target.IpAddress}\\root\\cimv2", options);
                     scope.Connect();
 
-                    // ���μ��������� .exe Ȯ���� ����
+                    // 占쏙옙占싸쇽옙占쏙옙占쏙옙占쏙옙占쏙옙 .exe 확占쏙옙占쏙옙 占쏙옙占쏙옙
                     string processNameWithoutExt = target.ProcessName.Replace(".exe", "");
 
                     ObjectQuery query = new ObjectQuery($"SELECT * FROM Win32_Process WHERE Name = '{target.ProcessName}'");
@@ -148,7 +148,7 @@ namespace FACTOVA_QueryHelper
                                 WorkingSetSize = Convert.ToInt64(obj["WorkingSetSize"] ?? 0)
                             };
 
-                            // CreationDate �Ľ�
+                            // CreationDate 占식쏙옙
                             string creationDate = obj["CreationDate"]?.ToString() ?? "";
                             if (!string.IsNullOrEmpty(creationDate))
                             {
@@ -159,7 +159,7 @@ namespace FACTOVA_QueryHelper
                         }
                         catch
                         {
-                            // ���� ���μ��� ���� �Ľ� ���� �� ����
+                            // 占쏙옙占쏙옙 占쏙옙占싸쇽옙占쏙옙 占쏙옙占쏙옙 占식쏙옙 占쏙옙占쏙옙 占쏙옙 占쏙옙占쏙옙
                         }
                     }
                 }

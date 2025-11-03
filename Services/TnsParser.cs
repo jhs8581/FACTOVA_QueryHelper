@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -29,11 +29,11 @@ namespace FACTOVA_QueryHelper
 
             try
             {
-                // UTF-8, UTF-8 BOM, ANSI �� ���� ���ڵ����� �õ�
+                // UTF-8, UTF-8 BOM, ANSI 占쏙옙 占쏙옙占쏙옙 占쏙옙占쌘듸옙占쏙옙占쏙옙 占시듸옙
                 string content = ReadFileWithEncoding(filePath);
                 
-                // TNS ��Ʈ�� �Ľ� (�̸� = ���� �����ϴ� �� ����)
-                // ����, �� ���� ����ϰ� ��ҹ��� ���� ���� ��Ī
+                // TNS 占쏙옙트占쏙옙 占식쏙옙 (占싱몌옙 = 占쏙옙占쏙옙 占쏙옙占쏙옙占싹댐옙 占쏙옙 占쏙옙占쏙옙)
+                // 占쏙옙占쏙옙, 占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙構占?占쏙옙拈占쏙옙占?占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙칭
                 var matches = Regex.Matches(content, @"^[\s]*([^\s=]+)[\s]*=[\s]*\(DESCRIPTION", 
                     RegexOptions.IgnoreCase | RegexOptions.Multiline);
 
@@ -41,7 +41,7 @@ namespace FACTOVA_QueryHelper
                 {
                     string tnsName = match.Groups[1].Value.Trim();
                     
-                    // �ش� TNS ���� ����
+                    // 占쌔댐옙 TNS 占쏙옙占쏙옙 占쏙옙占쏙옙
                     int startIndex = match.Index;
                     int endIndex = FindMatchingParenthesis(content, startIndex);
                     
@@ -51,14 +51,14 @@ namespace FACTOVA_QueryHelper
                         
                         var entry = new TnsEntry { Name = tnsName };
                         
-                        // HOST ����
+                        // HOST 占쏙옙占쏙옙
                         var hostMatch = Regex.Match(block, @"HOST[\s]*=[\s]*([^\)]+)", RegexOptions.IgnoreCase);
                         if (hostMatch.Success)
                         {
                             entry.Host = hostMatch.Groups[1].Value.Trim();
                         }
                         
-                        // PORT ����
+                        // PORT 占쏙옙占쏙옙
                         var portMatch = Regex.Match(block, @"PORT[\s]*=[\s]*(\d+)", RegexOptions.IgnoreCase);
                         if (portMatch.Success)
                         {
@@ -66,7 +66,7 @@ namespace FACTOVA_QueryHelper
                             entry.Port = port;
                         }
                         
-                        // SERVICE_NAME �Ǵ� SID ����
+                        // SERVICE_NAME 占실댐옙 SID 占쏙옙占쏙옙
                         var serviceMatch = Regex.Match(block, @"SERVICE_NAME[\s]*=[\s]*([^\)]+)", RegexOptions.IgnoreCase);
                         if (serviceMatch.Success)
                         {
@@ -74,7 +74,7 @@ namespace FACTOVA_QueryHelper
                         }
                         else
                         {
-                            // SID�ε� �õ�
+                            // SID占싸듸옙 占시듸옙
                             var sidMatch = Regex.Match(block, @"SID[\s]*=[\s]*([^\)]+)", RegexOptions.IgnoreCase);
                             if (sidMatch.Success)
                             {
@@ -82,7 +82,7 @@ namespace FACTOVA_QueryHelper
                             }
                         }
                         
-                        // ���� ���ڿ� ����
+                        // 占쏙옙占쏙옙 占쏙옙占쌘울옙 占쏙옙占쏙옙
                         entry.ConnectionString = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={entry.Host})(PORT={entry.Port}))(CONNECT_DATA=(SERVICE_NAME={entry.ServiceName})));";
                         
                         entries.Add(entry);
@@ -91,7 +91,7 @@ namespace FACTOVA_QueryHelper
             }
             catch (Exception)
             {
-                // �Ľ� ���� �� �� ����Ʈ ��ȯ
+                // 占식쏙옙 占쏙옙占쏙옙 占쏙옙 占쏙옙 占쏙옙占쏙옙트 占쏙옙환
             }
 
             return entries;
@@ -101,19 +101,19 @@ namespace FACTOVA_QueryHelper
         {
             try
             {
-                // ���� UTF-8�� �õ�
+                // 占쏙옙占쏙옙 UTF-8占쏙옙 占시듸옙
                 return File.ReadAllText(filePath, System.Text.Encoding.UTF8);
             }
             catch
             {
                 try
                 {
-                    // ANSI (Default)�� �õ�
+                    // ANSI (Default)占쏙옙 占시듸옙
                     return File.ReadAllText(filePath, System.Text.Encoding.Default);
                 }
                 catch
                 {
-                    // ASCII�� �õ�
+                    // ASCII占쏙옙 占시듸옙
                     return File.ReadAllText(filePath, System.Text.Encoding.ASCII);
                 }
             }
@@ -137,7 +137,7 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// TNS ������ ��� ��Ʈ�� �̸��� ���� (������)
+        /// TNS 占쏙옙占쏙옙占쏙옙 占쏙옙占?占쏙옙트占쏙옙 占싱몌옙占쏙옙 占쏙옙占쏙옙 (占쏙옙占쏙옙占쏙옙)
         /// </summary>
         public static List<string> GetAllEntryNames(string filePath)
         {
@@ -161,7 +161,7 @@ namespace FACTOVA_QueryHelper
             }
             catch
             {
-                // ���� �� �� ����Ʈ ��ȯ
+                // 占쏙옙占쏙옙 占쏙옙 占쏙옙 占쏙옙占쏙옙트 占쏙옙환
             }
 
             return names;

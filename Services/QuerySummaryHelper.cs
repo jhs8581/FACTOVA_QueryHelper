@@ -1,9 +1,9 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 
 namespace FACTOVA_QueryHelper
 {
     /// <summary>
-    /// Äõ¸® ¿ä¾à Á¤º¸¸¦ ÀúÀåÇÏ´Â Å¬·¡½º
+    /// ì¿¼ë¦¬ ìš”ì•½ ì •ë³´ë¥¼ ì €ì¥í•˜ëŠ” í´ë˜ìŠ¤
     /// </summary>
     public class QuerySummaryInfo
     {
@@ -14,7 +14,7 @@ namespace FACTOVA_QueryHelper
     }
 
     /// <summary>
-    /// ·Î±×¿¡¼­ Äõ¸® ¿ä¾à Á¤º¸¸¦ ÆÄ½ÌÇÏ´Â ÇïÆÛ Å¬·¡½º
+    /// ë¡œê·¸ì—ì„œ ì¿¼ë¦¬ ìš”ì•½ ì •ë³´ë¥¼ íŒŒì‹±í•˜ëŠ” í—¬í¼ í´ë˜ìŠ¤
     /// </summary>
     public static class QuerySummaryHelper
     {
@@ -25,16 +25,16 @@ namespace FACTOVA_QueryHelper
             double currentDuration = 0;
             bool foundDuration = false;
 
-            System.Diagnostics.Debug.WriteLine("=== QuerySummaryHelper.ParseQuerySummaries ½ÃÀÛ ===");
-            System.Diagnostics.Debug.WriteLine($"ÀüÃ¼ ·Î±× ¼ö: {logs.Count}");
-            System.Diagnostics.Debug.WriteLine($"¾Ë¸² Äõ¸® ¼ö: {notifiedQueryNames.Count}");
+            System.Diagnostics.Debug.WriteLine("=== QuerySummaryHelper.ParseQuerySummaries ì‹œì‘ ===");
+            System.Diagnostics.Debug.WriteLine($"ì „ì²´ ë¡œê·¸ ìˆ˜: {logs.Count}");
+            System.Diagnostics.Debug.WriteLine($"ì•Œë¦¼ ì¿¼ë¦¬ ìˆ˜: {notifiedQueryNames.Count}");
 
             for (int i = 0; i < logs.Count; i++)
             {
                 var log = logs[i];
-                System.Diagnostics.Debug.WriteLine($"·Î±×: {log}");
+                System.Diagnostics.Debug.WriteLine($"ë¡œê·¸: {log}");
 
-                // [1/5] Äõ¸®¸í Çü½Ä ÆÄ½Ì
+                // [1/5] ì¿¼ë¦¬ëª… í˜•ì‹ íŒŒì‹±
                 if (log.Contains("[") && log.Contains("]") && log.Contains("/"))
                 {
                     int startBracket = log.IndexOf('[');
@@ -45,39 +45,39 @@ namespace FACTOVA_QueryHelper
                         currentQueryName = log.Substring(endBracket + 2).Trim();
                         currentDuration = 0;
                         foundDuration = false;
-                        System.Diagnostics.Debug.WriteLine($"Äõ¸®¸í ÆÄ½Ì: {currentQueryName}");
+                        System.Diagnostics.Debug.WriteLine($"ì¿¼ë¦¬ëª… íŒŒì‹±: {currentQueryName}");
                         
-                        // ´ÙÀ½ ÁÙµéÀ» ¹Ì¸® ÀĞ¾î¼­ ¼Ò¿ä ½Ã°£°ú ¼º°ø/½ÇÆĞ Ã£±â
+                        // ë‹¤ìŒ ì¤„ë“¤ì„ ë¯¸ë¦¬ ì½ì–´ì„œ ì†Œìš” ì‹œê°„ê³¼ ì„±ê³µ/ì‹¤íŒ¨ ì°¾ê¸°
                         for (int j = i + 1; j < logs.Count && j < i + 15; j++)
                         {
                             var nextLog = logs[j];
                             
-                            // ¼Ò¿ä ½Ã°£ ÆÄ½Ì
-                            if (nextLog.Contains("¼Ò¿ä ½Ã°£:") && nextLog.Contains("ÃÊ"))
+                            // ì†Œìš” ì‹œê°„ íŒŒì‹±
+                            if (nextLog.Contains("ì†Œìš” ì‹œê°„:") && nextLog.Contains("ì´ˆ"))
                             {
                                 try
                                 {
                                     int start = nextLog.IndexOf(":") + 1;
-                                    int end = nextLog.IndexOf("ÃÊ");
+                                    int end = nextLog.IndexOf("ì´ˆ");
                                     if (start > 0 && end > start)
                                     {
                                         string durationStr = nextLog.Substring(start, end - start).Trim();
                                         double.TryParse(durationStr, out currentDuration);
                                         foundDuration = true;
-                                        System.Diagnostics.Debug.WriteLine($"¼Ò¿ä ½Ã°£ ÆÄ½Ì: {currentDuration}ÃÊ");
+                                        System.Diagnostics.Debug.WriteLine($"ì†Œìš” ì‹œê°„ íŒŒì‹±: {currentDuration}ì´ˆ");
                                     }
                                 }
                                 catch (System.Exception ex) 
                                 {
-                                    System.Diagnostics.Debug.WriteLine($"¼Ò¿ä ½Ã°£ ÆÄ½Ì ¿À·ù: {ex.Message}");
+                                    System.Diagnostics.Debug.WriteLine($"ì†Œìš” ì‹œê°„ íŒŒì‹± ì˜¤ë¥˜: {ex.Message}");
                                 }
                             }
                             
-                            // ¼º°ø ÆÄ½Ì
-                            if (nextLog.Contains("[¼º°ø]"))
+                            // ì„±ê³µ íŒŒì‹±
+                            if (nextLog.Contains("[ì„±ê³µ]"))
                             {
                                 bool hasNotification = notifiedQueryNames.Contains(currentQueryName);
-                                System.Diagnostics.Debug.WriteLine($"¼º°ø Äõ¸® Ãß°¡: {currentQueryName}, ¾Ë¸²: {hasNotification}, ½Ã°£: {currentDuration}ÃÊ");
+                                System.Diagnostics.Debug.WriteLine($"ì„±ê³µ ì¿¼ë¦¬ ì¶”ê°€: {currentQueryName}, ì•Œë¦¼: {hasNotification}, ì‹œê°„: {currentDuration}ì´ˆ");
                                 
                                 summaries.Add(new QuerySummaryInfo
                                 {
@@ -93,10 +93,10 @@ namespace FACTOVA_QueryHelper
                                 break;
                             }
                             
-                            // ½ÇÆĞ ÆÄ½Ì
-                            if (nextLog.Contains("[½ÇÆĞ]"))
+                            // ì‹¤íŒ¨ íŒŒì‹±
+                            if (nextLog.Contains("[ì‹¤íŒ¨]"))
                             {
-                                System.Diagnostics.Debug.WriteLine($"½ÇÆĞ Äõ¸® Ãß°¡: {currentQueryName}");
+                                System.Diagnostics.Debug.WriteLine($"ì‹¤íŒ¨ ì¿¼ë¦¬ ì¶”ê°€: {currentQueryName}");
                                 
                                 summaries.Add(new QuerySummaryInfo
                                 {
@@ -112,7 +112,7 @@ namespace FACTOVA_QueryHelper
                                 break;
                             }
                             
-                            // ´ÙÀ½ Äõ¸®¸¦ ¸¸³ª¸é Áß´Ü
+                            // ë‹¤ìŒ ì¿¼ë¦¬ë¥¼ ë§Œë‚˜ë©´ ì¤‘ë‹¨
                             if (nextLog.Contains("[") && nextLog.Contains("]") && nextLog.Contains("/"))
                             {
                                 break;
@@ -122,8 +122,8 @@ namespace FACTOVA_QueryHelper
                 }
             }
 
-            System.Diagnostics.Debug.WriteLine($"ÆÄ½ÌµÈ ¿ä¾à ¼ö: {summaries.Count}");
-            System.Diagnostics.Debug.WriteLine("=== QuerySummaryHelper.ParseQuerySummaries ¿Ï·á ===");
+            System.Diagnostics.Debug.WriteLine($"íŒŒì‹±ëœ ìš”ì•½ ìˆ˜: {summaries.Count}");
+            System.Diagnostics.Debug.WriteLine("=== QuerySummaryHelper.ParseQuerySummaries ì™„ë£Œ ===");
 
             return summaries;
         }

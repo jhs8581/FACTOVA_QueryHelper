@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -53,7 +53,7 @@ namespace FACTOVA_QueryHelper
             }
             catch
             {
-                // �α� ���� ���� ����
+                // 占싸깍옙 占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙
             }
         }
 
@@ -96,7 +96,7 @@ namespace FACTOVA_QueryHelper
             }
             catch
             {
-                // �α� �ε� ���� ����
+                // 占싸깍옙 占싸듸옙 占쏙옙占쏙옙 占쏙옙占쏙옙
             }
 
             return logs;
@@ -106,11 +106,11 @@ namespace FACTOVA_QueryHelper
         {
             try
             {
-                // �α� ����: [2025-01-22 10:30:45] [Info] 192.168.1.100 - process.exe: ���� �� - �޽���
+                // 占싸깍옙 占쏙옙占쏙옙: [2025-01-22 10:30:45] [Info] 192.168.1.100 - process.exe: 占쏙옙占쏙옙 占쏙옙 - 占쌨쏙옙占쏙옙
                 var parts = line.Split(new[] { "] [", "] ", " - " }, StringSplitOptions.None);
                 if (parts.Length >= 5)
                 {
-                    var timestampStr = parts[0].Substring(1); // [ ����
+                    var timestampStr = parts[0].Substring(1); // [ 占쏙옙占쏙옙
                     var levelStr = parts[1];
                     var ipAddress = parts[2];
                     var processName = parts[3];
@@ -130,7 +130,7 @@ namespace FACTOVA_QueryHelper
             }
             catch
             {
-                // �Ľ� ���� ����
+                // 占식쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙
             }
 
             return null;

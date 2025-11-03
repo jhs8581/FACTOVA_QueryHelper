@@ -9,7 +9,7 @@ using FACTOVA_QueryHelper.Database;
 namespace FACTOVA_QueryHelper.SFC
 {
     /// <summary>
-    /// SFC 쿼리 관리 및 결과 처리를 담당하는 클래스
+    /// SFC 荑쇰━ 愿由?諛?寃곌낵 泥섎━瑜??대떦?섎뒗 ?대옒??
     /// </summary>
     public class SfcQueryManager
     {
@@ -21,7 +21,7 @@ namespace FACTOVA_QueryHelper.SFC
         }
 
         /// <summary>
-        /// TNS ��Ʈ�� ����� ������Ʈ�մϴ�.
+        /// TNS 占쏙옙트占쏙옙 占쏙옙占쏙옙占?占쏙옙占쏙옙占쏙옙트占쌌니댐옙.
         /// </summary>
         public void UpdateTnsEntries(List<TnsEntry> tnsEntries)
         {
@@ -30,7 +30,7 @@ namespace FACTOVA_QueryHelper.SFC
         }
 
         /// <summary>
-        /// SFC ������ �����ϰ� ����� ��ȯ�մϴ�.
+        /// SFC 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占싹곤옙 占쏙옙占쏙옙占?占쏙옙환占쌌니댐옙.
         /// </summary>
         public async Task<DataTable?> ExecuteQueryAsync(
             string tnsName,
@@ -44,7 +44,7 @@ namespace FACTOVA_QueryHelper.SFC
 
             if (selectedTns == null)
             {
-                throw new Exception($"TNS '{tnsName}'�� ã�� �� �����ϴ�.");
+                throw new Exception($"TNS '{tnsName}'占쏙옙 찾占쏙옙 占쏙옙 占쏙옙占쏙옙占싹댐옙.");
             }
 
             string configDate = queryDate.ToString("yyyyMMdd");
@@ -61,7 +61,7 @@ namespace FACTOVA_QueryHelper.SFC
         }
 
         /// <summary>
-        /// SFC ���� ����� ó���Ͽ� ���� ���¸� ������Ʈ�մϴ�.
+        /// SFC 占쏙옙占쏙옙 占쏙옙占쏙옙占?처占쏙옙占싹울옙 占쏙옙占쏙옙 占쏙옙占승몌옙 占쏙옙占쏙옙占쏙옙트占쌌니댐옙.
         /// </summary>
         public void ProcessQueryResult(DataTable result, List<SfcEquipmentInfo> equipmentList)
         {
@@ -93,7 +93,7 @@ namespace FACTOVA_QueryHelper.SFC
         }
 
         /// <summary>
-        /// CONFIG_JSON���� BIZACTOR�� �����մϴ�.
+        /// CONFIG_JSON占쏙옙占쏙옙 BIZACTOR占쏙옙 占쏙옙占쏙옙占쌌니댐옙.
         /// </summary>
         private string ExtractBizActor(string configJson)
         {
@@ -130,14 +130,14 @@ namespace FACTOVA_QueryHelper.SFC
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"JSON �Ľ� ����: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"JSON 占식쏙옙 占쏙옙占쏙옙: {ex.Message}");
             }
 
             return "";
         }
 
         /// <summary>
-        /// SFC ���� ��� ���
+        /// SFC 占쏙옙占쏙옙 占쏙옙占?占쏙옙占?
         /// </summary>
         public class QueryResultSummary
         {
@@ -147,12 +147,12 @@ namespace FACTOVA_QueryHelper.SFC
 
             public string GetSummaryMessage()
             {
-                return $"��ȸ �Ϸ� - ON: {OnCount}��, OFF: {OffCount}��";
+                return $"占쏙옙회 占싹뤄옙 - ON: {OnCount}占쏙옙, OFF: {OffCount}占쏙옙";
             }
         }
 
         /// <summary>
-        /// ���� ��� ����� �����մϴ�.
+        /// 占쏙옙占쏙옙 占쏙옙占?占쏙옙占쏙옙占?占쏙옙占쏙옙占쌌니댐옙.
         /// </summary>
         public static QueryResultSummary GetResultSummary(List<SfcEquipmentInfo> equipmentList)
         {

@@ -1,4 +1,4 @@
-using Microsoft.Data.Sqlite;
+ï»¿using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,7 +6,7 @@ using System.IO;
 namespace FACTOVA_QueryHelper.Database
 {
     /// <summary>
-    /// SQLite µ¥ÀÌÅÍº£ÀÌ½º¸¦ °ü¸®ÇÏ´Â Å¬·¡½º
+    /// SQLite ë°ì´í„°ë² ì´ìŠ¤ë¥¼ ê´€ë¦¬í•˜ëŠ” í´ë˜ìŠ¤
     /// </summary>
     public class QueryDatabase
     {
@@ -15,14 +15,14 @@ namespace FACTOVA_QueryHelper.Database
 
         public QueryDatabase(string? customPath = null)
         {
-            // »ç¿ëÀÚ ÁöÁ¤ °æ·Î°¡ ÀÖÀ¸¸é »ç¿ë, ¾øÀ¸¸é ±âº» °æ·Î »ç¿ë
+            // ì‚¬ìš©ì ì§€ì • ê²½ë¡œê°€ ìˆìœ¼ë©´ ì‚¬ìš©, ì—†ìœ¼ë©´ ê¸°ë³¸ ê²½ë¡œ ì‚¬ìš©
             _databasePath = string.IsNullOrWhiteSpace(customPath) ? GetDefaultDatabasePath() : customPath;
             _connectionString = $"Data Source={_databasePath}";
             InitializeDatabase();
         }
 
         /// <summary>
-        /// µ¥ÀÌÅÍº£ÀÌ½º¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        /// ë°ì´í„°ë² ì´ìŠ¤ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         /// </summary>
         private void InitializeDatabase()
         {
@@ -61,7 +61,7 @@ namespace FACTOVA_QueryHelper.Database
                 )";
             command.ExecuteNonQuery();
             
-            // DefaultFlag ÄÃ·³ÀÌ ¾ø´Â ±âÁ¸ Å×ÀÌºí¿¡ ÄÃ·³ Ãß°¡
+            // DefaultFlag ì»¬ëŸ¼ì´ ì—†ëŠ” ê¸°ì¡´ í…Œì´ë¸”ì— ì»¬ëŸ¼ ì¶”ê°€
             try
             {
                 var alterCommand = connection.CreateCommand();
@@ -70,12 +70,12 @@ namespace FACTOVA_QueryHelper.Database
             }
             catch
             {
-                // ÄÃ·³ÀÌ ÀÌ¹Ì Á¸ÀçÇÏ¸é ¹«½Ã
+                // ì»¬ëŸ¼ì´ ì´ë¯¸ ì¡´ì¬í•˜ë©´ ë¬´ì‹œ
             }
         }
 
         /// <summary>
-        /// ¸ğµç Äõ¸®¸¦ Á¶È¸ÇÕ´Ï´Ù.
+        /// ëª¨ë“  ì¿¼ë¦¬ë¥¼ ì¡°íšŒí•©ë‹ˆë‹¤.
         /// </summary>
         public List<QueryItem> GetAllQueries()
         {
@@ -117,7 +117,7 @@ namespace FACTOVA_QueryHelper.Database
         }
 
         /// <summary>
-        /// Äõ¸®¸¦ Ãß°¡ÇÕ´Ï´Ù.
+        /// ì¿¼ë¦¬ë¥¼ ì¶”ê°€í•©ë‹ˆë‹¤.
         /// </summary>
         public void AddQuery(QueryItem query)
         {
@@ -125,7 +125,7 @@ namespace FACTOVA_QueryHelper.Database
         }
 
         /// <summary>
-        /// Äõ¸®¸¦ Ãß°¡ÇÕ´Ï´Ù.
+        /// ì¿¼ë¦¬ë¥¼ ì¶”ê°€í•©ë‹ˆë‹¤.
         /// </summary>
         public void InsertQuery(QueryItem query)
         {
@@ -149,7 +149,7 @@ namespace FACTOVA_QueryHelper.Database
         }
 
         /// <summary>
-        /// Äõ¸®¸¦ ¼öÁ¤ÇÕ´Ï´Ù.
+        /// ì¿¼ë¦¬ë¥¼ ìˆ˜ì •í•©ë‹ˆë‹¤.
         /// </summary>
         public void UpdateQuery(QueryItem query)
         {
@@ -185,7 +185,7 @@ namespace FACTOVA_QueryHelper.Database
         }
 
         /// <summary>
-        /// Äõ¸®¸¦ »èÁ¦ÇÕ´Ï´Ù.
+        /// ì¿¼ë¦¬ë¥¼ ì‚­ì œí•©ë‹ˆë‹¤.
         /// </summary>
         public void DeleteQuery(int id)
         {
@@ -199,7 +199,7 @@ namespace FACTOVA_QueryHelper.Database
         }
 
         /// <summary>
-        /// ¸ğµç Äõ¸®¸¦ »èÁ¦ÇÕ´Ï´Ù.
+        /// ëª¨ë“  ì¿¼ë¦¬ë¥¼ ì‚­ì œí•©ë‹ˆë‹¤.
         /// </summary>
         public void ClearAllQueries()
         {
@@ -212,7 +212,7 @@ namespace FACTOVA_QueryHelper.Database
         }
 
         /// <summary>
-        /// Excel¿¡¼­ Äõ¸®¸¦ °¡Á®¿É´Ï´Ù.
+        /// Excelì—ì„œ ì¿¼ë¦¬ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
         /// </summary>
         public void ImportFromExcel(List<QueryItem> queries, bool clearExisting = false)
         {
@@ -258,7 +258,7 @@ namespace FACTOVA_QueryHelper.Database
         }
 
         /// <summary>
-        /// Äõ¸® ÆÄ¶ó¹ÌÅÍ¸¦ Ãß°¡ÇÏ´Â ÇïÆÛ ¸Ş¼­µå
+        /// ì¿¼ë¦¬ íŒŒë¼ë¯¸í„°ë¥¼ ì¶”ê°€í•˜ëŠ” í—¬í¼ ë©”ì„œë“œ
         /// </summary>
         private void AddQueryParameters(SqliteCommand command, QueryItem query)
         {
@@ -282,7 +282,7 @@ namespace FACTOVA_QueryHelper.Database
         }
 
         /// <summary>
-        /// µ¥ÀÌÅÍº£ÀÌ½º °æ·Î¸¦ ¹İÈ¯ÇÕ´Ï´Ù.
+        /// ë°ì´í„°ë² ì´ìŠ¤ ê²½ë¡œë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
         /// </summary>
         public string GetDatabasePath()
         {
@@ -290,7 +290,7 @@ namespace FACTOVA_QueryHelper.Database
         }
         
         /// <summary>
-        /// ±âº» µ¥ÀÌÅÍº£ÀÌ½º °æ·Î¸¦ ¹İÈ¯ÇÕ´Ï´Ù (Á¤Àû ¸Ş¼­µå).
+        /// ê¸°ë³¸ ë°ì´í„°ë² ì´ìŠ¤ ê²½ë¡œë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤ (ì •ì  ë©”ì„œë“œ).
         /// </summary>
         public static string GetDefaultDatabasePath()
         {
