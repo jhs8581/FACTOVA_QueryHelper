@@ -910,7 +910,6 @@ namespace FACTOVA_QueryHelper.Controls
                     SelectionUnit = DataGridSelectionUnit.Cell,
                     ClipboardCopyMode = DataGridClipboardCopyMode.IncludeHeader,
                     FontSize = fontSize,
-                    RowHeight = 35,
                     BorderThickness = new Thickness(1),
                     BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224)),
                     ColumnWidth = DataGridLength.Auto,  // 자동 너비 조정

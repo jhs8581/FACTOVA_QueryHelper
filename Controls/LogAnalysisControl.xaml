@@ -45,18 +45,7 @@
                         </StackPanel>
                     </Button>
                     
-                    <Button x:Name="ToggleAutoQueryButton" 
-                            Content="실행" 
-                            Width="100" Height="40"
-                            Click="ToggleAutoQueryButton_Click"
-                            Background="#FF0078D7" 
-                            Foreground="White"
-                            BorderThickness="0"
-                            Cursor="Hand"
-                            FontWeight="Bold"
-                            FontSize="14"
-                            IsEnabled="False"
-                            Margin="0,0,20,0"/>
+                    
                     
                     <Rectangle Width="1" Height="30" Fill="#FFE0E0E0" Margin="0,0,20,0"/>
                     
@@ -109,14 +98,28 @@
                             <TextBlock Text="⏱️ 다음 실행까지: " 
                                        FontSize="12" 
                                        FontWeight="SemiBold"
+                                       Foreground="#FF2C3E50"
                                        VerticalAlignment="Center"/>
                             <TextBlock x:Name="AutoQueryCountdownTextBlock" 
                                        FontSize="12" 
                                        FontWeight="Bold" 
-                                       Foreground="#FFFFC107"
+                                       Foreground="#FFDC3545"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
+
+                    <Button x:Name="ToggleAutoQueryButton" 
+                            Content="실행" 
+                            Width="100" Height="40"
+                            Click="ToggleAutoQueryButton_Click"
+                            Background="#FF0078D7" 
+                            Foreground="White"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            FontWeight="Bold"
+                            FontSize="14"
+                            IsEnabled="False"
+                            Margin="20,0,20,0"/>         
                 </StackPanel>
 
                 <!-- 두 번째 행: 쿼리 선택 및 디폴트 폼 -->

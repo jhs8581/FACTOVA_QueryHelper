@@ -400,7 +400,6 @@
                           AlternatingRowBackground="#FFF8F9FA"
                           CanUserAddRows="False"
                           HeadersVisibility="All"
-                          RowHeight="35"
                           FontSize="11"
                           BorderThickness="1"
                           BorderBrush="#FFE0E0E0">
