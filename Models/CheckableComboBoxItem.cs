@@ -3,7 +3,7 @@
 namespace FACTOVA_QueryHelper
 {
     /// <summary>
-    /// 체크占쌘쏙옙占쏙옙 占쌍댐옙 ComboBox 占쏙옙占쏙옙占쏙옙
+    /// 체크박스가 있는 ComboBox 아이템
     /// </summary>
     public class CheckableComboBoxItem : INotifyPropertyChanged
     {

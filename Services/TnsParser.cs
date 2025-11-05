@@ -29,11 +29,11 @@ namespace FACTOVA_QueryHelper
 
             try
             {
-                // UTF-8, UTF-8 BOM, ANSI 占쏙옙 占쏙옙占쏙옙 占쏙옙占쌘듸옙占쏙옙占쏙옙 占시듸옙
+                // UTF-8, UTF-8 BOM, ANSI 등 다양한 인코딩으로 시도
                 string content = ReadFileWithEncoding(filePath);
                 
-                // TNS 占쏙옙트占쏙옙 占식쏙옙 (占싱몌옙 = 占쏙옙占쏙옙 占쏙옙占쏙옙占싹댐옙 占쏙옙 占쏙옙占쏙옙)
-                // 占쏙옙占쏙옙, 占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙構占?占쏙옙拈占쏙옙占?占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙칭
+                // TNS 엔트리 추출 (이름 = 으로 시작하는 각 블록)
+                // 예제, 각 블록은 이름과 괄호로 시작하는 설명 구성
                 var matches = Regex.Matches(content, @"^[\s]*([^\s=]+)[\s]*=[\s]*\(DESCRIPTION", 
                     RegexOptions.IgnoreCase | RegexOptions.Multiline);
 
@@ -41,7 +41,7 @@ namespace FACTOVA_QueryHelper
                 {
                     string tnsName = match.Groups[1].Value.Trim();
                     
-                    // 占쌔댐옙 TNS 占쏙옙占쏙옙 占쏙옙占쏙옙
+                    // 해당 TNS 블록 추출
                     int startIndex = match.Index;
                     int endIndex = FindMatchingParenthesis(content, startIndex);
                     
@@ -51,14 +51,14 @@ namespace FACTOVA_QueryHelper
                         
                         var entry = new TnsEntry { Name = tnsName };
                         
-                        // HOST 占쏙옙占쏙옙
+                        // HOST 추출
                         var hostMatch = Regex.Match(block, @"HOST[\s]*=[\s]*([^\)]+)", RegexOptions.IgnoreCase);
                         if (hostMatch.Success)
                         {
                             entry.Host = hostMatch.Groups[1].Value.Trim();
                         }
                         
-                        // PORT 占쏙옙占쏙옙
+                        // PORT 추출
                         var portMatch = Regex.Match(block, @"PORT[\s]*=[\s]*(\d+)", RegexOptions.IgnoreCase);
                         if (portMatch.Success)
                         {
@@ -66,7 +66,7 @@ namespace FACTOVA_QueryHelper
                             entry.Port = port;
                         }
                         
-                        // SERVICE_NAME 占실댐옙 SID 占쏙옙占쏙옙
+                        // SERVICE_NAME 또는 SID 추출
                         var serviceMatch = Regex.Match(block, @"SERVICE_NAME[\s]*=[\s]*([^\)]+)", RegexOptions.IgnoreCase);
                         if (serviceMatch.Success)
                         {
@@ -74,7 +74,7 @@ namespace FACTOVA_QueryHelper
                         }
                         else
                         {
-                            // SID占싸듸옙 占시듸옙
+                            // SID로 시도
                             var sidMatch = Regex.Match(block, @"SID[\s]*=[\s]*([^\)]+)", RegexOptions.IgnoreCase);
                             if (sidMatch.Success)
                             {
@@ -82,7 +82,7 @@ namespace FACTOVA_QueryHelper
                             }
                         }
                         
-                        // 占쏙옙占쏙옙 占쏙옙占쌘울옙 占쏙옙占쏙옙
+                        // 연결 문자열 생성
                         entry.ConnectionString = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={entry.Host})(PORT={entry.Port}))(CONNECT_DATA=(SERVICE_NAME={entry.ServiceName})));";
                         
                         entries.Add(entry);
@@ -91,7 +91,7 @@ namespace FACTOVA_QueryHelper
             }
             catch (Exception)
             {
-                // 占식쏙옙 占쏙옙占쏙옙 占쏙옙 占쏙옙 占쏙옙占쏙옙트 占쏙옙환
+                // 파싱 실패 시 빈 리스트 반환
             }
 
             return entries;
@@ -101,19 +101,19 @@ namespace FACTOVA_QueryHelper
         {
             try
             {
-                // 占쏙옙占쏙옙 UTF-8占쏙옙 占시듸옙
+                // 먼저 UTF-8로 시도
                 return File.ReadAllText(filePath, System.Text.Encoding.UTF8);
             }
             catch
             {
                 try
                 {
-                    // ANSI (Default)占쏙옙 占시듸옙
+                    // ANSI (Default)로 시도
                     return File.ReadAllText(filePath, System.Text.Encoding.Default);
                 }
                 catch
                 {
-                    // ASCII占쏙옙 占시듸옙
+                    // ASCII로 시도
                     return File.ReadAllText(filePath, System.Text.Encoding.ASCII);
                 }
             }
@@ -137,7 +137,7 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// TNS 占쏙옙占쏙옙占쏙옙 占쏙옙占?占쏙옙트占쏙옙 占싱몌옙占쏙옙 占쏙옙占쏙옙 (占쏙옙占쏙옙占쏙옙)
+        /// TNS 파일에서 모든 엔트리 이름만 추출 (간단함)
         /// </summary>
         public static List<string> GetAllEntryNames(string filePath)
         {
@@ -161,7 +161,7 @@ namespace FACTOVA_QueryHelper
             }
             catch
             {
-                // 占쏙옙占쏙옙 占쏙옙 占쏙옙 占쏙옙占쏙옙트 占쏙옙환
+                // 실패 시 빈 리스트 반환
             }
 
             return names;

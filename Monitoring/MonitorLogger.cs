@@ -53,7 +53,7 @@ namespace FACTOVA_QueryHelper
             }
             catch
             {
-                // 占싸깍옙 占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙
+                // 로깅 실패 시 무시
             }
         }
 
@@ -96,7 +96,7 @@ namespace FACTOVA_QueryHelper
             }
             catch
             {
-                // 占싸깍옙 占싸듸옙 占쏙옙占쏙옙 占쏙옙占쏙옙
+                // 로그 읽기 실패 시 무시
             }
 
             return logs;
@@ -106,11 +106,11 @@ namespace FACTOVA_QueryHelper
         {
             try
             {
-                // 占싸깍옙 占쏙옙占쏙옙: [2025-01-22 10:30:45] [Info] 192.168.1.100 - process.exe: 占쏙옙占쏙옙 占쏙옙 - 占쌨쏙옙占쏙옙
+                // 로그 형식: [2025-01-22 10:30:45] [Info] 192.168.1.100 - process.exe: 실행 중 - 메시지
                 var parts = line.Split(new[] { "] [", "] ", " - " }, StringSplitOptions.None);
                 if (parts.Length >= 5)
                 {
-                    var timestampStr = parts[0].Substring(1); // [ 占쏙옙占쏙옙
+                    var timestampStr = parts[0].Substring(1); // [ 제거
                     var levelStr = parts[1];
                     var ipAddress = parts[2];
                     var processName = parts[3];
@@ -130,7 +130,7 @@ namespace FACTOVA_QueryHelper
             }
             catch
             {
-                // 占식쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙
+                // 파싱 실패 시 무시
             }
 
             return null;

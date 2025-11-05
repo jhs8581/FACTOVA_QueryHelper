@@ -342,7 +342,7 @@ namespace FACTOVA_QueryHelper.Controls
                 QueryName = "",
                 TnsName = "",
                 Host = "",
-                Port = "1521",
+                Port = "",
                 ServiceName = "",
                 UserId = "",
                 Password = "",

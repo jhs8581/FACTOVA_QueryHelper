@@ -23,7 +23,7 @@ namespace FACTOVA_QueryHelper
         public int ProcessId { get; set; }
         public string ExecutablePath { get; set; } = string.Empty;
         public DateTime StartTime { get; set; }
-        public long WorkingSetSize { get; set; } // 占쌨몌옙 占쏙옙酉?(bytes)
+        public long WorkingSetSize { get; set; } // 메모리 사용량(bytes)
     }
 
     public class MonitorResult
@@ -69,41 +69,41 @@ namespace FACTOVA_QueryHelper
 
             try
             {
-                // 占쏙옙占쏙옙 호占쏙옙트占쏙옙 占쏙옙占쏙옙獵占쏙옙占?확占쏙옙
+                // 먼저 호스트가 살아있는지 확인
                 bool isHostAlive = await CheckHostAvailability(target.IpAddress);
                 if (!isHostAlive)
                 {
                     result.IsRunning = false;
-                    result.Status = "호占쏙옙트 占쏙옙占쏙옙 占쌀곤옙";
-                    result.ErrorMessage = "호占쏙옙트占쏙옙 占쏙옙占쏙옙占쏙옙 占쏙옙 占쏙옙占쏙옙占싹댐옙. 占쏙옙트占쏙옙크 占쏙옙占쏙옙占쏙옙 확占쏙옙占싹쇽옙占쏙옙.";
+                    result.Status = "호스트 응답 없음";
+                    result.ErrorMessage = "호스트에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.";
                     return result;
                 }
 
-                // WMI占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙占싸쇽옙占쏙옙 확占쏙옙
+                // WMI를 통해 원격 프로세스 확인
                 var processes = await GetRemoteProcessesAsync(target);
                 result.Processes = processes;
 
                 if (processes.Count > 0)
                 {
                     result.IsRunning = true;
-                    result.Status = $"占쏙옙占쏙옙 占쏙옙 ({processes.Count}占쏙옙 占쏙옙占싸쇽옙占쏙옙)";
+                    result.Status = $"실행 중 ({processes.Count}개 프로세스)";
                 }
                 else
                 {
                     result.IsRunning = false;
-                    result.Status = "占쏙옙占쏙옙 占쏙옙占쏙옙 占싣댐옙";
+                    result.Status = "실행 중이지 않음";
                 }
             }
             catch (UnauthorizedAccessException)
             {
                 result.IsRunning = false;
-                result.Status = "占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙";
-                result.ErrorMessage = "占쏙옙占?占시쏙옙占쌜울옙 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占싹댐옙. 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙 확占쏙옙占싹쇽옙占쏙옙.";
+                result.Status = "접근 권한 없음";
+                result.ErrorMessage = "원격 시스템에 접근할 권한이 없습니다. 자격증명을 확인해주세요.";
             }
             catch (Exception ex)
             {
                 result.IsRunning = false;
-                result.Status = "占쏙옙占쏙옙 占쌩삼옙";
+                result.Status = "확인 실패";
                 result.ErrorMessage = ex.Message;
             }
 
@@ -130,7 +130,7 @@ namespace FACTOVA_QueryHelper
                     ManagementScope scope = new ManagementScope($"\\\\{target.IpAddress}\\root\\cimv2", options);
                     scope.Connect();
 
-                    // 占쏙옙占싸쇽옙占쏙옙占쏙옙占쏙옙占쏙옙 .exe 확占쏙옙占쏙옙 占쏙옙占쏙옙
+                    // 프로세스명에서 .exe 확장자 제거
                     string processNameWithoutExt = target.ProcessName.Replace(".exe", "");
 
                     ObjectQuery query = new ObjectQuery($"SELECT * FROM Win32_Process WHERE Name = '{target.ProcessName}'");
@@ -148,7 +148,7 @@ namespace FACTOVA_QueryHelper
                                 WorkingSetSize = Convert.ToInt64(obj["WorkingSetSize"] ?? 0)
                             };
 
-                            // CreationDate 占식쏙옙
+                            // CreationDate 파싱
                             string creationDate = obj["CreationDate"]?.ToString() ?? "";
                             if (!string.IsNullOrEmpty(creationDate))
                             {
@@ -159,7 +159,7 @@ namespace FACTOVA_QueryHelper
                         }
                         catch
                         {
-                            // 占쏙옙占쏙옙 占쏙옙占싸쇽옙占쏙옙 占쏙옙占쏙옙 占식쏙옙 占쏙옙占쏙옙 占쏙옙 占쏙옙占쏙옙
+                            // 개별 프로세스 정보 파싱 실패 시 무시
                         }
                     }
                 }

@@ -255,9 +255,9 @@
                         
                         <DataGridTextColumn Header="쿼리명" Binding="{Binding QueryName, UpdateSourceTrigger=PropertyChanged}" Width="200"/>
                         <DataGridTextColumn Header="TNS" Binding="{Binding TnsName, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
-                        <DataGridTextColumn Header="Host" Binding="{Binding Host, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
-                        <DataGridTextColumn Header="Port" Binding="{Binding Port, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
-                        <DataGridTextColumn Header="Service" Binding="{Binding ServiceName, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                        <DataGridTextColumn Header="Host" Binding="{Binding Host, UpdateSourceTrigger=PropertyChanged}" Width="120" Visibility="Collapsed"/>
+                        <DataGridTextColumn Header="Port" Binding="{Binding Port, UpdateSourceTrigger=PropertyChanged}" Width="60" Visibility="Collapsed"/>
+                        <DataGridTextColumn Header="Service" Binding="{Binding ServiceName, UpdateSourceTrigger=PropertyChanged}" Width="100" Visibility="Collapsed"/>
                         <DataGridTextColumn Header="User ID" Binding="{Binding UserId, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
                         
                         <DataGridTextColumn Header="Password" Binding="{Binding Password, UpdateSourceTrigger=PropertyChanged}" Width="100">

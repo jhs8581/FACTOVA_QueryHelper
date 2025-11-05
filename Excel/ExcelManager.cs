@@ -9,41 +9,41 @@ using OfficeOpenXml;
 namespace FACTOVA_QueryHelper
 {
     /// <summary>
-    /// Excel 占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙求占?클占쏙옙占쏙옙
+    /// Excel 파일 작업을 담당하는 클래스
     /// </summary>
     public class ExcelManager
     {
         /// <summary>
-        /// Excel 占쏙옙占싹울옙占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙占?占싸듸옙占쌌니댐옙.
-        /// N占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙占?占쏙옙占?占쏙옙占쏙옙占쏙옙 占싸듸옙占쌌니댐옙.
+        /// Excel 파일에서 쿼리 목록을 읽어옵니다.
+        /// N열 컬럼 제외여부를 추가로 읽어옵니다.
         /// </summary>
         public static List<QueryItem> LoadQueries(string filePath, string? sheetName, int startRow)
         {
             var queries = ExcelQueryReader.ReadQueriesFromExcel(
                 filePath,
                 sheetName,
-                "F",     // 占쏙옙占쏙옙 (占십쇽옙)
-                "D",     // 占쏙옙 占싱몌옙 (占십쇽옙)
-                "",      // 占쏙옙占쏙옙 占쏙옙 占쏙옙占?占쏙옙 占쏙옙
-                "A",     // TNS (占쏙옙占쏙옙)
-                "B",     // User ID (占쏙옙占쏙옙)
-                "C",     // Password (占쏙옙占쏙옙)
+                "F",     // 쿼리 (필수)
+                "D",     // 탭 이름 (필수)
+                "",      // 쿼리 설명 (옵션)
+                "A",     // TNS (필수)
+                "B",     // User ID (필수)
+                "C",     // Password (필수)
                 startRow,
-                "G",  // 占쏙옙占쏙옙 占쏙옙占쏙옙
-                "H",  // 占싯몌옙 占쏙옙占쏙옙
-                "I",  // 占싱삼옙
-                "J",  // 占쏙옙占쏙옙
-                "K",  // 占쏙옙占쏙옙
-                "L",  // 占시뤄옙占쏙옙
-                "M",  // 占시뤄옙占쏙옙
-                "N"); // 占썩본 활占쏙옙화 占쏙옙占쏙옙
+                "G",  // 실행 여부
+                "H",  // 알림 여부
+                "I",  // 이상
+                "J",  // 같음
+                "K",  // 이하
+                "L",  // 컬럼명
+                "M",  // 컬럼값
+                "N"); // 제외 활성화 여부
 
-            // N占쏙옙 占쏙옙占싶몌옙 占쏙옙占쏙옙 - 占쏙옙占?占쏙옙占쏙옙 占쏙옙환
+            // N열 제외여부 포함 - 그대로 반환
             return queries;
         }
 
         /// <summary>
-        /// Excel 占쏙옙占쏙옙占쏙옙 占쏙옙트 占쏙옙占쏙옙占?占쏙옙占쏙옙占심니댐옙.
+        /// Excel 파일의 시트 목록을 반환합니다.
         /// </summary>
         public static List<string> GetSheetNames(string filePath)
         {
@@ -51,7 +51,7 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// SFC Excel 占쏙옙占싹울옙占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙 占싸듸옙占쌌니댐옙.
+        /// SFC Excel 파일에서 장비 목록을 읽어옵니다.
         /// </summary>
         public static List<SfcEquipmentInfo> LoadSfcEquipmentList(string filePath)
         {
@@ -59,7 +59,7 @@ namespace FACTOVA_QueryHelper
 
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException("Excel 占쏙옙占쏙옙占쏙옙 찾占쏙옙 占쏙옙 占쏙옙占쏙옙占싹댐옙.", filePath);
+                throw new FileNotFoundException("Excel 파일을 찾을 수 없습니다.", filePath);
             }
 
             using (var package = new ExcelPackage(new FileInfo(filePath)))
@@ -67,7 +67,7 @@ namespace FACTOVA_QueryHelper
                 var worksheet = package.Workbook.Worksheets[0];
                 int rowCount = worksheet.Dimension?.End.Row ?? 0;
 
-                // 2占쏙옙占쏙옙占?占쏙옙占쏙옙占쏙옙 占싻깍옙 (1占쏙옙占쏙옙 占쏙옙占?
+                // 2행부터 시작 (1행은 헤더)
                 for (int row = 2; row <= rowCount; row++)
                 {
                     var ipAddress = worksheet.Cells[row, 1].Text?.Trim();

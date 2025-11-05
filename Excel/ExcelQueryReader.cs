@@ -17,23 +17,23 @@ namespace FACTOVA_QueryHelper
         public string UserId { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         
-        // 吏곸젒 ?곌껐 ?뺣낫 (TNS ????ъ슜 媛??
+        // 직접 연결 정보 (TNS 대신 사용 가능)
         public string Host { get; set; } = string.Empty;
         public string Port { get; set; } = string.Empty;
         public string ServiceName { get; set; } = string.Empty;
 
-        // ?덈줈???듭뀡 ?꾨뱶 ?띿꽦??
-        public string EnabledFlag { get; set; } = string.Empty; // G?? 'Y'?대㈃ ?ㅽ뻾 ?쒖꽦
-        public string NotifyFlag { get; set; } = string.Empty; // H?? 'Y'?대㈃ ?뚮┝ ?쒖떆
-        public string CountGreaterThan { get; set; } = string.Empty; // I?? N嫄??댁긽?????뚮┝
-        public string CountEquals { get; set; } = string.Empty; // J?? N嫄??뺥솗???쇱튂 ???뚮┝
-        public string CountLessThan { get; set; } = string.Empty; // K?? N嫄??댄븯?????뚮┝
-        public string ColumnNames { get; set; } = string.Empty; // L?? 泥댄겕??而щ읆紐?(A,B,C ?뺤떇)
-        public string ColumnValues { get; set; } = string.Empty; // M?? 泥댄겕??而щ읆媛?(1,2,3 ?뺤떇)
-        public string ExcludeFlag { get; set; } = string.Empty; // N?? 'Y'?대㈃ ?쒖쇅
-        public string DefaultFlag { get; set; } = string.Empty; // O?? 'Y'?대㈃ ?뷀뤃????
+        // 새로운 옵션 필드 추가됨
+        public string EnabledFlag { get; set; } = string.Empty; // G열 'Y'이면 실행 활성
+        public string NotifyFlag { get; set; } = string.Empty; // H열 'Y'이면 알림 표시
+        public string CountGreaterThan { get; set; } = string.Empty; // I열 N건 이상이면 알림
+        public string CountEquals { get; set; } = string.Empty; // J열 N건 정확히 일치 시 알림
+        public string CountLessThan { get; set; } = string.Empty; // K열 N건 이하이면 알림
+        public string ColumnNames { get; set; } = string.Empty; // L열 체크할 컬럼명(A,B,C 형식)
+        public string ColumnValues { get; set; } = string.Empty; // M열 체크할 컬럼값(1,2,3 형식)
+        public string ExcludeFlag { get; set; } = string.Empty; // N열 'Y'이면 제외
+        public string DefaultFlag { get; set; } = string.Empty; // O열 'Y'이면 디폴트값
 
-        // DataGrid CheckBox 諛붿씤?⑹슜 Bool ?띿꽦
+        // DataGrid CheckBox 바인딩용 Bool 속성
         public bool EnabledFlagBool
         {
             get => string.Equals(EnabledFlag, "Y", StringComparison.OrdinalIgnoreCase);
@@ -46,16 +46,16 @@ namespace FACTOVA_QueryHelper
             set => NotifyFlag = value ? "Y" : "N";
         }
 
-        // "?ы븿" 泥댄겕諛뺤뒪 (ExcludeFlag? 諛섎? 濡쒖쭅)
-        // 泥댄겕 = ?ы븿 (ExcludeFlag = "N")
-        // 泥댄겕 ?댁젣 = ?쒖쇅 (ExcludeFlag = "Y")
+        // "포함" 체크박스 (ExcludeFlag와 반대 로직)
+        // 체크 = 포함 (ExcludeFlag = "N")
+        // 체크 해제 = 제외 (ExcludeFlag = "Y")
         public bool ExcludeFlagBool
         {
             get => !string.Equals(ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase);
             set => ExcludeFlag = value ? "N" : "Y";
         }
 
-        // ?뷀뤃????泥댄겕諛뺤뒪
+        // 디폴트값 체크박스
         public bool DefaultFlagBool
         {
             get => string.Equals(DefaultFlag, "Y", StringComparison.OrdinalIgnoreCase);
@@ -65,14 +65,14 @@ namespace FACTOVA_QueryHelper
 
     public class ExcelQueryReader
     {
-        // EPPlus 占쏙옙占싱쇽옙占쏙옙 占쏙옙占쏙옙
+        // EPPlus 라이선스 설정
         static ExcelQueryReader()
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         }
 
         /// <summary>
-        /// Excel 占쏙옙 占쏙옙占쏙옙(A, B, C...)占쏙옙 占쏙옙占쏙옙 占싸듸옙占쏙옙占쏙옙 占쏙옙환 (1-based)
+        /// Excel 열 문자(A, B, C...)를 숫자 인덱스로 변환 (1-based)
         /// </summary>
         public static int ColumnLetterToNumber(string columnLetter)
         {
@@ -91,7 +91,7 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// Excel 占쏙옙占싹울옙占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙占?占싻억옙求占?
+        /// Excel 파일에서 쿼리 목록을 읽어옵니다.
         /// </summary>
         public static List<QueryItem> ReadQueriesFromExcel(
             string filePath,
@@ -116,7 +116,7 @@ namespace FACTOVA_QueryHelper
 
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException($"Excel 占쏙옙占쏙옙占쏙옙 찾占쏙옙 占쏙옙 占쏙옙占쏙옙占싹댐옙: {filePath}");
+                throw new FileNotFoundException($"Excel 파일을 찾을 수 없습니다: {filePath}");
             }
 
             try
@@ -138,7 +138,7 @@ namespace FACTOVA_QueryHelper
 
                 if (queryColIndex == 0)
                 {
-                    throw new ArgumentException("占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙占쏙옙 占십았쏙옙占싹댐옙.");
+                    throw new ArgumentException("쿼리 컬럼 문자열이 잘못되었습니다.");
                 }
 
                 using (var package = new ExcelPackage(new FileInfo(filePath)))
@@ -154,7 +154,7 @@ namespace FACTOVA_QueryHelper
                         worksheet = package.Workbook.Worksheets[sheetName];
                         if (worksheet == null)
                         {
-                            throw new ArgumentException($"占쏙옙트占쏙옙 찾占쏙옙 占쏙옙 占쏙옙占쏙옙占싹댐옙: {sheetName}");
+                            throw new ArgumentException($"시트를 찾을 수 없습니다: {sheetName}");
                         }
                     }
 
@@ -162,10 +162,10 @@ namespace FACTOVA_QueryHelper
 
                     for (int row = startRow; row <= rowCount; row++)
                     {
-                        // 占쏙옙占쏙옙 占싻깍옙
+                        // 쿼리 읽기
                         var query = worksheet.Cells[row, queryColIndex].Text?.Trim();
 
-                        // 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙占쏙옙占?占실너뛰깍옙
+                        // 쿼리가 비어있으면 건너뜀
                         if (string.IsNullOrWhiteSpace(query))
                             continue;
 
@@ -175,7 +175,7 @@ namespace FACTOVA_QueryHelper
                             Query = query
                         };
 
-                        // 占쏙옙占쏙옙 占싱몌옙 占싻깍옙
+                        // 쿼리 이름 읽기
                         if (nameColIndex > 0)
                         {
                             queryItem.QueryName = worksheet.Cells[row, nameColIndex].Text?.Trim() ?? "";
@@ -185,18 +185,18 @@ namespace FACTOVA_QueryHelper
                             queryItem.QueryName = $"Query {row - startRow + 1}";
                         }
 
-                        // 占쏙옙占쏙옙 占싻깍옙
+                        // 설명 읽기
                         if (descColIndex > 0)
                         {
                             queryItem.Description = worksheet.Cells[row, descColIndex].Text?.Trim() ?? "";
                         }
 
-                        // TNS 占싱몌옙 占싻깍옙 (占실댐옙 Host:Port:ServiceName 占쏙옙占쏙옙)
+                        // TNS 이름 읽기 (또는 Host:Port:ServiceName 형식)
                         if (tnsColIndex > 0)
                         {
                             var tnsValue = worksheet.Cells[row, tnsColIndex].Text?.Trim() ?? "";
                             
-                            // Host:Port:ServiceName 占쏙옙占쏙옙占쏙옙占쏙옙 확占쏙옙
+                            // Host:Port:ServiceName 형식인지 확인
                             if (tnsValue.Contains(":"))
                             {
                                 var parts = tnsValue.Split(':');
@@ -217,19 +217,19 @@ namespace FACTOVA_QueryHelper
                             }
                         }
 
-                        // User ID 占싻깍옙
+                        // User ID 읽기
                         if (userColIndex > 0)
                         {
                             queryItem.UserId = worksheet.Cells[row, userColIndex].Text?.Trim() ?? "";
                         }
 
-                        // Password 占싻깍옙
+                        // Password 읽기
                         if (passColIndex > 0)
                         {
                             queryItem.Password = worksheet.Cells[row, passColIndex].Text?.Trim() ?? "";
                         }
 
-                        // 占쏙옙占싸울옙 占심쇽옙 占십듸옙 占쏙옙 占싻깍옙
+                        // 옵션 필드들 읽기
                         if (enabledColIndex > 0)
                         {
                             queryItem.EnabledFlag = worksheet.Cells[row, enabledColIndex].Text?.Trim().ToUpper() ?? "";
@@ -276,14 +276,14 @@ namespace FACTOVA_QueryHelper
             }
             catch (Exception ex)
             {
-                throw new Exception($"Excel 占쏙옙占쏙옙 占싻깍옙 占쏙옙占쏙옙: {ex.Message}", ex);
+                throw new Exception($"Excel 파일 읽기 오류: {ex.Message}", ex);
             }
 
             return queries;
         }
 
         /// <summary>
-        /// Excel 占쏙옙占쏙옙占쏙옙 占쏙옙트 占쏙옙占쏙옙占?占쏙옙占쏙옙占심니댐옙.
+        /// Excel 파일의 시트 목록을 반환합니다.
         /// </summary>
         public static List<string> GetSheetNames(string filePath)
         {
@@ -291,7 +291,7 @@ namespace FACTOVA_QueryHelper
 
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException($"Excel 占쏙옙占쏙옙占쏙옙 찾占쏙옙 占쏙옙 占쏙옙占쏙옙占싹댐옙: {filePath}");
+                throw new FileNotFoundException($"Excel 파일을 찾을 수 없습니다: {filePath}");
             }
 
             try
@@ -303,14 +303,14 @@ namespace FACTOVA_QueryHelper
             }
             catch (Exception ex)
             {
-                throw new Exception($"Excel 占쏙옙占쏙옙 占싻깍옙 占쏙옙占쏙옙: {ex.Message}", ex);
+                throw new Exception($"Excel 파일 읽기 오류: {ex.Message}", ex);
             }
 
             return sheetNames;
         }
 
         /// <summary>
-        /// Excel 占쏙옙占쏙옙占쏙옙 특占쏙옙 占쏙옙트占쏙옙 占쏙옙占?占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占심니댐옙.
+        /// Excel 파일의 특정 시트에 있는 컬럼명을 반환합니다.
         /// </summary>
         public static List<string> GetColumnHeaders(string filePath, string? sheetName = null, int headerRow = 1)
         {
@@ -318,7 +318,7 @@ namespace FACTOVA_QueryHelper
 
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException($"Excel 占쏙옙占쏙옙占쏙옙 찾占쏙옙 占쏙옙 占쏙옙占쏙옙占싹댐옙: {filePath}");
+                throw new FileNotFoundException($"Excel 파일을 찾을 수 없습니다: {filePath}");
             }
 
             try
@@ -336,7 +336,7 @@ namespace FACTOVA_QueryHelper
                         worksheet = package.Workbook.Worksheets[sheetName];
                         if (worksheet == null)
                         {
-                            throw new ArgumentException($"占쏙옙트占쏙옙 찾占쏙옙 占쏙옙 占쏙옙占쏙옙占싹댐옙: {sheetName}");
+                            throw new ArgumentException($"시트를 찾을 수 없습니다: {sheetName}");
                         }
                     }
 
@@ -351,14 +351,14 @@ namespace FACTOVA_QueryHelper
             }
             catch (Exception ex)
             {
-                throw new Exception($"Excel 占쏙옙占쏙옙 占싻깍옙 占쏙옙占쏙옙: {ex.Message}", ex);
+                throw new Exception($"Excel 파일 읽기 오류: {ex.Message}", ex);
             }
 
             return headers;
         }
 
         /// <summary>
-        /// 占쏙옙占쏙옙 占싸듸옙占쏙옙占쏙옙 Excel 占쏙옙 占쏙옙占쌘뤄옙 占쏙옙환 (1-based)
+        /// 숫자 인덱스를 Excel 열 문자로 변환 (1-based)
         /// </summary>
         public static string GetColumnLetter(int columnNumber)
         {

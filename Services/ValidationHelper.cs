@@ -4,12 +4,12 @@ using System.Windows;
 namespace FACTOVA_QueryHelper
 {
     /// <summary>
-    /// 占쌉력곤옙 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙求占?클占쏙옙占쏙옙
+    /// 입력값 검증을 담당하는 클래스
     /// </summary>
     public static class ValidationHelper
     {
         /// <summary>
-        /// 占쏙옙占쏙옙 占쏙옙 占쏙옙호占쏙옙 占쏙옙占쏙옙占쌌니댐옙.
+        /// 시작 행 번호를 검증합니다.
         /// </summary>
         public static bool ValidateStartRow(string startRowText, out int startRow)
         {
@@ -17,7 +17,7 @@ namespace FACTOVA_QueryHelper
 
             if (!int.TryParse(startRowText, out startRow) || startRow < 1)
             {
-                MessageBox.Show("占쏙옙占쏙옙 占쏙옙 占쏙옙호占쏙옙 1 占싱삼옙占싱억옙占?占쌌니댐옙.", "占쏙옙占쏙옙",
+                MessageBox.Show("시작 행 번호는 1 이상이어야 합니다.", "오류",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
@@ -26,7 +26,7 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// 占쏙옙占쏙옙 占쏙옙占쏙옙 占쌍기를 占쏙옙占쏙옙占쌌니댐옙.
+        /// 쿼리 실행 주기를 검증합니다.
         /// </summary>
         public static bool ValidateQueryInterval(string intervalText, out int interval, int minimumSeconds = 5)
         {
@@ -34,7 +34,7 @@ namespace FACTOVA_QueryHelper
 
             if (!int.TryParse(intervalText, out interval) || interval < minimumSeconds)
             {
-                MessageBox.Show($"占쏙옙占쏙옙 占쏙옙占쏙옙 占쌍깍옙占?{minimumSeconds}占쏙옙 占싱삼옙占싱억옙占?占쌌니댐옙.", "占쏙옙占쏙옙",
+                MessageBox.Show($"쿼리 실행 주기는 {minimumSeconds}초 이상이어야 합니다.", "오류",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
@@ -43,13 +43,13 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// 占쏙옙占쌘울옙占쏙옙 占쏙옙占쏙옙占쏙옙占?占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占쌌니댐옙.
+        /// 문자열이 비어있지 않은지 검증합니다.
         /// </summary>
         public static bool ValidateNotEmpty(string? value, string fieldName)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                MessageBox.Show($"{fieldName}占쏙옙(占쏙옙) 占쌉뤄옙占싹쇽옙占쏙옙.", "占싯몌옙",
+                MessageBox.Show($"{fieldName}을(를) 입력해주세요.", "입력오류",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
@@ -58,13 +58,13 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// 占쏙옙占쏙옙트占쏙옙 占쏙옙占쏙옙占쏙옙占?占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占쌌니댐옙.
+        /// 리스트가 비어있지 않은지 검증합니다.
         /// </summary>
         public static bool ValidateListNotEmpty<T>(System.Collections.Generic.List<T> list, string listName)
         {
             if (list == null || list.Count == 0)
             {
-                MessageBox.Show($"{listName}???놁뒿?덈떎.", "?뚮┝",
+                MessageBox.Show($"{listName}이(가) 비어있습니다.", "알림",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return false;
             }
@@ -73,13 +73,13 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// 占쏙옙占시듸옙 占쌓몌옙占쏙옙 占쌍댐옙占쏙옙 占쏙옙占쏙옙占쌌니댐옙.
+        /// 항목이 선택되었는지 검증합니다.
         /// </summary>
         public static bool ValidateSelection(object? selectedItem, string itemName)
         {
             if (selectedItem == null)
             {
-                MessageBox.Show($"{itemName}占쏙옙(占쏙옙) 占쏙옙占쏙옙占싹쇽옙占쏙옙.", "占싯몌옙",
+                MessageBox.Show($"{itemName}을(를) 선택해주세요.", "입력오류",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return false;
             }

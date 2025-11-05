@@ -5,14 +5,14 @@ using System.IO;
 namespace FACTOVA_QueryHelper
 {
     /// <summary>
-    /// 占쏙옙占쏙옙 占쏙옙占싱억옙慣占?占쏙옙占쏙옙 占쏙옙占쏙옙占?占쏙옙占쏙옙占싹댐옙 클占쏙옙占쏙옙
+    /// 파일 대화상자를 관리하는 클래스
     /// </summary>
     public class FileDialogManager
     {
         /// <summary>
-        /// Excel 占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙占싱억옙慣琉占?占쏙옙占싹댐옙.
+        /// Excel 파일 선택 대화상자를 표시합니다.
         /// </summary>
-        public static string? OpenExcelFileDialog(string title = "Excel 占쏙옙占쏙옙 占쏙옙占쏙옙")
+        public static string? OpenExcelFileDialog(string title = "Excel 파일 선택")
         {
             return OpenFileDialog(
                 "Excel Files (*.xlsx;*.xls)|*.xlsx;*.xls|All Files (*.*)|*.*",
@@ -20,14 +20,14 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// TNS 占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙占싱억옙慣琉占?占쏙옙占싹댐옙.
+        /// TNS 파일 선택 대화상자를 표시합니다.
         /// </summary>
         public static string? OpenTnsFileDialog(string initialDirectory)
         {
             var openFileDialog = new OpenFileDialog
             {
                 Filter = "TNS Names File (tnsnames.ora)|tnsnames.ora|All Files (*.*)|*.*",
-                Title = "tnsnames.ora 占쏙옙占쏙옙 占쏙옙占쏙옙",
+                Title = "tnsnames.ora 파일 선택",
                 InitialDirectory = initialDirectory
             };
 
@@ -35,7 +35,7 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// 占싹뱄옙 占쏙옙占쏙옙 占쏙옙占쏙옙 占쏙옙占싱억옙慣琉占?占쏙옙占싹댐옙.
+        /// 일반 파일 선택 대화상자를 표시합니다.
         /// </summary>
         public static string? OpenFileDialog(string filter, string title)
         {
@@ -49,7 +49,7 @@ namespace FACTOVA_QueryHelper
         }
 
         /// <summary>
-        /// 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占싹댐옙占쏙옙 확占쏙옙占쌌니댐옙.
+        /// 파일이 존재하는지 확인합니다.
         /// </summary>
         public static bool FileExists(string? filePath)
         {
