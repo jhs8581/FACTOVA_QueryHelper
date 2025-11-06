@@ -9,7 +9,7 @@
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="*" MinHeight="200"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -28,7 +28,7 @@
                 </Grid.RowDefinitions>
 
                 <!-- 첫 번째 행: DB 로드, 실행 버튼, 자동 실행 옵션 -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+                <WrapPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
                     <Button x:Name="LoadFromDbButton" 
                             Width="160" Height="40"
                             Click="LoadFromDbButton_Click"
@@ -38,22 +38,20 @@
                             Cursor="Hand"
                             FontWeight="Bold"
                             FontSize="14"
-                            Margin="0,0,10,0">
+                            Margin="0,0,10,5">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="💾" FontSize="16" Margin="0,0,8,0"/>
                             <TextBlock Text="DB에서 쿼리 로드"/>
                         </StackPanel>
                     </Button>
                     
-                    
-                    
-                    <Rectangle Width="1" Height="30" Fill="#FFE0E0E0" Margin="0,0,20,0"/>
+                    <Rectangle Width="1" Height="30" Fill="#FFE0E0E0" Margin="0,0,20,5"/>
                     
                     <CheckBox x:Name="EnableAutoExecutionCheckBox" 
                               Content="자동 실행" 
                               VerticalAlignment="Center"
                               FontWeight="SemiBold"
-                              Margin="0,0,15,0"
+                              Margin="0,0,15,5"
                               IsChecked="False"
                               Checked="EnableAutoExecutionCheckBox_Changed"
                               Unchecked="EnableAutoExecutionCheckBox_Changed"/>
@@ -61,7 +59,7 @@
                     <TextBlock Text="실행 주기:" 
                                VerticalAlignment="Center" 
                                FontWeight="SemiBold"
-                               Margin="0,0,10,0"/>
+                               Margin="0,0,10,5"/>
                     <TextBox x:Name="QueryIntervalTextBox" 
                              Width="70" 
                              Height="32"
@@ -70,11 +68,12 @@
                              VerticalContentAlignment="Center"
                              TextAlignment="Center"
                              IsEnabled="False"
-                             FontWeight="Bold"/>
+                             FontWeight="Bold"
+                             Margin="0,0,5,5"/>
                     <TextBlock Text="초" 
                                VerticalAlignment="Center" 
                                FontWeight="SemiBold"
-                               Margin="5,0,20,0"/>
+                               Margin="0,0,20,5"/>
                     
                     <CheckBox x:Name="StopOnNotificationCheckBox" 
                               Content="⚠️ 알림 시 자동 실행 중지" 
@@ -84,7 +83,7 @@
                               IsChecked="True"
                               Checked="StopOnNotificationCheckBox_Changed"
                               Unchecked="StopOnNotificationCheckBox_Changed"
-                              Margin="0,0,20,0"/>
+                              Margin="0,0,20,5"/>
                     
                     <Border x:Name="AutoQueryCountdownBorder"
                             Background="#FFFFEAA7" 
@@ -93,7 +92,8 @@
                             CornerRadius="6" 
                             Padding="12,8"
                             VerticalAlignment="Center"
-                            Visibility="Collapsed">
+                            Visibility="Collapsed"
+                            Margin="0,0,20,5">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="⏱️ 다음 실행까지: " 
                                        FontSize="12" 
@@ -119,22 +119,22 @@
                             FontWeight="Bold"
                             FontSize="14"
                             IsEnabled="False"
-                            Margin="20,0,20,0"/>         
-                </StackPanel>
+                            Margin="0,0,0,5"/>         
+                </WrapPanel>
 
                 <!-- 두 번째 행: 쿼리 선택 및 디폴트 폼 -->
-                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                <WrapPanel Grid.Row="1" Orientation="Horizontal">
                     <TextBlock Text="실행할 쿼리:" 
                                VerticalAlignment="Center" 
                                FontWeight="SemiBold"
-                               Margin="0,0,10,0"/>
+                               Margin="0,0,10,5"/>
                     <ComboBox x:Name="QueryFilterComboBox" 
                               Width="300" 
                               Height="32"
                               VerticalAlignment="Center"
                               IsEditable="True"
                               IsReadOnly="True"
-                              Margin="0,0,20,0"
+                              Margin="0,0,20,5"
                               DropDownClosed="QueryFilterComboBox_DropDownClosed">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
@@ -149,13 +149,14 @@
                     <TextBlock Text="디폴트 폼:" 
                                VerticalAlignment="Center" 
                                FontWeight="SemiBold"
-                               Margin="0,0,10,0"/>
+                               Margin="0,0,10,5"/>
                     <ComboBox x:Name="DefaultFormComboBox" 
                               Width="300" 
                               Height="32"
                               VerticalAlignment="Center"
-                              DisplayMemberPath="Text"/>
-                </StackPanel>
+                              DisplayMemberPath="Text"
+                              Margin="0,0,0,5"/>
+                </WrapPanel>
             </Grid>
         </Border>
 
