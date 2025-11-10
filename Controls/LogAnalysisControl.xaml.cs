@@ -125,7 +125,9 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 System.Diagnostics.Debug.WriteLine("=== DB에서 쿼리 로드 시작 ===");
                 
-                _sharedData.LoadedQueries = _database.GetAllQueries();
+                var allQueries = _database.GetAllQueries();
+                // "쿼리 실행" 구분만 필터링
+                _sharedData.LoadedQueries = allQueries.Where(q => q.QueryType == "쿼리 실행").ToList();
                 
                 System.Diagnostics.Debug.WriteLine($"로드된 쿼리 수: {_sharedData.LoadedQueries.Count}개");
                 

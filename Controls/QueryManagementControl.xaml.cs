@@ -340,6 +340,10 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 RowNumber = 0, // 아직 저장되지 않음
                 QueryName = "",
+                QueryType = "쿼리 실행",
+                BizName = "",
+                Description2 = "",
+                OrderNumber = 0,
                 TnsName = "",
                 Host = "",
                 Port = "",
@@ -350,6 +354,7 @@ namespace FACTOVA_QueryHelper.Controls
                 EnabledFlag = "Y",
                 NotifyFlag = "N",
                 ExcludeFlag = "N",
+                DefaultFlag = "N",
                 CountGreaterThan = "",
                 CountEquals = "",
                 CountLessThan = "",

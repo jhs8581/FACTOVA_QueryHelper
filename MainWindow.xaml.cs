@@ -85,6 +85,7 @@ namespace FACTOVA_QueryHelper
             // QueryExecutionManager는 LogAnalysisControl에서 초기화됨
             this.LogAnalysisControl.Initialize(_sharedData);
             this.GmesInfoControl.Initialize(_sharedData);
+            this.BizQueryControl.Initialize(_sharedData);
             this.QueryManagementControl.Initialize(_sharedData);
             this.SfcMonitoringControl.Initialize(_sharedData);
             this.SettingsControl.Initialize(_sharedData);

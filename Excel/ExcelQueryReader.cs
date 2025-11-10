@@ -24,6 +24,11 @@ namespace FACTOVA_QueryHelper
 
         // 구분 필드 추가 (쿼리 실행 / 정보 조회)
         public string QueryType { get; set; } = "쿼리 실행";
+        
+        // 추가 정보 필드
+        public string BizName { get; set; } = string.Empty; // 비즈명
+        public string Description2 { get; set; } = string.Empty; // 설명
+        public int OrderNumber { get; set; } = 0; // 순번
 
         // 새로운 옵션 필드 추가됨
         public string EnabledFlag { get; set; } = string.Empty; // G열 'Y'이면 실행 활성
@@ -230,6 +235,27 @@ namespace FACTOVA_QueryHelper
                         if (passColIndex > 0)
                         {
                             queryItem.Password = worksheet.Cells[row, passColIndex].Text?.Trim() ?? "";
+                        }
+
+                        // BizName 읽기
+                        if (passColIndex > 0)
+                        {
+                            queryItem.BizName = worksheet.Cells[row, passColIndex].Text?.Trim() ?? "";
+                        }
+
+                        // Description2 읽기
+                        if (passColIndex > 0)
+                        {
+                            queryItem.Description2 = worksheet.Cells[row, passColIndex].Text?.Trim() ?? "";
+                        }
+
+                        // 순번 읽기
+                        if (passColIndex > 0)
+                        {
+                            if (int.TryParse(worksheet.Cells[row, passColIndex].Text?.Trim(), out int orderNumber))
+                            {
+                                queryItem.OrderNumber = orderNumber;
+                            }
                         }
 
                         // 옵션 필드들 읽기
