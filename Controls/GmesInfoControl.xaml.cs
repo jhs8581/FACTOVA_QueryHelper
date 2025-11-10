@@ -46,6 +46,7 @@ namespace FACTOVA_QueryHelper.Controls
             FacilityTextBox.LostFocus += InputField_LostFocus;
             WorkOrderTextBox.LostFocus += InputField_LostFocus;
             WorkOrderNameTextBox.LostFocus += InputField_LostFocus;
+            ModelSuffixTextBox.LostFocus += InputField_LostFocus;
             
             QuerySelectComboBox.SelectionChanged += QueryComboBox_SelectionChanged;
             PlanInfoDataGrid.AutoGeneratingColumn += DataGrid_AutoGeneratingColumn;
@@ -90,6 +91,7 @@ namespace FACTOVA_QueryHelper.Controls
             FacilityTextBox.Text = _sharedData.Settings.GmesFacility;
             WorkOrderTextBox.Text = _sharedData.Settings.GmesWorkOrder;
             WorkOrderNameTextBox.Text = _sharedData.Settings.GmesWorkOrderName;
+            ModelSuffixTextBox.Text = _sharedData.Settings.GmesModelSuffix;
         }
 
         private void SaveInputValues()
@@ -105,6 +107,7 @@ namespace FACTOVA_QueryHelper.Controls
             _sharedData.Settings.GmesFacility = FacilityTextBox.Text;
             _sharedData.Settings.GmesWorkOrder = WorkOrderTextBox.Text;
             _sharedData.Settings.GmesWorkOrderName = WorkOrderNameTextBox.Text;
+            _sharedData.Settings.GmesModelSuffix = ModelSuffixTextBox.Text;
 
             _sharedData.SaveSettingsCallback?.Invoke();
         }
@@ -801,6 +804,7 @@ namespace FACTOVA_QueryHelper.Controls
             result = result.Replace("@FACILITY_CODE", $"'{FacilityTextBox.Text}'");
             result = result.Replace("@WORK_ORDER_ID", $"'{WorkOrderTextBox.Text}'");
             result = result.Replace("@WORK_ORDER_NAME", $"'{WorkOrderNameTextBox.Text}'");
+            result = result.Replace("@PRODUCT_SPECIFICATION_ID", $"'{ModelSuffixTextBox.Text}'");
 
             return result;
         }
