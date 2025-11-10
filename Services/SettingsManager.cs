@@ -24,6 +24,41 @@ namespace FACTOVA_QueryHelper
         public bool CheckUpdateOnStartup { get; set; } = false; // 시작 시 업데이트 확인 (기본값: false로 변경!)
         public string UpdateSource { get; set; } = "GitHub"; // 업데이트 소스: "GitHub" 또는 "Network"
         public string NetworkUpdatePath { get; set; } = @"\\서버\FACTOVA_Apps\QueryHelper\latest"; // 네트워크 업데이트 경로
+        
+        // GMES 정보 조회 입력값
+        public string GmesFactory { get; set; } = string.Empty; // 대표공장
+        public string GmesOrg { get; set; } = string.Empty; // ORG
+        public DateTime? GmesDateFrom { get; set; } = null; // 조회 시작 날짜
+        public DateTime? GmesDateTo { get; set; } = null; // 조회 종료 날짜
+        public string GmesWipLineId { get; set; } = string.Empty; // 윕라인 ID
+        public string GmesEquipLineId { get; set; } = string.Empty; // 설비라인 ID
+        public string GmesFacility { get; set; } = string.Empty; // FACILITY
+        public string GmesWorkOrder { get; set; } = string.Empty; // W/O
+        public string GmesWorkOrderName { get; set; } = string.Empty; // W/O 명
+        
+        // GMES 그리드별 선택된 쿼리 (최대 20개)
+        public int GmesGridCount { get; set; } = 6; // 그리드 개수 (기본값: 6)
+        public string GmesPlanQueryName { get; set; } = string.Empty; // 계획정보 쿼리
+        public string GmesGrid1QueryName { get; set; } = string.Empty; // 그리드 1 쿼리
+        public string GmesGrid2QueryName { get; set; } = string.Empty; // 그리드 2 쿼리
+        public string GmesGrid3QueryName { get; set; } = string.Empty; // 그리드 3 쿼리
+        public string GmesGrid4QueryName { get; set; } = string.Empty; // 그리드 4 쿼리
+        public string GmesGrid5QueryName { get; set; } = string.Empty; // 그리드 5 쿼리
+        public string GmesGrid6QueryName { get; set; } = string.Empty; // 그리드 6 쿼리
+        public string GmesGrid7QueryName { get; set; } = string.Empty; // 그리드 7 쿼리
+        public string GmesGrid8QueryName { get; set; } = string.Empty; // 그리드 8 쿼리
+        public string GmesGrid9QueryName { get; set; } = string.Empty; // 그리드 9 쿼리
+        public string GmesGrid10QueryName { get; set; } = string.Empty; // 그리드 10 쿼리
+        public string GmesGrid11QueryName { get; set; } = string.Empty; // 그리드 11 쿼리
+        public string GmesGrid12QueryName { get; set; } = string.Empty; // 그리드 12 쿼리
+        public string GmesGrid13QueryName { get; set; } = string.Empty; // 그리드 13 쿼리
+        public string GmesGrid14QueryName { get; set; } = string.Empty; // 그리드 14 쿼리
+        public string GmesGrid15QueryName { get; set; } = string.Empty; // 그리드 15 쿼리
+        public string GmesGrid16QueryName { get; set; } = string.Empty; // 그리드 16 쿼리
+        public string GmesGrid17QueryName { get; set; } = string.Empty; // 그리드 17 쿼리
+        public string GmesGrid18QueryName { get; set; } = string.Empty; // 그리드 18 쿼리
+        public string GmesGrid19QueryName { get; set; } = string.Empty; // 그리드 19 쿼리
+        public string GmesGrid20QueryName { get; set; } = string.Empty; // 그리드 20 쿼리
     }
 
     public class SettingsManager

@@ -15,6 +15,11 @@
                 <controls:LogAnalysisControl x:Name="LogAnalysisControl"/>
             </TabItem>
 
+            <!-- GMES 정보 조회 탭 -->
+            <TabItem Header="GMES 정보 조회">
+                <controls:GmesInfoControl x:Name="GmesInfoControl"/>
+            </TabItem>
+
             <!-- 쿼리 관리 탭 -->
             <TabItem Header="쿼리 관리">
                 <controls:QueryManagementControl x:Name="QueryManagementControl"/>

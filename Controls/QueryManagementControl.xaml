@@ -254,6 +254,35 @@
                         </DataGridTextColumn>
                         
                         <DataGridTextColumn Header="쿼리명" Binding="{Binding QueryName, UpdateSourceTrigger=PropertyChanged}" Width="200"/>
+                        
+                        <DataGridComboBoxColumn Header="구분" Width="110"
+                                                SelectedItemBinding="{Binding QueryType, UpdateSourceTrigger=PropertyChanged}">
+                            <DataGridComboBoxColumn.ElementStyle>
+                                <Style TargetType="ComboBox">
+                                    <Setter Property="ItemsSource">
+                                        <Setter.Value>
+                                            <x:Array Type="sys:String" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+                                                <sys:String>쿼리 실행</sys:String>
+                                                <sys:String>정보 조회</sys:String>
+                                            </x:Array>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </DataGridComboBoxColumn.ElementStyle>
+                            <DataGridComboBoxColumn.EditingElementStyle>
+                                <Style TargetType="ComboBox">
+                                    <Setter Property="ItemsSource">
+                                        <Setter.Value>
+                                            <x:Array Type="sys:String" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+                                                <sys:String>쿼리 실행</sys:String>
+                                                <sys:String>정보 조회</sys:String>
+                                            </x:Array>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </DataGridComboBoxColumn.EditingElementStyle>
+                        </DataGridComboBoxColumn>
+                        
                         <DataGridTextColumn Header="TNS" Binding="{Binding TnsName, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
                         <DataGridTextColumn Header="Host" Binding="{Binding Host, UpdateSourceTrigger=PropertyChanged}" Width="120" Visibility="Collapsed"/>
                         <DataGridTextColumn Header="Port" Binding="{Binding Port, UpdateSourceTrigger=PropertyChanged}" Width="60" Visibility="Collapsed"/>

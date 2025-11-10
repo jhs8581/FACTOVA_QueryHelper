@@ -22,6 +22,9 @@ namespace FACTOVA_QueryHelper
         public string Port { get; set; } = string.Empty;
         public string ServiceName { get; set; } = string.Empty;
 
+        // 구분 필드 추가 (쿼리 실행 / 정보 조회)
+        public string QueryType { get; set; } = "쿼리 실행";
+
         // 새로운 옵션 필드 추가됨
         public string EnabledFlag { get; set; } = string.Empty; // G열 'Y'이면 실행 활성
         public string NotifyFlag { get; set; } = string.Empty; // H열 'Y'이면 알림 표시

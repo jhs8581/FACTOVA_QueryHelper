@@ -40,6 +40,7 @@ namespace FACTOVA_QueryHelper.Database
                 CREATE TABLE IF NOT EXISTS Queries (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     QueryName TEXT NOT NULL,
+                    QueryType TEXT DEFAULT '쿼리 실행',
                     TnsName TEXT,
                     Host TEXT,
                     Port TEXT,
@@ -60,6 +61,18 @@ namespace FACTOVA_QueryHelper.Database
                     ModifiedDate TEXT DEFAULT CURRENT_TIMESTAMP
                 )";
             command.ExecuteNonQuery();
+            
+            // QueryType 컬럼 추가 (기존 테이블 호환성)
+            try
+            {
+                var alterCommand = connection.CreateCommand();
+                alterCommand.CommandText = "ALTER TABLE Queries ADD COLUMN QueryType TEXT DEFAULT '쿼리 실행'";
+                alterCommand.ExecuteNonQuery();
+            }
+            catch
+            {
+                // 컬럼이 이미 존재하면 무시
+            }
             
             // DefaultFlag 컬럼이 없는 기존 테이블에 컬럼 추가
             try
@@ -94,6 +107,7 @@ namespace FACTOVA_QueryHelper.Database
                 {
                     RowNumber = Convert.ToInt32(reader["Id"]),
                     QueryName = reader["QueryName"]?.ToString() ?? "",
+                    QueryType = reader["QueryType"]?.ToString() ?? "쿼리 실행",
                     TnsName = reader["TnsName"]?.ToString() ?? "",
                     Host = reader["Host"]?.ToString() ?? "",
                     Port = reader["Port"]?.ToString() ?? "",
@@ -135,11 +149,11 @@ namespace FACTOVA_QueryHelper.Database
             var command = connection.CreateCommand();
             command.CommandText = @"
                 INSERT INTO Queries (
-                    QueryName, TnsName, Host, Port, ServiceName, UserId, Password, Query,
+                    QueryName, QueryType, TnsName, Host, Port, ServiceName, UserId, Password, Query,
                     EnabledFlag, NotifyFlag, CountGreaterThan, CountEquals, CountLessThan,
                     ColumnNames, ColumnValues, ExcludeFlag, DefaultFlag
                 ) VALUES (
-                    $queryName, $tnsName, $host, $port, $serviceName, $userId, $password, $query,
+                    $queryName, $queryType, $tnsName, $host, $port, $serviceName, $userId, $password, $query,
                     $enabledFlag, $notifyFlag, $countGreaterThan, $countEquals, $countLessThan,
                     $columnNames, $columnValues, $excludeFlag, $defaultFlag
                 )";
@@ -160,6 +174,7 @@ namespace FACTOVA_QueryHelper.Database
             command.CommandText = @"
                 UPDATE Queries SET
                     QueryName = $queryName,
+                    QueryType = $queryType,
                     TnsName = $tnsName,
                     Host = $host,
                     Port = $port,
@@ -235,11 +250,11 @@ namespace FACTOVA_QueryHelper.Database
                     var command = connection.CreateCommand();
                     command.CommandText = @"
                         INSERT INTO Queries (
-                            QueryName, TnsName, Host, Port, ServiceName, UserId, Password, Query,
+                            QueryName, QueryType, TnsName, Host, Port, ServiceName, UserId, Password, Query,
                             EnabledFlag, NotifyFlag, CountGreaterThan, CountEquals, CountLessThan,
                             ColumnNames, ColumnValues, ExcludeFlag, DefaultFlag
                         ) VALUES (
-                            $queryName, $tnsName, $host, $port, $serviceName, $userId, $password, $query,
+                            $queryName, $queryType, $tnsName, $host, $port, $serviceName, $userId, $password, $query,
                             $enabledFlag, $notifyFlag, $countGreaterThan, $countEquals, $countLessThan,
                             $columnNames, $columnValues, $excludeFlag, $defaultFlag
                         )";
@@ -263,6 +278,7 @@ namespace FACTOVA_QueryHelper.Database
         private void AddQueryParameters(SqliteCommand command, QueryItem query)
         {
             command.Parameters.AddWithValue("$queryName", query.QueryName);
+            command.Parameters.AddWithValue("$queryType", query.QueryType ?? "쿼리 실행");
             command.Parameters.AddWithValue("$tnsName", query.TnsName ?? "");
             command.Parameters.AddWithValue("$host", query.Host ?? "");
             command.Parameters.AddWithValue("$port", query.Port ?? "");

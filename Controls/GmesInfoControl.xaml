@@ -1,0 +1,385 @@
+﻿<UserControl x:Class="FACTOVA_QueryHelper.Controls.GmesInfoControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1200"
+             Background="#FFF8F9FA">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 상단 조회 영역 -->
+        <Border Grid.Row="0" 
+                Background="White" 
+                BorderBrush="#FFE0E0E0" 
+                BorderThickness="1" 
+                CornerRadius="8"
+                Padding="15"
+                Margin="0,0,0,15">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- 첫 번째 행: 쿼리 로드 + 그리드 개수 설정 + 폰트 크기 조절 -->
+                <WrapPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                    <Button x:Name="LoadQueriesButton" 
+                            Width="160" Height="40"
+                            Click="LoadQueriesButton_Click"
+                            Background="#FF28A745" 
+                            Foreground="White"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            FontWeight="Bold"
+                            FontSize="14"
+                            Margin="0,0,15,5">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🔄" FontSize="16" Margin="0,0,8,0"/>
+                            <TextBlock Text="쿼리 로드"/>
+                        </StackPanel>
+                    </Button>
+
+                    <TextBlock Text="그리드 개수:" 
+                               VerticalAlignment="Center" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,10,5"/>
+                    <TextBox x:Name="GridCountTextBox" 
+                             Width="60" 
+                             Height="32"
+                             Text="6"
+                             VerticalAlignment="Center"
+                             VerticalContentAlignment="Center"
+                             TextAlignment="Center"
+                             Margin="0,0,10,5"/>
+                    <Button x:Name="GenerateGridsButton" 
+                            Width="140" Height="40"
+                            Click="GenerateGridsButton_Click"
+                            Background="#FF6C757D" 
+                            Foreground="White"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            FontWeight="Bold"
+                            FontSize="14"
+                            Margin="0,0,15,5">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📊" FontSize="16" Margin="0,0,5,0"/>
+                            <TextBlock Text="그리드 생성"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- 폰트 크기 조절 -->
+                    <Border BorderBrush="#FF0078D7" 
+                            BorderThickness="2" 
+                            CornerRadius="8" 
+                            Padding="10,5"
+                            Margin="0,0,15,5">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="폰트:" 
+                                       VerticalAlignment="Center" 
+                                       FontWeight="Bold"
+                                       Margin="0,0,10,0"/>
+                            <Button x:Name="DecreaseFontButton" 
+                                    Content="-"
+                                    Width="32" Height="32"
+                                    Click="DecreaseFontButton_Click"
+                                    Background="#FF6C757D"
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    FontWeight="Bold"
+                                    FontSize="16"
+                                    Margin="0,0,5,0"/>
+                            <TextBlock x:Name="FontSizeTextBlock"
+                                       Text="16"
+                                       Width="30"
+                                       TextAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       FontWeight="Bold"
+                                       FontSize="16"
+                                       Margin="0,0,5,0"/>
+                            <Button x:Name="IncreaseFontButton" 
+                                    Content="+"
+                                    Width="32" Height="32"
+                                    Click="IncreaseFontButton_Click"
+                                    Background="#FF6C757D"
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    FontWeight="Bold"
+                                    FontSize="16"/>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="조회 쿼리:" 
+                               VerticalAlignment="Center" 
+                               FontWeight="SemiBold"
+                               Margin="0,0,10,5"/>
+                    <ComboBox x:Name="QuerySelectComboBox" 
+                              Width="250" 
+                              Height="32"
+                              VerticalAlignment="Center"
+                              DisplayMemberPath="QueryName"
+                              Margin="0,0,5,5"/>
+                    <Button x:Name="ClearQuerySelectButton"
+                            Content="✖"
+                            Width="28" Height="32"
+                            Click="ClearQuerySelectButton_Click"
+                            Background="#FFDC3545"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            FontWeight="Bold"
+                            Margin="0,0,10,5"
+                            ToolTip="선택 취소"/>
+
+                    <Button x:Name="ExecuteQueryButton" 
+                            Width="120" Height="40"
+                            Click="ExecuteQueryButton_Click"
+                            Background="#FF0078D7" 
+                            Foreground="White"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            FontWeight="Bold"
+                            FontSize="14"
+                            Margin="0,0,0,5">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="▶" FontSize="16" Margin="0,0,5,0"/>
+                            <TextBlock Text="조회"/>
+                        </StackPanel>
+                    </Button>
+                </WrapPanel>
+
+                <!-- 두 번째 행: 입력 파라미터 1 -->
+                <WrapPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBlock Text="대표공장:" 
+                               VerticalAlignment="Center" 
+                               FontWeight="SemiBold"
+                               Width="80"
+                               Margin="0,0,5,5"/>
+                    <TextBox x:Name="FactoryTextBox" 
+                             Width="120" 
+                             Height="28"
+                             VerticalAlignment="Center"
+                             VerticalContentAlignment="Center"
+                             Margin="0,0,15,5"/>
+
+                    <TextBlock Text="ORG:" 
+                               VerticalAlignment="Center" 
+                               FontWeight="SemiBold"
+                               Width="80"
+                               Margin="0,0,5,5"/>
+                    <TextBox x:Name="OrgTextBox" 
+                             Width="120" 
+                             Height="28"
+                             VerticalAlignment="Center"
+                             VerticalContentAlignment="Center"
+                             Margin="0,0,15,5"/>
+
+                    <TextBlock Text="계획일자:" 
+                               VerticalAlignment="Center" 
+                               FontWeight="SemiBold"
+                               Width="80"
+                               Margin="0,0,5,5"/>
+                    <DatePicker x:Name="DateFromPicker" 
+                                Width="130" 
+                                Height="28"
+                                VerticalAlignment="Center"
+                                Margin="0,0,5,5"/>
+                    <TextBlock Text="~" 
+                               VerticalAlignment="Center" 
+                               FontWeight="Bold"
+                               Margin="0,0,5,5"/>
+                    <DatePicker x:Name="DateToPicker" 
+                                Width="130" 
+                                Height="28"
+                                VerticalAlignment="Center"
+                                Margin="0,0,15,5"/>
+
+                    <TextBlock Text="윕라인 ID:" 
+                               VerticalAlignment="Center" 
+                               FontWeight="SemiBold"
+                               Width="80"
+                               Margin="0,0,5,5"/>
+                    <TextBox x:Name="WipLineIdTextBox" 
+                             Width="120" 
+                             Height="28"
+                             VerticalAlignment="Center"
+                             VerticalContentAlignment="Center"
+                             Margin="0,0,0,5"/>
+                </WrapPanel>
+
+                <!-- 세 번째 행: 입력 파라미터 2 -->
+                <WrapPanel Grid.Row="2" Orientation="Horizontal">
+                    <TextBlock Text="설비라인 ID:" 
+                               VerticalAlignment="Center" 
+                               FontWeight="SemiBold"
+                               Width="80"
+                               Margin="0,0,5,5"/>
+                    <TextBox x:Name="EquipLineIdTextBox" 
+                             Width="120" 
+                             Height="28"
+                             VerticalAlignment="Center"
+                             VerticalContentAlignment="Center"
+                             Margin="0,0,15,5"/>
+
+                    <TextBlock Text="FACILITY:" 
+                               VerticalAlignment="Center" 
+                               FontWeight="SemiBold"
+                               Width="80"
+                               Margin="0,0,5,5"/>
+                    <TextBox x:Name="FacilityTextBox" 
+                             Width="120" 
+                             Height="28"
+                             VerticalAlignment="Center"
+                             VerticalContentAlignment="Center"
+                             Margin="0,0,15,5"/>
+
+                    <TextBlock Text="W/O:" 
+                               VerticalAlignment="Center" 
+                               FontWeight="SemiBold"
+                               Width="80"
+                               Margin="0,0,5,5"/>
+                    <TextBox x:Name="WorkOrderTextBox" 
+                             Width="150" 
+                             Height="28"
+                             VerticalAlignment="Center"
+                             VerticalContentAlignment="Center"
+                             Margin="0,0,15,5"/>
+
+                    <TextBlock Text="W/O 명:" 
+                               VerticalAlignment="Center" 
+                               FontWeight="SemiBold"
+                               Width="80"
+                               Margin="0,0,5,5"/>
+                    <TextBox x:Name="WorkOrderNameTextBox" 
+                             Width="200" 
+                             Height="28"
+                             VerticalAlignment="Center"
+                             VerticalContentAlignment="Center"
+                             Margin="0,0,0,5"/>
+                </WrapPanel>
+            </Grid>
+        </Border>
+
+        <!-- 하단 그리드 영역 -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300" MinWidth="200"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <GridSplitter Grid.Column="1" 
+                          Width="5" 
+                          HorizontalAlignment="Stretch" 
+                          Background="#FFE0E0E0"/>
+
+            <!-- 왼쪽: 계획정보 -->
+            <Border Grid.Column="0" 
+                    Background="White" 
+                    BorderBrush="#FFE0E0E0" 
+                    BorderThickness="1" 
+                    CornerRadius="8"
+                    Padding="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBlock Text="계획정보" 
+                                   FontSize="14" 
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock x:Name="PlanInfoResultTextBlock"
+                                   FontSize="10"
+                                   Foreground="#FF6C757D"
+                                   Margin="10,0,0,0"
+                                   VerticalAlignment="Center"
+                                   Text=""/>
+                    </StackPanel>
+
+                    <DataGrid x:Name="PlanInfoDataGrid" 
+                              Grid.Row="1"
+                              AutoGenerateColumns="True"
+                              IsReadOnly="True"
+                              AlternatingRowBackground="#FFF8F9FA"
+                              GridLinesVisibility="All"
+                              HeadersVisibility="All"
+                              BorderThickness="1"
+                              BorderBrush="#FFE0E0E0"
+                              Margin="0,0,0,10"
+                              FontSize="10"
+                              LoadingRow="DataGrid_LoadingRow">
+                        <DataGrid.ColumnHeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#FF0078D7"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                <Setter Property="FontSize" Value="10"/>
+                            </Style>
+                        </DataGrid.ColumnHeaderStyle>
+                    </DataGrid>
+
+                    <Button x:Name="ExportToExcelButton" 
+                            Grid.Row="2"
+                            Height="40"
+                            Click="ExportToExcelButton_Click"
+                            Background="#FF28A745" 
+                            Foreground="White"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            FontWeight="Bold"
+                            FontSize="13"
+                            Margin="0,0,0,10">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="📊" FontSize="16" Margin="0,0,5,0"/>
+                            <TextBlock Text="Excel 다운로드"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="ExecuteAllGridsButton" 
+                            Grid.Row="3"
+                            Height="40"
+                            Click="ExecuteAllGridsButton_Click"
+                            Background="#FFDC3545" 
+                            Foreground="White"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            FontWeight="Bold"
+                            FontSize="13"
+                            Margin="0,0,0,10">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="⚡" FontSize="16" Margin="0,0,5,0"/>
+                            <TextBlock Text="선택 행 기준 전체 조회"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- 오른쪽: 동적 그리드 영역 -->
+            <ScrollViewer Grid.Column="2" 
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Padding="5"
+                          x:Name="GridScrollViewer">
+                <Grid x:Name="DynamicGridsContainer">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</UserControl>
