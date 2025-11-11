@@ -63,14 +63,8 @@ namespace FACTOVA_QueryHelper.Controls
             LoadInputValues();
             LoadInfoQueries();
             
-            // 저장된 그리드 개수 복원 (기본값: 6)
-            int gridCount = _sharedData.Settings.GmesGridCount;
-            if (gridCount < 1 || gridCount > 20)
-                gridCount = 6;
-            
-            GridCountTextBox.Text = gridCount.ToString();
-            // 최초 로드 시 그리드만 생성하고 콤보박스 바인딩은 하지 않음
-            GenerateDynamicGridsWithoutBinding(gridCount);
+            // 그리드를 항상 20개로 고정 생성
+            GenerateDynamicGridsWithoutBinding(20);
             
             // 폰트 크기 적용
             ApplyFontSize();
@@ -129,8 +123,8 @@ namespace FACTOVA_QueryHelper.Controls
                 DynamicGridsContainer.Children.Add(border);
             }
 
-            // 최초 로드 시에는 콤보박스 바인딩을 하지 않음
-            // UpdateAllGridComboBoxes() 호출하지 않음
+            // 모든 "정보 조회" 쿼리를 콤보박스에 바인딩
+            UpdateAllGridComboBoxes();
             
             _isInitializing = false;
         }
@@ -189,8 +183,6 @@ namespace FACTOVA_QueryHelper.Controls
         {
             if (_isInitializing) return;
 
-            SaveSelectedQueries();
-
             // 선택된 계획정보 쿼리의 비즈명으로 상세 쿼리 자동 로드
             if (QuerySelectComboBox.SelectedItem is QueryItem selectedPlanQuery &&
                 !string.IsNullOrWhiteSpace(selectedPlanQuery.BizName) &&
@@ -200,11 +192,8 @@ namespace FACTOVA_QueryHelper.Controls
             }
             else
             {
-                // 플레이스홀더 선택 시 동적 그리드 초기화
-                GridCountTextBox.Text = "0";
-                DynamicGridsContainer.Children.Clear();
-                DynamicGridsContainer.RowDefinitions.Clear();
-                _dynamicGrids.Clear();
+                // 플레이스홀더 선택 시 모든 콤보박스 활성화 및 전체 쿼리 바인딩
+                UpdateAllGridComboBoxes();
             }
         }
 
@@ -229,21 +218,15 @@ namespace FACTOVA_QueryHelper.Controls
 
                 if (detailQueries.Count > 0)
                 {
-                    // 그리드 개수를 상세 쿼리 개수로 설정
-                    GridCountTextBox.Text = detailQueries.Count.ToString();
-
-                    // 동적 그리드 생성 및 쿼리 자동 바인딩
+                    // 동적 그리드 생성 및 쿼리 자동 바인딩 (최대 20개)
                     GenerateDynamicGridsWithQueries(detailQueries);
                 }
                 else
                 {
-                    // 상세 쿼리가 없으면 동적 그리드 초기화
-                    GridCountTextBox.Text = "0";
-                    DynamicGridsContainer.Children.Clear();
-                    DynamicGridsContainer.RowDefinitions.Clear();
-                    _dynamicGrids.Clear();
+                    // 상세 쿼리가 없으면 동적 그리드를 20개 빈 상태로 재생성
+                    GenerateDynamicGridsWithoutBinding(20);
                     
-                    System.Diagnostics.Debug.WriteLine($"비즈명 '{bizName}'에 대한 상세 쿼리(순번 1 이상)가 없습니다. 화면을 초기화했습니다.");
+                    System.Diagnostics.Debug.WriteLine($"비즈명 '{bizName}'에 대한 상세 쿼리(순번 1 이상)가 없습니다. 빈 그리드 20개를 생성했습니다.");
                 }
             }
             catch (Exception ex)
@@ -264,10 +247,11 @@ namespace FACTOVA_QueryHelper.Controls
             DynamicGridsContainer.RowDefinitions.Clear();
             _dynamicGrids.Clear();
 
-            int count = queries.Count;
+            // 최대 20개까지만 처리
+            int count = Math.Min(queries.Count, 20);
 
             // 필요한 행 개수 계산 (2열 레이아웃이므로 올림 나누기)
-            int rowCount = (int)Math.Ceiling(count / 2.0);
+            int rowCount = (int)Math.Ceiling(20 / 2.0);  // 항상 20개 그리드용 행 생성
 
             // 행 정의 추가
             for (int i = 0; i < rowCount; i++)
@@ -278,7 +262,8 @@ namespace FACTOVA_QueryHelper.Controls
                 });
             }
 
-            for (int i = 0; i < count; i++)
+            // 20개 그리드 모두 생성
+            for (int i = 0; i < 20; i++)
             {
                 int gridIndex = i + 1;
                 var gridInfo = CreateDynamicGrid(gridIndex);
@@ -305,26 +290,38 @@ namespace FACTOVA_QueryHelper.Controls
                 DynamicGridsContainer.Children.Add(border);
             }
 
-            // 쿼리를 순서대로 콤보박스에 바인딩
+            // 모든 정보 조회 쿼리를 콤보박스에 바인딩 (항상 활성화 - 사용자가 변경 가능)
+            foreach (var gridInfo in _dynamicGrids)
+            {
+                gridInfo.QueryComboBox.ItemsSource = _infoQueries;
+                gridInfo.QueryComboBox.IsEnabled = true;  // 항상 활성화
+                gridInfo.ClearButton.IsEnabled = true;     // 항상 활성화
+            }
+
+            // 매칭되는 쿼리를 순서대로 자동 선택 (최대 20개까지)
+            // 사용자는 언제든지 변경 가능
             for (int i = 0; i < count && i < _dynamicGrids.Count; i++)
             {
                 var gridInfo = _dynamicGrids[i];
                 var query = queries[i];
 
-                // 콤보박스에 단일 쿼리만 표시 (변경 불가)
-                gridInfo.QueryComboBox.ItemsSource = new List<QueryItem> { query };
-                gridInfo.QueryComboBox.SelectedItem = query;
-                gridInfo.QueryComboBox.IsEnabled = false; // 변경 불가능하도록 비활성화
-                gridInfo.ClearButton.IsEnabled = false; // 취소 버튼도 비활성화
-            }
+                // _infoQueries에서 같은 쿼리를 찾아서 선택
+                // QueryName과 BizName, OrderNumber로 매칭
+                var matchingQuery = _infoQueries.FirstOrDefault(q => 
+                    q.QueryName == query.QueryName && 
+                    q.BizName == query.BizName && 
+                    q.OrderNumber == query.OrderNumber);
 
-            // 그리드 개수 저장
-            if (_sharedData != null)
-            {
-                _sharedData.Settings.GmesGridCount = count;
-                _sharedData.SaveSettingsCallback?.Invoke();
+                if (matchingQuery != null)
+                {
+                    gridInfo.QueryComboBox.SelectedItem = matchingQuery;
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"경고: '{query.QueryName}' 쿼리를 _infoQueries에서 찾을 수 없습니다.");
+                }
             }
-
+            
             _isInitializing = false;
         }
 
@@ -338,10 +335,15 @@ namespace FACTOVA_QueryHelper.Controls
                 
                 var allQueries = _database.GetAllQueries();
                 
-                // 구분이 "정보 조회"이고 순번이 0인 쿼리만 계획정보 쿼리로 필터링
-                var planQueries = allQueries
-                    .Where(q => q.QueryType == "정보 조회" && q.OrderNumber == 0)
+                // 모든 "정보 조회" 타입의 쿼리 필터링 (순번 제한 없이)
+                var infoQueries = allQueries
+                    .Where(q => q.QueryType == "정보 조회")
+                    .OrderBy(q => q.BizName)
+                    .ThenBy(q => q.OrderNumber)
                     .ToList();
+
+                // 순번 0인 쿼리만 계획정보 쿼리 콤보박스용
+                var planQueries = infoQueries.Where(q => q.OrderNumber == 0).ToList();
 
                 // 플레이스홀더 아이템 생성
                 var placeholderItem = new QueryItem 
@@ -356,14 +358,14 @@ namespace FACTOVA_QueryHelper.Controls
                     OrderNumber = -1
                 };
 
-                // 플레이스홀더를 리스트 맨 앞에 추가
-                _infoQueries = new List<QueryItem> { placeholderItem };
-                _infoQueries.AddRange(planQueries);
-
-                QuerySelectComboBox.ItemsSource = _infoQueries;
+                // 계획정보 쿼리 콤보박스: 플레이스홀더 + 순번 0인 쿼리
+                var planQueryList = new List<QueryItem> { placeholderItem };
+                planQueryList.AddRange(planQueries);
                 
-                // 기본 선택을 LoadSelectedQueries에서 처리하도록 여기서는 제거
-                // QuerySelectComboBox.SelectedIndex = 0;
+                QuerySelectComboBox.ItemsSource = planQueryList;
+                
+                // _infoQueries에는 모든 정보 조회 쿼리 저장 (동적 그리드용)
+                _infoQueries = infoQueries;
 
                 LoadSelectedQueries();
                 
@@ -389,29 +391,10 @@ namespace FACTOVA_QueryHelper.Controls
         {
             if (_sharedData == null || _infoQueries.Count == 0) return;
 
-            bool querySelected = false;
+            // 항상 플레이스홀더(인덱스 0)로 시작
+            QuerySelectComboBox.SelectedIndex = 0;
 
-            if (!string.IsNullOrEmpty(_sharedData.Settings.GmesPlanQueryName))
-            {
-                // 플레이스홀더가 아닌 실제 쿼리만 찾기
-                var query = _infoQueries.FirstOrDefault(q => 
-                    q.QueryName == _sharedData.Settings.GmesPlanQueryName && 
-                    q.OrderNumber >= 0);
-                    
-                if (query != null)
-                {
-                    QuerySelectComboBox.SelectedItem = query;
-                    querySelected = true;
-                }
-            }
-            
-            // 저장된 쿼리가 없거나 찾지 못하면 플레이스홀더(인덱스 0) 선택
-            if (!querySelected)
-            {
-                QuerySelectComboBox.SelectedIndex = 0;
-            }
-
-            LoadDynamicGridQueries();
+            // 동적 그리드 쿼리 복원 제거 - 사용자가 직접 선택
         }
 
         private void LoadQueriesButton_Click(object sender, RoutedEventArgs e)
@@ -423,25 +406,6 @@ namespace FACTOVA_QueryHelper.Controls
         private void ClearQuerySelectButton_Click(object sender, RoutedEventArgs e)
         {
             QuerySelectComboBox.SelectedItem = null;
-        }
-
-        private void GenerateGridsButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (!int.TryParse(GridCountTextBox.Text, out int gridCount) || gridCount < 1 || gridCount > 20)
-            {
-                MessageBox.Show("1~20 사이의 숫자를 입력하세요.", "입력 오류",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            // 그리드 개수 저장
-            if (_sharedData != null)
-            {
-                _sharedData.Settings.GmesGridCount = gridCount;
-                _sharedData.SaveSettingsCallback?.Invoke();
-            }
-
-            GenerateDynamicGrids(gridCount);
         }
 
         private void GenerateDynamicGrids(int count)
@@ -526,7 +490,7 @@ namespace FACTOVA_QueryHelper.Controls
                 Margin = new Thickness(10, 0, 5, 0),
                 VerticalAlignment = VerticalAlignment.Center
             };
-            queryComboBox.SelectionChanged += (s, e) => SaveDynamicGridQueries();
+            // SelectionChanged 이벤트 제거 - 저장 불필요
 
             var clearButton = new Button
             {
@@ -687,10 +651,15 @@ namespace FACTOVA_QueryHelper.Controls
         {
             foreach (var gridInfo in _dynamicGrids)
             {
+                // 모든 정보 조회 쿼리를 콤보박스에 바인딩
                 gridInfo.QueryComboBox.ItemsSource = _infoQueries;
+                
+                // 콤보박스 활성화 및 취소 버튼 활성화
+                gridInfo.QueryComboBox.IsEnabled = true;
+                gridInfo.ClearButton.IsEnabled = true;
             }
 
-            LoadDynamicGridQueries();
+            // 복원 기능 제거 - 사용자가 직접 선택
         }
 
         private async System.Threading.Tasks.Task ExecuteDynamicGridQuery(DynamicGridInfo gridInfo)
@@ -1118,7 +1087,7 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     var chkValue = row["CHK"]?.ToString()?.Trim();
                     
-                    // CHK 값이 'E'이면 빨간 배경
+                    // CHK 값이 'E'면 빨간 배경
                     if (chkValue == "E")
                     {
                         e.Row.Background = new SolidColorBrush(Color.FromRgb(255, 200, 200)); // 연한 빨강
