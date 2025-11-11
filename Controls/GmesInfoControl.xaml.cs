@@ -887,8 +887,8 @@ namespace FACTOVA_QueryHelper.Controls
 
                 await System.Threading.Tasks.Task.WhenAll(tasks);
 
-                MessageBox.Show($"전체 조회 완료: {tasks.Count}개 그리드", "완료",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                //MessageBox.Show($"전체 조회 완료: {tasks.Count}개 그리드", "완료",
+                //    MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {

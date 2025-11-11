@@ -335,23 +335,7 @@
                         </DataGrid.ColumnHeaderStyle>
                     </DataGrid>
 
-                    <!-- Excel 다운로드 버튼 -->
-                    <Button x:Name="ExportToExcelButton" 
-                            Grid.Row="3"
-                            Height="40"
-                            Click="ExportToExcelButton_Click"
-                            Background="#FF28A745" 
-                            Foreground="White"
-                            BorderThickness="0"
-                            Cursor="Hand"
-                            FontWeight="Bold"
-                            FontSize="13"
-                            Margin="0,0,0,10">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="📊" FontSize="16" Margin="0,0,5,0"/>
-                            <TextBlock Text="Excel 다운로드"/>
-                        </StackPanel>
-                    </Button>
+                
 
                     <!-- 전체 조회 버튼 -->
                     <Button x:Name="ExecuteAllGridsButton" 
@@ -388,12 +372,13 @@
                         CornerRadius="8"
                         Padding="10"
                         Margin="5,0,5,10">
-                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                         <!-- 폰트 크기 조절 -->
                         <Border BorderBrush="#FF0078D7" 
                                 BorderThickness="2" 
                                 CornerRadius="8" 
-                                Padding="10,5">
+                                Padding="10,5"
+                                Margin="0,0,10,0">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="폰트:" 
                                            VerticalAlignment="Center" 
@@ -430,7 +415,24 @@
                                         FontSize="16"/>
                             </StackPanel>
                         </Border>
-                    </WrapPanel>
+
+                        <!-- Excel 다운로드 버튼 -->
+                        <Button x:Name="ExportToExcelButton" 
+                                Height="42"
+                                Click="ExportToExcelButton_Click"
+                                Background="#FF28A745" 
+                                Foreground="White"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                FontWeight="Bold"
+                                FontSize="13"
+                                Padding="15,0">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="📊" FontSize="16" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Excel 다운로드" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
                 </Border>
 
                 <!-- 동적 그리드 스크롤 영역 -->

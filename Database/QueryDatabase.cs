@@ -274,54 +274,6 @@ namespace FACTOVA_QueryHelper.Database
         }
 
         /// <summary>
-        /// Excel에서 쿼리를 가져옵니다.
-        /// </summary>
-        public void ImportFromExcel(List<QueryItem> queries, bool clearExisting = false)
-        {
-            using var connection = new SqliteConnection(_connectionString);
-            connection.Open();
-
-            using var transaction = connection.BeginTransaction();
-
-            try
-            {
-                if (clearExisting)
-                {
-                    var clearCommand = connection.CreateCommand();
-                    clearCommand.CommandText = "DELETE FROM Queries";
-                    clearCommand.ExecuteNonQuery();
-                }
-
-                foreach (var query in queries)
-                {
-                    var command = connection.CreateCommand();
-                    command.CommandText = @"
-                        INSERT INTO Queries (
-                            QueryName, QueryType, TnsName, Host, Port, ServiceName, UserId, Password, Query,
-                            BizName, Description2, OrderNumber,
-                            EnabledFlag, NotifyFlag, CountGreaterThan, CountEquals, CountLessThan,
-                            ColumnNames, ColumnValues, ExcludeFlag, DefaultFlag
-                        ) VALUES (
-                            $queryName, $queryType, $tnsName, $host, $port, $serviceName, $userId, $password, $query,
-                            $bizName, $description2, $orderNumber,
-                            $enabledFlag, $notifyFlag, $countGreaterThan, $countEquals, $countLessThan,
-                            $columnNames, $columnValues, $excludeFlag, $defaultFlag
-                        )";
-
-                    AddQueryParameters(command, query);
-                    command.ExecuteNonQuery();
-                }
-
-                transaction.Commit();
-            }
-            catch
-            {
-                transaction.Rollback();
-                throw;
-            }
-        }
-
-        /// <summary>
         /// 쿼리 파라미터를 추가하는 헬퍼 메서드
         /// </summary>
         private void AddQueryParameters(SqliteCommand command, QueryItem query)

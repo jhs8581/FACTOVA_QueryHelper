@@ -16,10 +16,30 @@ namespace FACTOVA_QueryHelper.Controls
         
         // TNS 경로 변경 이벤트
         public event EventHandler? TnsPathChanged;
+        
+        // 접속 정보 변경 이벤트
+        public event EventHandler? ConnectionInfoChanged;
 
         public SettingsControl()
         {
             InitializeComponent();
+            
+            // ConnectionManagementControl의 저장 완료 이벤트 구독
+            ConnectionManagement.ConnectionInfosSaved += OnConnectionInfosSaved;
+        }
+
+        /// <summary>
+        /// 접속 정보가 저장되었을 때 호출됩니다.
+        /// </summary>
+        private void OnConnectionInfosSaved(object? sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("✅ Connection infos saved in ConnectionManagementControl");
+            
+            // 상위로 이벤트 전파
+            ConnectionInfoChanged?.Invoke(this, EventArgs.Empty);
+            
+            // 상태바 업데이트
+            UpdateStatus("접속 정보가 저장되었습니다.", Colors.Green);
         }
 
         /// <summary>
@@ -29,6 +49,9 @@ namespace FACTOVA_QueryHelper.Controls
         {
             _sharedData = sharedData;
             LoadSettings();
+            
+            // ConnectionManagementControl 초기화
+            // 별도의 SharedDataContext가 필요 없이 독립적으로 동작
         }
 
         /// <summary>

@@ -14,17 +14,17 @@ namespace FACTOVA_QueryHelper.Services
     public class ConnectionInfoService
     {
         private readonly string _dbPath;
-        private readonly string _encryptionKey = "FACTOVA_QueryCreate_2025"; // 실제로는 더 안전한 키 관리 필요
+        private readonly string _encryptionKey = "FACTOVA_QueryHelper_2025"; // 실제로는 더 안전한 키 관리 필요
 
         public ConnectionInfoService()
         {
             var appDataPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "FACTOVA_QueryCreate"
+                "FACTOVA_QueryHelper"
             );
 
             Directory.CreateDirectory(appDataPath);
-            _dbPath = Path.Combine(appDataPath, "connections.db");
+            _dbPath = Path.Combine(appDataPath, "queries.db");
 
             InitializeDatabase();
         }

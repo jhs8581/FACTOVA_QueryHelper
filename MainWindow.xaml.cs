@@ -90,8 +90,21 @@ namespace FACTOVA_QueryHelper
             this.SfcMonitoringControl.Initialize(_sharedData);
             this.SettingsControl.Initialize(_sharedData);
             
-            // 설정 탭의 TNS 경로 변경 이벤트 구독
+            // 설정 탭의 이벤트 구독
             this.SettingsControl.TnsPathChanged += (s, args) => LoadTnsEntries();
+            this.SettingsControl.ConnectionInfoChanged += OnConnectionInfoChanged;
+        }
+
+        /// <summary>
+        /// 접속 정보가 변경되었을 때 호출됩니다.
+        /// </summary>
+        private void OnConnectionInfoChanged(object? sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("🔔 Connection info changed - notifying all controls");
+            UpdateStatus("접속 정보가 업데이트되었습니다.", Colors.Blue);
+            
+            // 필요한 경우 다른 컨트롤에 알림
+            // 예: QueryExecutorControl이 열려 있다면 연결 정보 새로고침
         }
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)

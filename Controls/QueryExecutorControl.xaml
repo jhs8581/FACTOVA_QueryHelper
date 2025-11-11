@@ -1,0 +1,383 @@
+﻿<UserControl x:Class="FACTOVA_QueryHelper.Controls.QueryExecutorControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:FACTOVA_QueryHelper.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800">
+    <Grid Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Section: Query Input Area -->
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Connection Selection -->
+            <Border Grid.Row="0" Margin="0,0,0,5" Padding="8,5" 
+                    Background="#F0F8FF" BorderBrush="#B0C4DE" BorderThickness="1" CornerRadius="3">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Text="🔗 Connection:" 
+                               VerticalAlignment="Center" 
+                               Margin="0,0,10,0" 
+                               FontWeight="SemiBold"
+                               Foreground="#2C5AA0"/>
+                    <ComboBox x:Name="ConnectionComboBox" 
+                              Grid.Column="1"
+                              DisplayMemberPath="DisplayName"
+                              VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- Query Editor with SqlEditorControl -->
+            <GroupBox Header="📝 Query" Grid.Row="1" Margin="0,0,0,5"
+                      BorderBrush="#CCCCCC" BorderThickness="1">
+                <GroupBox.HeaderTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" FontWeight="Bold" Foreground="#2C5AA0"/>
+                    </DataTemplate>
+                </GroupBox.HeaderTemplate>
+                
+                <!-- 🔥 SqlEditorControl 사용 -->
+                <local:SqlEditorControl x:Name="QueryTextBox" 
+                                        TextChanged="QueryTextBox_TextChanged"/>
+            </GroupBox>
+
+            <!-- Buttons -->
+            <Border Grid.Row="2" Margin="0,0,0,5" Padding="5" 
+                    Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="3">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Button x:Name="ParseVariablesButton" 
+                            Content="🔎 Parse Variables" 
+                            Grid.Column="0"
+                            Background="#FFFF9800" 
+                            Foreground="White" 
+                            FontWeight="Bold" 
+                            FontSize="11"
+                            Padding="8,4" 
+                            Margin="0,0,5,0"
+                            Click="ParseVariablesButton_Click"/>
+                    
+                    <Button x:Name="InputDataButton" 
+                            Content="📥 Input Data" 
+                            Grid.Column="1"
+                            Background="#9C27B0" 
+                            Foreground="White" 
+                            FontWeight="Bold" 
+                            FontSize="11"
+                            Padding="8,4" 
+                            Margin="0,0,5,0"
+                            Click="InputDataButton_Click"
+                            ToolTip="JSON 형식으로 바인드 변수 값 일괄 입력"/>
+                    
+                    <Button x:Name="ExecuteQueryButton" 
+                            Content="▶️ Execute Query" 
+                            Grid.Column="2" 
+                            Background="#FF2196F3" 
+                            Foreground="White" 
+                            FontWeight="Bold" 
+                            FontSize="13"
+                            Padding="10,5" 
+                            Margin="0,0,5,0" 
+                            Click="ExecuteQueryButton_Click"/>
+                    
+                    <Button x:Name="CancelQueryButton" 
+                            Content="⏹️ Cancel" 
+                            Grid.Column="3" 
+                            Background="#FFDC3545" 
+                            Foreground="White" 
+                            FontWeight="Bold" 
+                            FontSize="13"
+                            Padding="10,5" 
+                            Margin="0,0,5,0"
+                            Click="CancelQueryButton_Click"
+                            IsEnabled="False"/>
+                    
+                    <Button x:Name="ClearButton" 
+                            Content="🔄 Clear" 
+                            Grid.Column="4" 
+                            Background="#FF6C757D" 
+                            Foreground="White" 
+                            FontWeight="Bold" 
+                            FontSize="11"
+                            Padding="8,4" 
+                            Margin="0,0,5,0"
+                            Click="ClearButton_Click"
+                            ToolTip="Clear query results and reset status"/>
+                    
+                    <TextBlock Grid.Column="5" 
+                               Text="💡 Tip: Ctrl+Enter or F8 to execute, Ctrl+F to find, Ctrl+H to replace"
+                               VerticalAlignment="Center"
+                               Margin="15,0,0,0"
+                               Foreground="Gray"
+                               FontSize="10"
+                               FontStyle="Italic"/>
+                </Grid>
+            </Border>
+
+            <!-- Bind Variables Expander -->
+            <Expander x:Name="BindVariablesExpander" 
+                      Grid.Row="3"
+                      Header="📋 Bind Variables" 
+                      Margin="0,0,0,0"
+                      BorderBrush="#CCCCCC" 
+                      BorderThickness="1"
+                      Background="White"
+                      IsExpanded="True">
+                <Expander.HeaderTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" 
+                                   FontWeight="Bold" 
+                                   FontSize="12"
+                                   Foreground="#2C5AA0"/>
+                    </DataTemplate>
+                </Expander.HeaderTemplate>
+                <DataGrid x:Name="BindVariablesDataGrid" 
+                          AutoGenerateColumns="False" 
+                          CanUserAddRows="False" 
+                          CanUserDeleteRows="False"
+                          AlternatingRowBackground="LightYellow" 
+                          GridLinesVisibility="All"
+                          MinHeight="60"
+                          MaxHeight="120"
+                          Margin="5">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Parameter" 
+                                            Binding="{Binding Name}" 
+                                            Width="*" 
+                                            IsReadOnly="True"
+                                            FontFamily="Consolas" 
+                                            FontWeight="Bold"/>
+                        <DataGridTextColumn Header="Value" 
+                                            Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}" 
+                                            Width="2*"
+                                            FontFamily="Consolas"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Expander>
+        </Grid>
+
+        <!-- GridSplitter -->
+        <GridSplitter Grid.Row="1" 
+                      HorizontalAlignment="Stretch" 
+                      VerticalAlignment="Stretch"
+                      Background="#CCCCCC"
+                      ShowsPreview="False"/>
+
+        <!-- Bottom Section: Query Results -->
+        <GroupBox Header="📊 Query Results" Grid.Row="2" Margin="0"
+                  BorderBrush="#CCCCCC" BorderThickness="1">
+            <GroupBox.HeaderTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}" FontWeight="Bold" Foreground="#2C5AA0"/>
+                </DataTemplate>
+            </GroupBox.HeaderTemplate>
+            <Grid Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Result Status -->
+                <Border Grid.Row="0" Margin="0,0,0,5" Padding="5" 
+                        Background="#F0F8FF" BorderBrush="#B0C4DE" BorderThickness="1" CornerRadius="3">
+                    <TextBlock x:Name="ResultStatusText" 
+                               Text="⏸️ Ready to execute query" 
+                               FontWeight="SemiBold" 
+                               Foreground="#2C5AA0"/>
+                </Border>
+
+                <!-- Result Grid -->
+                <DataGrid x:Name="QueryResultDataGrid" 
+                          Grid.Row="1"
+                          AutoGenerateColumns="True"
+                          CanUserAddRows="False" 
+                          CanUserDeleteRows="False"
+                          CanUserReorderColumns="True"
+                          CanUserResizeColumns="True"
+                          IsReadOnly="False"
+                          AlternatingRowBackground="#F5F5F5" 
+                          GridLinesVisibility="All"
+                          CellEditEnding="QueryResultDataGrid_CellEditEnding"
+                          BeginningEdit="QueryResultDataGrid_BeginningEdit"
+                          AutoGeneratingColumn="QueryResultDataGrid_AutoGeneratingColumn"
+                          CopyingRowClipboardContent="QueryResultDataGrid_CopyingRowClipboardContent"
+                          SelectionMode="Extended"
+                          SelectionUnit="CellOrRowHeader">
+                    <DataGrid.Resources>
+                        <!-- 컬럼 헤더 스타일 -->
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="#F0F8FF"/>
+                            <Setter Property="Foreground" Value="#2C5AA0"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="Padding" Value="8,5"/>
+                            <Setter Property="BorderBrush" Value="#B0C4DE"/>
+                            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="DataGridColumnHeader">
+                                        <Grid>
+                                            <Border x:Name="BackgroundBorder"
+                                                    Background="{TemplateBinding Background}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"/>
+                                            
+                                            <Grid Margin="{TemplateBinding Padding}">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                
+                                                <!-- 컬럼명 (더블클릭 시 전체 선택, 드래그로 이동 가능) -->
+                                                <Border Grid.Column="0"
+                                                        Background="Transparent"
+                                                        MouseLeftButtonDown="ColumnHeader_MouseLeftButtonDown"
+                                                        Tag="{Binding RelativeSource={RelativeSource TemplatedParent}}">
+                                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                                      SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                                </Border>
+                                                
+                                                <!-- 정렬 버튼 -->
+                                                <Button Grid.Column="1" 
+                                                        x:Name="SortButton"
+                                                        Content="⇅" 
+                                                        Width="20" 
+                                                        Height="20"
+                                                        Margin="5,0,0,0"
+                                                        FontSize="10"
+                                                        FontWeight="Bold"
+                                                        Background="#E0E0E0"
+                                                        BorderBrush="#B0B0B0"
+                                                        BorderThickness="1"
+                                                        Cursor="Hand"
+                                                        ToolTip="정렬 (클릭: 오름차순 ↑, Shift+클릭: 내림차순 ↓)"
+                                                        Click="SortButton_Click"
+                                                        Tag="{Binding RelativeSource={RelativeSource TemplatedParent}}">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button">
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="Button">
+                                                                        <Border Background="{TemplateBinding Background}"
+                                                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                                                CornerRadius="2">
+                                                                            <ContentPresenter HorizontalAlignment="Center" 
+                                                                                              VerticalAlignment="Center"/>
+                                                                        </Border>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                            <Style.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="Background" Value="#2196F3"/>
+                                                                    <Setter Property="Foreground" Value="White"/>
+                                                                </Trigger>
+                                                                <Trigger Property="IsPressed" Value="True">
+                                                                    <Setter Property="Background" Value="#1976D2"/>
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+                                            </Grid>
+                                            
+                                            <!-- 필수: 컬럼 리사이징을 위한 Thumb (오른쪽) -->
+                                            <Thumb x:Name="PART_RightHeaderGripper"
+                                                   HorizontalAlignment="Right"
+                                                   Width="8"
+                                                   Cursor="SizeWE">
+                                                <Thumb.Style>
+                                                    <Style TargetType="Thumb">
+                                                        <Setter Property="Background" Value="Transparent"/>
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="Thumb">
+                                                                    <Border Background="{TemplateBinding Background}"
+                                                                            Padding="0"/>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                </Thumb.Style>
+                                            </Thumb>
+                                            
+                                            <!-- 필수: 컬럼 리사이징을 위한 Thumb (왼쪽) -->
+                                            <Thumb x:Name="PART_LeftHeaderGripper"
+                                                   HorizontalAlignment="Left"
+                                                   Width="8"
+                                                   Cursor="SizeWE">
+                                                <Thumb.Style>
+                                                    <Style TargetType="Thumb">
+                                                        <Setter Property="Background" Value="Transparent"/>
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="Thumb">
+                                                                    <Border Background="{TemplateBinding Background}"
+                                                                            Padding="0"/>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                </Thumb.Style>
+                                            </Thumb>
+                                        </Grid>
+                                        
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="BackgroundBorder" Property="Background" Value="#E6F3FF"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </DataGrid.Resources>
+                    
+                    <DataGrid.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="Padding" Value="5,3"/>
+                            <Style.Triggers>
+                                <Trigger Property="Tag" Value="Edited">
+                                    <Setter Property="Background" Value="#FFFFEB3B"/>
+                                    <Setter Property="BorderBrush" Value="#FFFF9800"/>
+                                    <Setter Property="BorderThickness" Value="2"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#E3F2FD"/>
+                                    <Setter Property="Foreground" Value="Black"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.CellStyle>
+                </DataGrid>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</UserControl>

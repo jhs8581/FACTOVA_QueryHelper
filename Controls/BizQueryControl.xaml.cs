@@ -169,6 +169,57 @@ namespace FACTOVA_QueryHelper.Controls
             }
         }
 
+        private void ExecuteBizButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is QueryItem query)
+            {
+                try
+                {
+                    // QueryExecutorControl을 포함하는 팝업 윈도우 생성
+                    var window = new Window
+                    {
+                        Title = $"비즈 실행 - {query.QueryName}",
+                        Width = 1000,
+                        Height = 700,
+                        Owner = Window.GetWindow(this),
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        WindowStyle = WindowStyle.SingleBorderWindow,
+                        ResizeMode = ResizeMode.CanResize
+                    };
+
+                    // QueryExecutorControl 생성
+                    var executorControl = new QueryExecutorControl();
+                    
+                    // 🔥 SharedDataContext 설정 (TnsEntries 접근용)
+                    if (_sharedData != null)
+                    {
+                        executorControl.SetSharedDataContext(_sharedData);
+                    }
+                    
+                    // OracleDbService 생성 및 설정
+                    var dbService = new Services.OracleDbService();
+                    executorControl.SetDbService(dbService);
+                    
+                    // 쿼리 설정
+                    executorControl.SetQuery(query.Query);
+                    
+                    // Window에 Control 추가
+                    window.Content = executorControl;
+                    
+                    // 팝업으로 표시
+                    window.ShowDialog();
+                    
+                    UpdateStatus($"'{query.QueryName}' 비즈를 실행했습니다.", Colors.Blue);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"비즈 실행 실패:\n{ex.Message}", "오류",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    UpdateStatus($"비즈 실행 실패: {ex.Message}", Colors.Red);
+                }
+            }
+        }
+
         #endregion
 
         /// <summary>

@@ -159,7 +159,7 @@
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
                                     <Setter Property="FontWeight" Value="Bold"/>
                                     <Setter Property="FontSize" Value="13"/>
-                                    <Setter Property="Foreground" Value="#FF0078D7"/>
+                                    <Setter Property="Foreground" Value="Black"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -169,6 +169,7 @@
                                 <Style TargetType="TextBlock">
                                     <Setter Property="FontWeight" Value="SemiBold"/>
                                     <Setter Property="Padding" Value="5,0"/>
+                                    <Setter Property="Foreground" Value="Black"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -177,6 +178,7 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Padding" Value="5,0"/>
+                                    <Setter Property="Foreground" Value="Black"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -186,7 +188,7 @@
                                 <Style TargetType="TextBlock">
                                     <Setter Property="TextWrapping" Value="Wrap"/>
                                     <Setter Property="Padding" Value="5,0"/>
-                                    <Setter Property="Foreground" Value="#FF6C757D"/>
+                                    <Setter Property="Foreground" Value="Black"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -196,6 +198,7 @@
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
                                     <Setter Property="FontSize" Value="11"/>
+                                    <Setter Property="Foreground" Value="Black"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -220,6 +223,35 @@
                                                 <Style.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
                                                         <Setter Property="Background" Value="#FF218838"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        
+                        <DataGridTemplateColumn Header="비즈 실행" Width="120">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="▶️ 비즈 실행" 
+                                            Click="ExecuteBizButton_Click"
+                                            Tag="{Binding}"
+                                            Background="#FFDC3545"
+                                            Foreground="White"
+                                            BorderThickness="0"
+                                            Height="28"
+                                            FontSize="11"
+                                            FontWeight="SemiBold"
+                                            Cursor="Hand"
+                                            Margin="2">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Background" Value="#FFDC3545"/>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="#FFC82333"/>
                                                     </Trigger>
                                                 </Style.Triggers>
                                             </Style>

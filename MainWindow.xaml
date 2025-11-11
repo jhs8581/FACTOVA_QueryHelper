@@ -39,6 +39,11 @@
             <TabItem Header="설정">
                 <controls:SettingsControl x:Name="SettingsControl"/>
             </TabItem>
+
+            <!-- 도움말 탭 -->
+            <TabItem Header="📖 도움말">
+                <controls:HelpControl x:Name="HelpControl"/>
+            </TabItem>
         </TabControl>
     </Grid>
 </Window>
