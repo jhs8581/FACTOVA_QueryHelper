@@ -12,7 +12,7 @@ namespace FACTOVA_QueryHelper.Controls
     {
         public string QueryText { get; private set; } = string.Empty;
 
-        public QueryTextEditWindow(string initialQuery = "")
+        public QueryTextEditWindow(string initialQuery = "", bool isReadOnly = false)
         {
             InitializeComponent();
             
@@ -23,6 +23,14 @@ namespace FACTOVA_QueryHelper.Controls
             if (!string.IsNullOrEmpty(initialQuery))
             {
                 QueryTextEditor.Text = initialQuery;
+            }
+            
+            // 읽기 전용 모드일 경우 Save 버튼 숨기기
+            if (isReadOnly)
+            {
+                SaveButton.Visibility = Visibility.Collapsed;
+                QueryTextEditor.IsReadOnly = true;
+                CancelButton.Content = "닫기";
             }
             
             QueryTextEditor.Focus();

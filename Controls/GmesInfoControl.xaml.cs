@@ -84,8 +84,11 @@ namespace FACTOVA_QueryHelper.Controls
 
             FactoryTextBox.Text = _sharedData.Settings.GmesFactory;
             OrgTextBox.Text = _sharedData.Settings.GmesOrg;
-            DateFromPicker.SelectedDate = _sharedData.Settings.GmesDateFrom ?? DateTime.Today;
-            DateToPicker.SelectedDate = _sharedData.Settings.GmesDateTo ?? DateTime.Today;
+            
+            // 일자는 항상 오늘 날짜로 설정 (저장하지 않음)
+            DateFromPicker.SelectedDate = DateTime.Today;
+            DateToPicker.SelectedDate = DateTime.Today;
+            
             WipLineIdTextBox.Text = _sharedData.Settings.GmesWipLineId;
             EquipLineIdTextBox.Text = _sharedData.Settings.GmesEquipLineId;
             FacilityTextBox.Text = _sharedData.Settings.GmesFacility;
@@ -100,8 +103,11 @@ namespace FACTOVA_QueryHelper.Controls
 
             _sharedData.Settings.GmesFactory = FactoryTextBox.Text;
             _sharedData.Settings.GmesOrg = OrgTextBox.Text;
-            _sharedData.Settings.GmesDateFrom = DateFromPicker.SelectedDate;
-            _sharedData.Settings.GmesDateTo = DateToPicker.SelectedDate;
+            
+            // 일자는 저장하지 않음 (항상 현재 날짜 사용)
+            // _sharedData.Settings.GmesDateFrom = DateFromPicker.SelectedDate;
+            // _sharedData.Settings.GmesDateTo = DateToPicker.SelectedDate;
+            
             _sharedData.Settings.GmesWipLineId = WipLineIdTextBox.Text;
             _sharedData.Settings.GmesEquipLineId = EquipLineIdTextBox.Text;
             _sharedData.Settings.GmesFacility = FacilityTextBox.Text;
@@ -369,6 +375,7 @@ namespace FACTOVA_QueryHelper.Controls
                 VerticalAlignment = VerticalAlignment.Center
             };
 
+            // 쿼리 실행 버튼
             var executeButton = new Button
             {
                 Content = "▶",
@@ -378,15 +385,60 @@ namespace FACTOVA_QueryHelper.Controls
                 Foreground = Brushes.White,
                 BorderThickness = new Thickness(0),
                 Cursor = Cursors.Hand,
-                FontWeight = FontWeights.Bold
+                FontWeight = FontWeights.Bold,
+                Margin = new Thickness(0, 0, 5, 0)
             };
             executeButton.Click += async (s, e) => await ExecuteDynamicGridQuery(gridInfo);
 
+            // 쿼리 보기 버튼
+            var viewQueryButton = new Button
+            {
+                Content = "📝 쿼리 보기",
+                Width = 90,
+                Height = 28,
+                Background = new SolidColorBrush(Color.FromRgb(40, 167, 69)), // #FF28A745
+                Foreground = Brushes.White,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand,
+                FontSize = 11,
+                FontWeight = FontWeights.SemiBold,
+                Margin = new Thickness(0, 0, 10, 0),
+                ToolTip = "쿼리 보기"
+            };
+            
+            // 마우스 오버 스타일 추가
+            var viewButtonStyle = new Style(typeof(Button));
+            viewButtonStyle.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(40, 167, 69))));
+            var viewTrigger = new System.Windows.Trigger { Property = Button.IsMouseOverProperty, Value = true };
+            viewTrigger.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(33, 136, 56)))); // #FF218838
+            viewButtonStyle.Triggers.Add(viewTrigger);
+            viewQueryButton.Style = viewButtonStyle;
+            
+            viewQueryButton.Click += (s, e) =>
+            {
+                if (gridInfo.QueryComboBox.SelectedItem is QueryItem query)
+                {
+                    var window = new QueryTextEditWindow(query.Query, isReadOnly: true)
+                    {
+                        Title = $"쿼리 보기 - {query.QueryName}",
+                        Owner = Window.GetWindow(this),
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner
+                    };
+                    window.ShowDialog();
+                }
+                else
+                {
+                    MessageBox.Show("먼저 쿼리를 선택하세요.", "알림",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            };
+
             headerPanel.Children.Add(titleBlock);
-            headerPanel.Children.Add(gridInfo.QueryComboBox);
-            headerPanel.Children.Add(gridInfo.ClearButton);
-            headerPanel.Children.Add(executeButton);
-            headerPanel.Children.Add(gridInfo.ResultInfoTextBlock); // 결과 정보 추가
+            headerPanel.Children.Add(gridInfo.QueryComboBox);  // 쿼리 선택 콤보박스
+            headerPanel.Children.Add(gridInfo.ClearButton);     // 취소 버튼
+            headerPanel.Children.Add(executeButton);            // 실행 버튼
+            headerPanel.Children.Add(viewQueryButton);          // 쿼리 보기 버튼
+            headerPanel.Children.Add(gridInfo.ResultInfoTextBlock); // 결과 정보
 
             Grid.SetRow(headerPanel, 0);
             Grid.SetRow(gridInfo.DataGrid, 1);
@@ -1085,10 +1137,10 @@ namespace FACTOVA_QueryHelper.Controls
             // 계획정보 DataGrid에 폰트 크기 적용
             PlanInfoDataGrid.FontSize = fontSize;
 
-            // 계획정보 DataGrid 헤더 폰트 크기도 업데이트
+            // 계획정보 DataGrid 헤더 폰트 크기도 업데이트 (파란색으로 통일)
             var planHeaderStyle = new Style(typeof(System.Windows.Controls.Primitives.DataGridColumnHeader));
             planHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BackgroundProperty, 
-                new SolidColorBrush(Color.FromRgb(108, 117, 125)))); // #FF6C757D
+                new SolidColorBrush(Color.FromRgb(0, 120, 215)))); // #FF0078D7 (파란색으로 변경)
             planHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.ForegroundProperty, 
                 Brushes.White));
             planHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontWeightProperty, 

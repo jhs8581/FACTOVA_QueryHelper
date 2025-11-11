@@ -149,15 +149,13 @@ namespace FACTOVA_QueryHelper.Controls
                 try
                 {
                     // 쿼리 텍스트 편집 윈도우를 읽기 전용 모드로 표시
-                    var window = new QueryTextEditWindow(query.Query)
+                    var window = new QueryTextEditWindow(query.Query, isReadOnly: true)
                     {
                         Title = $"쿼리 보기 - {query.QueryName}",
                         Owner = Window.GetWindow(this),
                         WindowStartupLocation = WindowStartupLocation.CenterOwner
                     };
                     
-                    // QueryTextEditWindow의 TextBox를 읽기 전용으로 설정
-                    // (필요시 QueryTextEditWindow에 IsReadOnly 속성 추가)
                     window.ShowDialog();
                     
                     UpdateStatus($"'{query.QueryName}' 쿼리를 확인했습니다.", Colors.Blue);

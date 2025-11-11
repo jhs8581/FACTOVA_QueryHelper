@@ -40,8 +40,8 @@
                             FontSize="14"
                             Margin="0,0,10,5">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="💾" FontSize="16" Margin="0,0,8,0"/>
-                            <TextBlock Text="DB에서 쿼리 로드"/>
+                            <TextBlock Text="🔄" FontSize="16" Margin="0,0,8,0"/>
+                            <TextBlock Text="쿼리 로드"/>
                         </StackPanel>
                     </Button>
                     
