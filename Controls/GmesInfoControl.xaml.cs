@@ -47,10 +47,41 @@ namespace FACTOVA_QueryHelper.Controls
             WorkOrderTextBox.LostFocus += InputField_LostFocus;
             WorkOrderNameTextBox.LostFocus += InputField_LostFocus;
             ModelSuffixTextBox.LostFocus += InputField_LostFocus;
+            LotIdTextBox.LostFocus += InputField_LostFocus;
+            EquipmentIdTextBox.LostFocus += InputField_LostFocus;
             
             QuerySelectComboBox.SelectionChanged += QueryComboBox_SelectionChanged;
             PlanInfoDataGrid.AutoGeneratingColumn += DataGrid_AutoGeneratingColumn;
             PlanInfoDataGrid.LoadingRow += DataGrid_LoadingRow; // CHK 컬럼 체크
+        }
+
+        /// <summary>
+        /// 조회 조건 접기/펼치기
+        /// </summary>
+        private void ToggleSearchConditionButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SearchConditionGrid.Visibility == Visibility.Visible)
+            {
+                // 접기
+                SearchConditionGrid.Visibility = Visibility.Collapsed;
+                SearchConditionRow.Height = new GridLength(0);
+                ToggleIconTextBlock.Text = "▼";
+            }
+            else
+            {
+                // 펼치기
+                SearchConditionGrid.Visibility = Visibility.Visible;
+                SearchConditionRow.Height = GridLength.Auto;
+                ToggleIconTextBlock.Text = "▲";
+            }
+        }
+
+        /// <summary>
+        /// 계획정보 DataGrid의 편집 시작을 막음 (복사만 허용)
+        /// </summary>
+        private void PlanInfoDataGrid_BeginningEdit(object? sender, DataGridBeginningEditEventArgs e)
+        {
+            e.Cancel = true;  // 편집 취소 (복사만 가능)
         }
 
         public void Initialize(SharedDataContext sharedData)
@@ -146,6 +177,8 @@ namespace FACTOVA_QueryHelper.Controls
             WorkOrderTextBox.Text = _sharedData.Settings.GmesWorkOrder;
             WorkOrderNameTextBox.Text = _sharedData.Settings.GmesWorkOrderName;
             ModelSuffixTextBox.Text = _sharedData.Settings.GmesModelSuffix;
+            LotIdTextBox.Text = _sharedData.Settings.GmesLotId;
+            EquipmentIdTextBox.Text = _sharedData.Settings.GmesEquipmentId;
         }
 
         private void SaveInputValues()
@@ -165,6 +198,8 @@ namespace FACTOVA_QueryHelper.Controls
             _sharedData.Settings.GmesWorkOrder = WorkOrderTextBox.Text;
             _sharedData.Settings.GmesWorkOrderName = WorkOrderNameTextBox.Text;
             _sharedData.Settings.GmesModelSuffix = ModelSuffixTextBox.Text;
+            _sharedData.Settings.GmesLotId = LotIdTextBox.Text;
+            _sharedData.Settings.GmesEquipmentId = EquipmentIdTextBox.Text;
 
             _sharedData.SaveSettingsCallback?.Invoke();
         }
@@ -519,14 +554,20 @@ namespace FACTOVA_QueryHelper.Controls
             var dataGrid = new DataGrid
             {
                 AutoGenerateColumns = true,
-                IsReadOnly = true,
+                IsReadOnly = false,  // 셀 복사를 위해 편집 가능하도록 변경
                 AlternatingRowBackground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
                 GridLinesVisibility = DataGridGridLinesVisibility.All,
                 HeadersVisibility = DataGridHeadersVisibility.All,
-                FontSize = 10
+                FontSize = 10,
+                ClipboardCopyMode = DataGridClipboardCopyMode.ExcludeHeader,  // 헤더 제외하고 복사
+                SelectionMode = DataGridSelectionMode.Extended,  // 다중 선택 가능
+                SelectionUnit = DataGridSelectionUnit.Cell  // 셀 단위 선택
             };
             dataGrid.AutoGeneratingColumn += DataGrid_AutoGeneratingColumn;
             dataGrid.LoadingRow += DataGrid_LoadingRow; // CHK 컬럼 체크를 위한 이벤트
+            
+            // BeginningEdit 이벤트 추가 - 실제 편집은 막고 복사만 허용
+            dataGrid.BeginningEdit += (s, e) => e.Cancel = true;
 
             // 헤더 스타일을 명시적으로 생성 (파란색 계열로 통일)
             var headerStyle = new Style(typeof(System.Windows.Controls.Primitives.DataGridColumnHeader));
@@ -671,14 +712,23 @@ namespace FACTOVA_QueryHelper.Controls
                 return;
             }
 
-            if (PlanInfoDataGrid.SelectedItem == null)
+            // 계획정보 DataGrid에서 선택된 항목 확인
+            if (PlanInfoDataGrid.ItemsSource == null)
             {
-                MessageBox.Show("계획정보에서 행을 먼저 선택하세요.", "알림",
+                MessageBox.Show("계획정보를 먼저 조회하세요.", "알림",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            var selectedRow = (DataRowView)PlanInfoDataGrid.SelectedItem;
+            // SelectedItem으로 선택된 행 가져오기
+            DataRowView? selectedRow = PlanInfoDataGrid.SelectedItem as DataRowView;
+            
+            if (selectedRow == null)
+            {
+                MessageBox.Show("계획정보에서 행을 선택하세요.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
             
             // 시간 측정 시작
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -789,7 +839,18 @@ namespace FACTOVA_QueryHelper.Controls
 
         private async void ExecuteAllGridsButton_Click(object sender, RoutedEventArgs e)
         {
-            if (PlanInfoDataGrid.SelectedItem == null)
+            // 계획정보 DataGrid에서 선택된 항목 확인
+            if (PlanInfoDataGrid.ItemsSource == null)
+            {
+                MessageBox.Show("계획정보를 먼저 조회하세요.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // SelectedItem으로 선택된 행 가져오기
+            DataRowView? selectedRow = PlanInfoDataGrid.SelectedItem as DataRowView;
+            
+            if (selectedRow == null)
             {
                 MessageBox.Show("계획정보에서 행을 선택하세요.", "알림",
                     MessageBoxButton.OK, MessageBoxImage.Information);
@@ -800,8 +861,6 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 ExecuteAllGridsButton.IsEnabled = false;
                 ExecuteAllGridsButton.Content = "조회 중...";
-
-                var selectedRow = (DataRowView)PlanInfoDataGrid.SelectedItem;
 
                 // 각 그리드별로 시간 측정과 함께 실행
                 var tasks = new List<System.Threading.Tasks.Task>();
@@ -1061,6 +1120,8 @@ namespace FACTOVA_QueryHelper.Controls
             result = result.Replace("@WORK_ORDER_ID", $"'{WorkOrderTextBox.Text}'");
             result = result.Replace("@WORK_ORDER_NAME", $"'{WorkOrderNameTextBox.Text}'");
             result = result.Replace("@PRODUCT_SPECIFICATION_ID", $"'{ModelSuffixTextBox.Text}'");
+            result = result.Replace("@LOT_ID", $"'{LotIdTextBox.Text}'");
+            result = result.Replace("@EQUIPMENT_ID", $"'{EquipmentIdTextBox.Text}'");
 
             return result;
         }

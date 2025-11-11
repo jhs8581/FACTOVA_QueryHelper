@@ -36,6 +36,8 @@ namespace FACTOVA_QueryHelper
         public string GmesWorkOrder { get; set; } = string.Empty; // W/O
         public string GmesWorkOrderName { get; set; } = string.Empty; // W/O 명
         public string GmesModelSuffix { get; set; } = string.Empty; // Model.Suffix (PRODUCT_SPECIFICATION_ID)
+        public string GmesLotId { get; set; } = string.Empty; // LOT ID
+        public string GmesEquipmentId { get; set; } = string.Empty; // 설비 ID
         
         // GMES 비즈명 및 쿼리 정보
         public string GmesBizName { get; set; } = string.Empty; // 선택된 비즈명
