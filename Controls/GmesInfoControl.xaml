@@ -62,167 +62,136 @@
                         <ColumnDefinition Width="150"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="30"/>
-                        <RowDefinition Height="35"/>
-                        <RowDefinition Height="35"/>
-                        <RowDefinition Height="35"/>
-                        <RowDefinition Height="35"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
                     </Grid.RowDefinitions>
 
-                    <!-- 헤더 (첫 번째 그룹) -->
-                    <Border Grid.Column="0" Grid.Row="0" Background="#FF0078D7" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBlock Text="입력 항목" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="11"/>
-                    </Border>
-                    <Border Grid.Column="1" Grid.Row="0" Background="#FF0078D7" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBlock Text="값" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="11"/>
-                    </Border>
-                    <Border Grid.Column="2" Grid.Row="0" Background="#FF0078D7" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBlock Text="쿼리 파라미터" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10"/>
-                    </Border>
-
-                    <!-- 헤더 (두 번째 그룹) -->
-                    <Border Grid.Column="3" Grid.Row="0" Background="#FF0078D7" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBlock Text="입력 항목" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="11"/>
-                    </Border>
-                    <Border Grid.Column="4" Grid.Row="0" Background="#FF0078D7" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBlock Text="값" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="11"/>
-                    </Border>
-                    <Border Grid.Column="5" Grid.Row="0" Background="#FF0078D7" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBlock Text="쿼리 파라미터" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10"/>
-                    </Border>
-
-                    <!-- 헤더 (세 번째 그룹) -->
-                    <Border Grid.Column="6" Grid.Row="0" Background="#FF0078D7" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBlock Text="입력 항목" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="11"/>
-                    </Border>
-                    <Border Grid.Column="7" Grid.Row="0" Background="#FF0078D7" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBlock Text="값" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="11"/>
-                    </Border>
-                    <Border Grid.Column="8" Grid.Row="0" Background="#FF0078D7" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBlock Text="쿼리 파라미터" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10"/>
-                    </Border>
+                    
 
                     <!-- Row 1: 대표공장 | ORG | 계획일자(시작) -->
-                    <Border Grid.Column="0" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
+                    <Border Grid.Column="0" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="대표공장" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="1" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1">
+                    <Border Grid.Column="1" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1">
                         <TextBox x:Name="FactoryTextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="2" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
+                    <Border Grid.Column="2" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
                         <TextBlock Text="@REPRESENTATIVE_FACTORY_CODE" FontSize="9" Foreground="#FF495057" VerticalAlignment="Center" Margin="5,0"/>
                     </Border>
 
-                    <Border Grid.Column="3" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
+                    <Border Grid.Column="3" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="ORG" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="4" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1">
+                    <Border Grid.Column="4" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1">
                         <TextBox x:Name="OrgTextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="5" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
+                    <Border Grid.Column="5" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
                         <TextBlock Text="@ORGANIZATION_ID" FontSize="9" Foreground="#FF495057" VerticalAlignment="Center" Margin="5,0"/>
                     </Border>
-
-                    <Border Grid.Column="6" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
-                        <TextBlock Text="계획일자 (시작)" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
+                    <Border Grid.Column="6" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
+                        <TextBlock Text="윕라인 ID" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="7" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <DatePicker x:Name="DateFromPicker" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
+                    <Border Grid.Column="7" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1">
+                        <TextBox x:Name="WipLineIdTextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="8" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
-                        <TextBlock Text="@PRODUCTION_YMD_START" FontSize="9" Foreground="#FF495057" VerticalAlignment="Center" Margin="5,0"/>
+                    <Border Grid.Column="8" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
+                        <TextBlock Text="@WIP_LINE_ID" FontSize="9" Foreground="#FF495057" VerticalAlignment="Center" Margin="5,0"/>
                     </Border>
+                    
 
                     <!-- Row 2: 계획일자(종료) | 윕라인 ID | 설비라인 ID -->
-                    <Border Grid.Column="0" Grid.Row="2" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
+                    <Border Grid.Column="0" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
+                        <TextBlock Text="계획일자 (시작)" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
+                    </Border>
+                    <Border Grid.Column="1" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1">
+                        <DatePicker x:Name="DateFromPicker" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
+                    </Border>
+                    <Border Grid.Column="2" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
+                        <TextBlock Text="@PRODUCTION_YMD_START" FontSize="9" Foreground="#FF495057" VerticalAlignment="Center" Margin="5,0"/>
+                    </Border>
+                    <Border Grid.Column="3" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="계획일자 (종료)" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="1" Grid.Row="2" BorderBrush="#FFE0E0E0" BorderThickness="1">
+                    <Border Grid.Column="4" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1">
                         <DatePicker x:Name="DateToPicker" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="2" Grid.Row="2" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
+                    <Border Grid.Column="5" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
                         <TextBlock Text="@PRODUCTION_YMD_END" FontSize="9" Foreground="#FF495057" VerticalAlignment="Center" Margin="5,0"/>
                     </Border>
 
-                    <Border Grid.Column="3" Grid.Row="2" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
-                        <TextBlock Text="윕라인 ID" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
-                    </Border>
-                    <Border Grid.Column="4" Grid.Row="2" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBox x:Name="WipLineIdTextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
-                    </Border>
-                    <Border Grid.Column="5" Grid.Row="2" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
-                        <TextBlock Text="@WIP_LINE_ID" FontSize="9" Foreground="#FF495057" VerticalAlignment="Center" Margin="5,0"/>
-                    </Border>
+                  
 
-                    <Border Grid.Column="6" Grid.Row="2" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
+                    <Border Grid.Column="6" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="설비라인 ID" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="7" Grid.Row="2" BorderBrush="#FFE0E0E0" BorderThickness="1">
+                    <Border Grid.Column="7" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1">
                         <TextBox x:Name="EquipLineIdTextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="8" Grid.Row="2" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
+                    <Border Grid.Column="8" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
                         <TextBlock Text="@LINE_ID" FontSize="9" Foreground="#FF495057" VerticalAlignment="Center" Margin="5,0"/>
                     </Border>
 
                     <!-- Row 3: FACILITY | W/O | W/O 명 -->
-                    <Border Grid.Column="0" Grid.Row="3" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
+                    <Border Grid.Column="0" Grid.Row="2" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="FACILITY" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="1" Grid.Row="3" BorderBrush="#FFE0E0E0" BorderThickness="1">
+                    <Border Grid.Column="1" Grid.Row="2" BorderBrush="#FFE0E0E0" BorderThickness="1">
                         <TextBox x:Name="FacilityTextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="2" Grid.Row="3" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
+                    <Border Grid.Column="2" Grid.Row="2" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
                         <TextBlock Text="@FACILITY_CODE" FontSize="9" Foreground="#FF495057" VerticalAlignment="Center" Margin="5,0"/>
                     </Border>
 
-                    <Border Grid.Column="3" Grid.Row="3" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
+                    <Border Grid.Column="3" Grid.Row="2" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="W/O" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="4" Grid.Row="3" BorderBrush="#FFE0E0E0" BorderThickness="1">
+                    <Border Grid.Column="4" Grid.Row="2" BorderBrush="#FFE0E0E0" BorderThickness="1">
                         <TextBox x:Name="WorkOrderTextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="5" Grid.Row="3" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
+                    <Border Grid.Column="5" Grid.Row="2" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
                         <TextBlock Text="@WORK_ORDER_ID" FontSize="9" Foreground="#FF495057" VerticalAlignment="Center" Margin="5,0"/>
                     </Border>
 
-                    <Border Grid.Column="6" Grid.Row="3" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
+                    <Border Grid.Column="6" Grid.Row="2" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="W/O 명" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="7" Grid.Row="3" BorderBrush="#FFE0E0E0" BorderThickness="1">
+                    <Border Grid.Column="7" Grid.Row="2" BorderBrush="#FFE0E0E0" BorderThickness="1">
                         <TextBox x:Name="WorkOrderNameTextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="8" Grid.Row="3" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
+                    <Border Grid.Column="8" Grid.Row="2" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
                         <TextBlock Text="@WORK_ORDER_NAME" FontSize="9" Foreground="#FF495057" VerticalAlignment="Center" Margin="5,0"/>
                     </Border>
 
                     <!-- Row 4: Model.Suffix | LOT ID | 설비 ID -->
-                    <Border Grid.Column="0" Grid.Row="4" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
+                    <Border Grid.Column="0" Grid.Row="3" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="Model.Suffix" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="1" Grid.Row="4" BorderBrush="#FFE0E0E0" BorderThickness="1">
+                    <Border Grid.Column="1" Grid.Row="3" BorderBrush="#FFE0E0E0" BorderThickness="1">
                         <TextBox x:Name="ModelSuffixTextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="2" Grid.Row="4" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
+                    <Border Grid.Column="2" Grid.Row="3" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
                         <TextBlock Text="@PRODUCT_SPECIFICATION_ID" FontSize="9" Foreground="#FF495057" VerticalAlignment="Center" Margin="5,0"/>
                     </Border>
 
-                    <Border Grid.Column="3" Grid.Row="4" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
+                    <Border Grid.Column="3" Grid.Row="3" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="LOT ID" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="4" Grid.Row="4" BorderBrush="#FFE0E0E0" BorderThickness="1">
+                    <Border Grid.Column="4" Grid.Row="3" BorderBrush="#FFE0E0E0" BorderThickness="1">
                         <TextBox x:Name="LotIdTextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="5" Grid.Row="4" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
+                    <Border Grid.Column="5" Grid.Row="3" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
                         <TextBlock Text="@LOT_ID" FontSize="9" Foreground="#FF495057" VerticalAlignment="Center" Margin="5,0"/>
                     </Border>
 
-                    <Border Grid.Column="6" Grid.Row="4" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
+                    <Border Grid.Column="6" Grid.Row="3" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="설비 ID" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="7" Grid.Row="4" BorderBrush="#FFE0E0E0" BorderThickness="1">
+                    <Border Grid.Column="7" Grid.Row="3" BorderBrush="#FFE0E0E0" BorderThickness="1">
                         <TextBox x:Name="EquipmentIdTextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
                     </Border>
-                    <Border Grid.Column="8" Grid.Row="4" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
+                    <Border Grid.Column="8" Grid.Row="3" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF0F8FF">
                         <TextBlock Text="@EQUIPMENT_ID" FontSize="9" Foreground="#FF495057" VerticalAlignment="Center" Margin="5,0"/>
                     </Border>
                 </Grid>
@@ -260,7 +229,7 @@
 
                     <!-- 제목 -->
                     <TextBlock Grid.Row="0"
-                               Text="계획정보" 
+                               Text="기준정보" 
                                FontSize="14" 
                                FontWeight="Bold"
                                Margin="0,0,0,10"/>
@@ -285,7 +254,7 @@
                         </Button>
 
                         <!-- 조회 쿼리 선택 -->
-                        <TextBlock Text="계획정보 쿼리:" 
+                        <TextBlock Text="기준정보 쿼리:" 
                                    FontWeight="SemiBold"
                                    Margin="0,0,0,5"/>
                         <Grid Margin="0,0,0,10">
@@ -342,6 +311,7 @@
                               Grid.Row="2"
                               AutoGenerateColumns="True"
                               IsReadOnly="False"
+                              CanUserAddRows="False"
                               AlternatingRowBackground="#FFF8F9FA"
                               GridLinesVisibility="All"
                               HeadersVisibility="All"

@@ -555,6 +555,7 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 AutoGenerateColumns = true,
                 IsReadOnly = false,  // 셀 복사를 위해 편집 가능하도록 변경
+                CanUserAddRows = false,  // 빈 행 생성 방지
                 AlternatingRowBackground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
                 GridLinesVisibility = DataGridGridLinesVisibility.All,
                 HeadersVisibility = DataGridHeadersVisibility.All,
@@ -1021,6 +1022,9 @@ namespace FACTOVA_QueryHelper.Controls
                     processedQuery);
 
                 targetGrid.ItemsSource = result.DefaultView;
+                
+                // 데이터 바인딩 후 폰트 크기 적용
+                ApplyFontSizeToGrid(targetGrid);
             }
             catch (Exception ex)
             {
@@ -1068,6 +1072,9 @@ namespace FACTOVA_QueryHelper.Controls
                     processedQuery);
 
                 targetGrid.ItemsSource = result.DefaultView;
+                
+                // 데이터 바인딩 후 폰트 크기 적용
+                ApplyFontSizeToGrid(targetGrid);
             }
             catch (Exception ex)
             {
@@ -1400,43 +1407,41 @@ namespace FACTOVA_QueryHelper.Controls
             int fontSize = _sharedData.Settings.FontSize;
 
             // 계획정보 DataGrid에 폰트 크기 적용
-            PlanInfoDataGrid.FontSize = fontSize;
-
-            // 계획정보 DataGrid 헤더 폰트 크기도 업데이트 (파란색으로 통일)
-            var planHeaderStyle = new Style(typeof(System.Windows.Controls.Primitives.DataGridColumnHeader));
-            planHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BackgroundProperty, 
-                new SolidColorBrush(Color.FromRgb(0, 120, 215)))); // #FF0078D7 (파란색으로 변경)
-            planHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.ForegroundProperty, 
-                Brushes.White));
-            planHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontWeightProperty, 
-                FontWeights.Bold));
-            planHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.HorizontalContentAlignmentProperty, 
-                HorizontalAlignment.Center));
-            planHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontSizeProperty, 
-                (double)fontSize));
-            
-            PlanInfoDataGrid.ColumnHeaderStyle = planHeaderStyle;
+            ApplyFontSizeToGrid(PlanInfoDataGrid);
 
             // 모든 동적 그리드에 폰트 크기 적용
             foreach (var gridInfo in _dynamicGrids)
             {
-                gridInfo.DataGrid.FontSize = fontSize;
-                
-                // 헤더 폰트 크기도 업데이트
-                var newHeaderStyle = new Style(typeof(System.Windows.Controls.Primitives.DataGridColumnHeader));
-                newHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BackgroundProperty, 
-                    new SolidColorBrush(Color.FromRgb(0, 120, 215))));
-                newHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.ForegroundProperty, 
-                    Brushes.White));
-                newHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontWeightProperty, 
-                    FontWeights.Bold));
-                newHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.HorizontalContentAlignmentProperty, 
-                    HorizontalAlignment.Center));
-                newHeaderStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontSizeProperty, 
-                    (double)fontSize));
-                
-                gridInfo.DataGrid.ColumnHeaderStyle = newHeaderStyle;
+                ApplyFontSizeToGrid(gridInfo.DataGrid);
             }
+        }
+
+        /// <summary>
+        /// 특정 DataGrid에 폰트 크기를 적용합니다.
+        /// </summary>
+        private void ApplyFontSizeToGrid(DataGrid dataGrid)
+        {
+            if (_sharedData == null) return;
+
+            int fontSize = _sharedData.Settings.FontSize;
+
+            // DataGrid 본문 폰트 크기 적용
+            dataGrid.FontSize = fontSize;
+
+            // 헤더 폰트 크기 적용
+            var headerStyle = new Style(typeof(System.Windows.Controls.Primitives.DataGridColumnHeader));
+            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BackgroundProperty, 
+                new SolidColorBrush(Color.FromRgb(0, 120, 215)))); // #FF0078D7
+            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.ForegroundProperty, 
+                Brushes.White));
+            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontWeightProperty, 
+                FontWeights.Bold));
+            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.HorizontalContentAlignmentProperty, 
+                HorizontalAlignment.Center));
+            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontSizeProperty, 
+                (double)fontSize));
+            
+            dataGrid.ColumnHeaderStyle = headerStyle;
         }
     }
 }
