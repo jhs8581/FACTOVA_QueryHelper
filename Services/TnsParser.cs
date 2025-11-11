@@ -2,20 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using FACTOVA_QueryHelper.Models;
 
 namespace FACTOVA_QueryHelper
 {
-    public class TnsEntry
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Host { get; set; } = string.Empty;
-        public int Port { get; set; }
-        public string ServiceName { get; set; } = string.Empty;
-        public string ConnectionString { get; set; } = string.Empty;
-
-        public override string ToString() => Name;
-    }
-
     public class TnsParser
     {
         public static List<TnsEntry> ParseTnsFile(string filePath)
@@ -62,8 +52,7 @@ namespace FACTOVA_QueryHelper
                         var portMatch = Regex.Match(block, @"PORT[\s]*=[\s]*(\d+)", RegexOptions.IgnoreCase);
                         if (portMatch.Success)
                         {
-                            int.TryParse(portMatch.Groups[1].Value, out int port);
-                            entry.Port = port;
+                            entry.Port = portMatch.Groups[1].Value.Trim();
                         }
                         
                         // SERVICE_NAME 또는 SID 추출
@@ -81,9 +70,6 @@ namespace FACTOVA_QueryHelper
                                 entry.ServiceName = sidMatch.Groups[1].Value.Trim();
                             }
                         }
-                        
-                        // 연결 문자열 생성
-                        entry.ConnectionString = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={entry.Host})(PORT={entry.Port}))(CONNECT_DATA=(SERVICE_NAME={entry.ServiceName})));";
                         
                         entries.Add(entry);
                     }

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using FACTOVA_QueryHelper.Models;
 
 namespace FACTOVA_QueryHelper.Database
 {
@@ -234,7 +235,7 @@ namespace FACTOVA_QueryHelper.Database
                             $"tnsnames.ora 파일 경로:\n{_settings.TnsPath}");
                     }
 
-                    connectionString = selectedTns.ConnectionString;
+                    connectionString = selectedTns.GetConnectionString();
                     logEntry.AppendLine($"  TNS: {queryItem.TnsName}");
                 }
 

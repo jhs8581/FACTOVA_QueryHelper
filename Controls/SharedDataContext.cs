@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using FACTOVA_QueryHelper.Database;
 using FACTOVA_QueryHelper.SFC;
+using FACTOVA_QueryHelper.Models;
 
 namespace FACTOVA_QueryHelper.Controls
 {

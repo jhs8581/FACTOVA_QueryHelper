@@ -207,7 +207,7 @@
                         </Button>
 
                         <!-- 조회 쿼리 선택 -->
-                        <TextBlock Text="조회 쿼리:" 
+                        <TextBlock Text="계획정보 쿼리:" 
                                    FontWeight="SemiBold"
                                    Margin="0,0,0,5"/>
                         <Grid Margin="0,0,0,10">

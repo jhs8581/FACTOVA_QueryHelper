@@ -1,0 +1,148 @@
+﻿<Window x:Class="FACTOVA_QueryHelper.Controls.JsonInputDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="📥 Input Data (XML/JSON)" 
+        Height="500" 
+        Width="600"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 설명 -->
+        <Border Grid.Row="0" 
+                Background="#FFF3E0" 
+                BorderBrush="#FFB74D" 
+                BorderThickness="1" 
+                CornerRadius="3"
+                Padding="10"
+                Margin="0,0,0,10">
+            <StackPanel>
+                <TextBlock Text="📋 XML 또는 JSON 형식으로 바인드 변수 값을 입력하세요" 
+                           FontWeight="Bold" 
+                           FontSize="12"
+                           Foreground="#E65100"
+                           Margin="0,0,0,5"/>
+                <TextBlock FontSize="11" Foreground="#5D4037" FontFamily="Consolas" TextWrapping="Wrap">
+                    XML 예시:<LineBreak/>
+                    &lt;NewDataSet&gt;<LineBreak/>
+                      &lt;IN_DATA&gt;<LineBreak/>
+                        &lt;FACILITY_CODE&gt;KC_CWZ_A&lt;/FACILITY_CODE&gt;<LineBreak/>
+                        &lt;LINE_ID&gt;KRCW-02-004&lt;/LINE_ID&gt;<LineBreak/>
+                      &lt;/IN_DATA&gt;<LineBreak/>
+                    &lt;/NewDataSet&gt;<LineBreak/>
+                    <LineBreak/>
+                    JSON 예시:<LineBreak/>
+                    { "FACILITY_CODE": "KC_CWZ_A", "LINE_ID": "KRCW-02-004" }
+                </TextBlock>
+            </StackPanel>
+        </Border>
+
+        <!-- XML/JSON TextBox -->
+        <Border Grid.Row="1" 
+                BorderBrush="#CCCCCC" 
+                BorderThickness="1" 
+                CornerRadius="3"
+                Margin="0,0,0,10">
+            <TextBox x:Name="JsonTextBox"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto"
+                     FontFamily="Consolas"
+                     FontSize="12"
+                     Padding="10"/>
+        </Border>
+
+        <!-- 상태 메시지 -->
+        <TextBlock x:Name="StatusText" 
+                   Grid.Row="2"
+                   Text=""
+                   Foreground="Red"
+                   FontSize="11"
+                   Margin="0,0,0,10"
+                   TextWrapping="Wrap"/>
+
+        <!-- 버튼 -->
+        <StackPanel Grid.Row="3" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right">
+            <Button x:Name="OkButton" 
+                    Content="✅ 적용" 
+                    Width="100" 
+                    Height="35"
+                    Background="#4CAF50"
+                    Foreground="White"
+                    FontWeight="Bold"
+                    Margin="0,0,10,0"
+                    Click="OkButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
+                                            BorderBrush="#388E3C"
+                                            BorderThickness="1"
+                                            CornerRadius="3"
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" 
+                                                          VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#388E3C"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#2E7D32"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            
+            <Button x:Name="CancelButton" 
+                    Content="❌ 취소" 
+                    Width="100" 
+                    Height="35"
+                    Background="#757575"
+                    Foreground="White"
+                    FontWeight="Bold"
+                    Click="CancelButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
+                                            BorderBrush="#616161"
+                                            BorderThickness="1"
+                                            CornerRadius="3"
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" 
+                                                          VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#616161"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#424242"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

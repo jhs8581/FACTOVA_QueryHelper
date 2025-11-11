@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using FACTOVA_QueryHelper.Database;
+using FACTOVA_QueryHelper.Models;
 
 namespace FACTOVA_QueryHelper.SFC
 {
@@ -54,7 +55,7 @@ namespace FACTOVA_QueryHelper.SFC
             query = query.Replace("@PC_IP_ADDR", ipList);
 
             return await OracleDatabase.ExecuteQueryAsync(
-                selectedTns.ConnectionString,
+                selectedTns.GetConnectionString(),
                 userId,
                 password,
                 query);

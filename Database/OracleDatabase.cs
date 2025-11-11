@@ -15,7 +15,20 @@ namespace FACTOVA_QueryHelper.Database
             {
                 await Task.Run(() =>
                 {
-                    string fullConnectionString = $"{connectionString}User Id={userId};Password={password};";
+                    // connectionString이 이미 "Data Source=..."로 시작하는지 확인
+                    string fullConnectionString;
+                    if (connectionString.StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // 이미 "Data Source="가 있으면 User Id, Password만 추가
+                        fullConnectionString = $"{connectionString}User Id={userId};Password={password};";
+                    }
+                    else
+                    {
+                        // TNS 형식인 경우 전체 연결 문자열 생성
+                        fullConnectionString = $"Data Source={connectionString};User Id={userId};Password={password};";
+                    }
+                    
+                    System.Diagnostics.Debug.WriteLine($"Connection String: {fullConnectionString.Replace(password, "***")}");
                         
                     using var connection = new OracleConnection(fullConnectionString);
                     connection.Open();
@@ -72,7 +85,16 @@ namespace FACTOVA_QueryHelper.Database
             {
                 await Task.Run(() =>
                 {
-                    string fullConnectionString = $"{connectionString}User Id={userId};Password={password};";
+                    // connectionString이 이미 "Data Source=..."로 시작하는지 확인
+                    string fullConnectionString;
+                    if (connectionString.StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase))
+                    {
+                        fullConnectionString = $"{connectionString}User Id={userId};Password={password};";
+                    }
+                    else
+                    {
+                        fullConnectionString = $"Data Source={connectionString};User Id={userId};Password={password};";
+                    }
 
                     using var connection = new OracleConnection(fullConnectionString);
                     connection.Open();

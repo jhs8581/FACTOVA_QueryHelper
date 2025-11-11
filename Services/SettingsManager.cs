@@ -37,6 +37,9 @@ namespace FACTOVA_QueryHelper
         public string GmesWorkOrderName { get; set; } = string.Empty; // W/O 명
         public string GmesModelSuffix { get; set; } = string.Empty; // Model.Suffix (PRODUCT_SPECIFICATION_ID)
         
+        // GMES 비즈명 및 쿼리 정보
+        public string GmesBizName { get; set; } = string.Empty; // 선택된 비즈명
+        
         // GMES 그리드별 선택된 쿼리 (최대 20개)
         public int GmesGridCount { get; set; } = 6; // 그리드 개수 (기본값: 6)
         public string GmesPlanQueryName { get; set; } = string.Empty; // 계획정보 쿼리
