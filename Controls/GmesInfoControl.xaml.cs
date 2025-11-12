@@ -53,6 +53,7 @@ namespace FACTOVA_QueryHelper.Controls
             QuerySelectComboBox.SelectionChanged += QueryComboBox_SelectionChanged;
             PlanInfoDataGrid.AutoGeneratingColumn += DataGrid_AutoGeneratingColumn;
             PlanInfoDataGrid.LoadingRow += DataGrid_LoadingRow; // CHK 컬럼 체크
+            PlanInfoDataGrid.SelectionChanged += PlanInfoDataGrid_SelectionChanged; // 선택 변경 이벤트
         }
 
         /// <summary>
@@ -82,6 +83,176 @@ namespace FACTOVA_QueryHelper.Controls
         private void PlanInfoDataGrid_BeginningEdit(object? sender, DataGridBeginningEditEventArgs e)
         {
             e.Cancel = true;  // 편집 취소 (복사만 가능)
+        }
+
+        /// <summary>
+        /// 계획정보 DataGrid 더블클릭 - 선택 행 기준 전체 조회 실행
+        /// </summary>
+        private async void PlanInfoDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // 헤더나 빈 영역 클릭 방지
+            var dataGrid = sender as DataGrid;
+            if (dataGrid == null) return;
+
+            // 실제 행을 클릭했는지 확인
+            var row = ItemsControl.ContainerFromElement(dataGrid, e.OriginalSource as DependencyObject) as DataGridRow;
+            if (row == null || row.Item == null) return;
+
+            // 선택된 행이 있는지 확인
+            if (PlanInfoDataGrid.SelectedItem is not DataRowView selectedRow)
+            {
+                MessageBox.Show("선택된 행이 없습니다.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // 전체 조회 버튼 클릭과 동일한 로직 실행
+            try
+            {
+                ExecuteAllGridsButton.IsEnabled = false;
+                ExecuteAllGridsButton.Content = "조회 중...";
+
+                // 각 그리드별로 시간 측정과 함께 실행
+                var tasks = new List<System.Threading.Tasks.Task>();
+                var stopwatches = new Dictionary<int, System.Diagnostics.Stopwatch>();
+
+                foreach (var gridInfo in _dynamicGrids)
+                {
+                    if (gridInfo.QueryComboBox.SelectedItem is QueryItem query)
+                    {
+                        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                        stopwatches[gridInfo.Index] = stopwatch;
+
+                        tasks.Add(ExecuteQueryToGridWithRowDataAndMeasure(query, gridInfo, selectedRow, stopwatch));
+                    }
+                }
+
+                if (tasks.Count == 0)
+                {
+                    MessageBox.Show("조회할 쿼리가 선택되지 않았습니다.", "알림",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                await System.Threading.Tasks.Task.WhenAll(tasks);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"전체 조회 실패:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                ExecuteAllGridsButton.IsEnabled = true;
+                ExecuteAllGridsButton.Content = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Children =
+                    {
+                        new TextBlock { Text = "⚡", FontSize = 16, Margin = new Thickness(0, 0, 5, 0) },
+                        new TextBlock { Text = "선택 행 기준 전체 조회" }
+                    }
+                };
+            }
+        }
+
+        /// <summary>
+        /// 계획정보 DataGrid의 선택 변경 이벤트
+        /// </summary>
+        private void PlanInfoDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PlanInfoDataGrid.SelectedItem is DataRowView selectedRow)
+            {
+                try
+                {
+                    var row = selectedRow.Row;
+                    var table = row.Table;
+
+                    // WORK_ORDER_ID
+                    if (table.Columns.Contains("WORK_ORDER_ID"))
+                    {
+                        var workOrderId = row["WORK_ORDER_ID"]?.ToString() ?? "-";
+                        SelectedWorkOrderIdTextBlock.Text = workOrderId;
+                    }
+                    else
+                    {
+                        SelectedWorkOrderIdTextBlock.Text = "-";
+                    }
+
+                    // WORK_ORDER_NAME
+                    if (table.Columns.Contains("WORK_ORDER_NAME"))
+                    {
+                        var workOrderName = row["WORK_ORDER_NAME"]?.ToString() ?? "-";
+                        SelectedWorkOrderNameTextBlock.Text = workOrderName;
+                    }
+                    else
+                    {
+                        SelectedWorkOrderNameTextBlock.Text = "-";
+                    }
+
+                    // PRODUCT_SPECIFICATION_ID
+                    if (table.Columns.Contains("PRODUCT_SPECIFICATION_ID"))
+                    {
+                        var productSpecId = row["PRODUCT_SPECIFICATION_ID"]?.ToString() ?? "-";
+                        SelectedProductSpecIdTextBlock.Text = productSpecId;
+                    }
+                    else
+                    {
+                        SelectedProductSpecIdTextBlock.Text = "-";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ 선택된 행 정보 표시 오류: {ex.Message}");
+                    SelectedWorkOrderIdTextBlock.Text = "-";
+                    SelectedWorkOrderNameTextBlock.Text = "-";
+                    SelectedProductSpecIdTextBlock.Text = "-";
+                }
+            }
+            else
+            {
+                // 선택 해제 시 초기화
+                SelectedWorkOrderIdTextBlock.Text = "-";
+                SelectedWorkOrderNameTextBlock.Text = "-";
+                SelectedProductSpecIdTextBlock.Text = "-";
+            }
+        }
+
+        /// <summary>
+        /// W/O ID 복사
+        /// </summary>
+        private void CopyWorkOrderId_Click(object sender, RoutedEventArgs e)
+        {
+            var text = SelectedWorkOrderIdTextBlock.Text;
+            if (text != "-" && !string.IsNullOrEmpty(text))
+            {
+                Clipboard.SetText(text);
+            }
+        }
+
+        /// <summary>
+        /// W/O 명 복사
+        /// </summary>
+        private void CopyWorkOrderName_Click(object sender, RoutedEventArgs e)
+        {
+            var text = SelectedWorkOrderNameTextBlock.Text;
+            if (text != "-" && !string.IsNullOrEmpty(text))
+            {
+                Clipboard.SetText(text);
+            }
+        }
+
+        /// <summary>
+        /// Model.Suffix 복사
+        /// </summary>
+        private void CopyProductSpecId_Click(object sender, RoutedEventArgs e)
+        {
+            var text = SelectedProductSpecIdTextBlock.Text;
+            if (text != "-" && !string.IsNullOrEmpty(text))
+            {
+                Clipboard.SetText(text);
+            }
         }
 
         public void Initialize(SharedDataContext sharedData)
@@ -441,6 +612,28 @@ namespace FACTOVA_QueryHelper.Controls
         private void ClearQuerySelectButton_Click(object sender, RoutedEventArgs e)
         {
             QuerySelectComboBox.SelectedItem = null;
+        }
+
+        /// <summary>
+        /// 기준정보 쿼리 보기 버튼 클릭
+        /// </summary>
+        private void ViewPlanQueryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (QuerySelectComboBox.SelectedItem is QueryItem query && query.OrderNumber >= 0)
+            {
+                var window = new QueryTextEditWindow(query.Query, isReadOnly: true)
+                {
+                    Title = $"쿼리 보기 - {query.QueryName}",
+                    Owner = Window.GetWindow(this),
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+                };
+                window.ShowDialog();
+            }
+            else
+            {
+                MessageBox.Show("먼저 기준정보 쿼리를 선택하세요.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
 
         private void GenerateDynamicGrids(int count)
@@ -1135,10 +1328,88 @@ namespace FACTOVA_QueryHelper.Controls
 
         private void DataGrid_AutoGeneratingColumn(object? sender, DataGridAutoGeneratingColumnEventArgs e)
         {
-            if (e.Column.Header is string header)
+            string header = e.Column.Header as string ?? e.PropertyName;
+            
+            if (!string.IsNullOrEmpty(header))
             {
                 e.Column.Header = header.Replace("_", "__");
             }
+            
+            // 🔥 CLOB 타입 컬럼을 TextBox 형태로 표시
+            if (e.PropertyType == typeof(string) && e.PropertyDescriptor != null)
+            {
+                // DataView에서 실제 DataColumn 정보 가져오기
+                var dataGrid = sender as DataGrid;
+                if (dataGrid?.ItemsSource is DataView dataView)
+                {
+                    var columnName = e.PropertyName;
+                    if (dataView.Table.Columns.Contains(columnName))
+                    {
+                        var dataColumn = dataView.Table.Columns[columnName];
+                        
+                        // 🔥 CLOB 타입이거나 긴 텍스트 컬럼 감지
+                        bool isLongText = dataColumn.DataType == typeof(string) && 
+                                         (dataColumn.MaxLength == -1 || dataColumn.MaxLength > 500);
+                        
+                        // 🔥 또는 데이터를 확인해서 긴 텍스트가 있는지 체크
+                        if (!isLongText && dataView.Table.Rows.Count > 0)
+                        {
+                            var sampleValue = dataView.Table.Rows[0][columnName]?.ToString() ?? "";
+                            isLongText = sampleValue.Length > 100 || sampleValue.Contains('\n');
+                        }
+                        
+                        if (isLongText)
+                        {
+                            // 🔥 기존 자동 생성된 컬럼 취소
+                            e.Cancel = true;
+                            
+                            // 🔥 TextBox 템플릿이 있는 새 컬럼 생성
+                            var templateColumn = new DataGridTemplateColumn
+                            {
+                                Header = header.Replace("_", "__"),
+                                Width = new DataGridLength(200), // 기본 너비
+                                CellTemplate = CreateClobCellTemplate(columnName)
+                            };
+                            
+                            dataGrid.Columns.Add(templateColumn);
+                            
+                            System.Diagnostics.Debug.WriteLine($"✅ CLOB 컬럼 감지: {columnName} - TextBox 템플릿 적용");
+                        }
+                    }
+                }
+            }
+        }
+        
+        /// <summary>
+        /// CLOB 컬럼용 TextBox 셀 템플릿 생성
+        /// </summary>
+        private DataTemplate CreateClobCellTemplate(string columnName)
+        {
+            var factory = new FrameworkElementFactory(typeof(TextBox));
+            
+            // 바인딩 설정
+            factory.SetBinding(TextBox.TextProperty, new System.Windows.Data.Binding(columnName)
+            {
+                Mode = System.Windows.Data.BindingMode.OneWay
+            });
+            
+            // TextBox 속성 설정
+            factory.SetValue(TextBox.IsReadOnlyProperty, true);
+            factory.SetValue(TextBox.TextWrappingProperty, TextWrapping.Wrap);
+            factory.SetValue(TextBox.AcceptsReturnProperty, true);
+            factory.SetValue(TextBox.VerticalScrollBarVisibilityProperty, ScrollBarVisibility.Auto);
+            factory.SetValue(TextBox.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Auto);
+            factory.SetValue(TextBox.MaxHeightProperty, 100.0);
+            factory.SetValue(TextBox.BorderThicknessProperty, new Thickness(0));
+            factory.SetValue(TextBox.BackgroundProperty, Brushes.Transparent);
+            factory.SetValue(TextBox.PaddingProperty, new Thickness(5));
+            
+            var dataTemplate = new DataTemplate
+            {
+                VisualTree = factory
+            };
+            
+            return dataTemplate;
         }
 
         /// <summary>

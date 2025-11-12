@@ -237,9 +237,8 @@
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
-                        
+                        <DataGridTextColumn Header="비즈명/그룹명" Binding="{Binding BizName, UpdateSourceTrigger=PropertyChanged}" Width="150"/>
                         <DataGridTextColumn Header="쿼리명" Binding="{Binding QueryName, UpdateSourceTrigger=PropertyChanged}" Width="200"/>
-                        
                         <DataGridComboBoxColumn Header="구분" Width="110"
                                                 SelectedItemBinding="{Binding QueryType, UpdateSourceTrigger=PropertyChanged}">
                             <DataGridComboBoxColumn.ElementStyle>
@@ -270,7 +269,7 @@
                             </DataGridComboBoxColumn.EditingElementStyle>
                         </DataGridComboBoxColumn>
                         
-                        <DataGridTextColumn Header="비즈명/그룹명" Binding="{Binding BizName, UpdateSourceTrigger=PropertyChanged}" Width="150"/>
+                        
                         <DataGridTextColumn Header="설명" Binding="{Binding Description2, UpdateSourceTrigger=PropertyChanged}" Width="200"/>
                         <DataGridTextColumn Header="순번" Binding="{Binding OrderNumber, UpdateSourceTrigger=PropertyChanged}" Width="60">
                             <DataGridTextColumn.ElementStyle>
