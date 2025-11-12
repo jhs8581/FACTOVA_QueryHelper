@@ -554,7 +554,7 @@ namespace FACTOVA_QueryHelper.Controls
             var dataGrid = new DataGrid
             {
                 AutoGenerateColumns = true,
-                IsReadOnly = false,  // 셀 복사를 위해 편집 가능하도록 변경
+                IsReadOnly = false,  // 셀 복스를 위해 편집 가능하도록 변경
                 CanUserAddRows = false,  // 빈 행 생성 방지
                 AlternatingRowBackground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
                 GridLinesVisibility = DataGridGridLinesVisibility.All,
@@ -1161,6 +1161,18 @@ namespace FACTOVA_QueryHelper.Controls
                         e.Row.Background = new SolidColorBrush(Color.FromRgb(255, 200, 200)); // 연한 빨강
                         e.Row.Foreground = new SolidColorBrush(Color.FromRgb(139, 0, 0)); // 진한 빨강 텍스트
                     }
+                    else
+                    {
+                        // 🔥 CHK 값이 'E'가 아니면 기본 배경색으로 초기화
+                        e.Row.ClearValue(System.Windows.Controls.Control.BackgroundProperty);
+                        e.Row.ClearValue(System.Windows.Controls.Control.ForegroundProperty);
+                    }
+                }
+                else
+                {
+                    // 🔥 CHK 컬럼이 없으면 기본 배경색으로 초기화
+                    e.Row.ClearValue(System.Windows.Controls.Control.BackgroundProperty);
+                    e.Row.ClearValue(System.Windows.Controls.Control.ForegroundProperty);
                 }
             }
         }

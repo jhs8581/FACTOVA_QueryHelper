@@ -11,6 +11,9 @@ namespace FACTOVA_QueryHelper.Controls
         private readonly ConnectionInfoService _connectionService;
         private ObservableCollection<ConnectionInfo> _connections;
         private bool _hasUnsavedChanges = false;
+        
+        // 🔥 변경된 항목 추적 (신규 + 수정)
+        private HashSet<ConnectionInfo> _modifiedConnections = new HashSet<ConnectionInfo>();
 
         // 저장 완료 시 발생하는 이벤트
         public event EventHandler? ConnectionInfosSaved;
@@ -28,6 +31,8 @@ namespace FACTOVA_QueryHelper.Controls
         private void LoadConnections()
         {
             _connections.Clear();
+            _modifiedConnections.Clear();
+            
             var connections = _connectionService.GetAllConnections();
             foreach (var conn in connections)
             {
@@ -57,9 +62,10 @@ namespace FACTOVA_QueryHelper.Controls
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            // 빈 행 추가
+            // 🔥 신규 항목 생성 (ID = 0)
             var newConnection = new ConnectionInfo
             {
+                Id = 0, // 신규 항목 표시
                 Name = "새 접속 정보",
                 TNS = "",
                 UserId = "",
@@ -68,14 +74,20 @@ namespace FACTOVA_QueryHelper.Controls
                 IsFavorite = false
             };
 
-            // 일단 메모리에만 추가 (저장 버튼 누를 때 DB에 저장)
+            // 컬렉션에 추가
             _connections.Add(newConnection);
+            
+            // 🔥 수정 목록에 추가 (신규 항목)
+            _modifiedConnections.Add(newConnection);
+            
             TotalCountText.Text = $"{_connections.Count}개";
             _hasUnsavedChanges = true;
 
             // 새로 추가된 행으로 스크롤 & 선택
             ConnectionsDataGrid.SelectedItem = newConnection;
             ConnectionsDataGrid.ScrollIntoView(newConnection);
+            
+            System.Diagnostics.Debug.WriteLine($"✅ 신규 항목 추가: {newConnection.Name} (ID: {newConnection.Id})");
         }
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
@@ -97,9 +109,18 @@ namespace FACTOVA_QueryHelper.Controls
                         
                         // 🔥 삭제 시에도 이벤트 발생
                         ConnectionInfosSaved?.Invoke(this, EventArgs.Empty);
+                        
+                        System.Diagnostics.Debug.WriteLine($"🗑️ DB에서 삭제: {selectedConnection.Name} (ID: {selectedConnection.Id})");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"🗑️ 신규 항목 삭제 (DB 저장 전): {selectedConnection.Name}");
                     }
 
+                    // 컬렉션 및 수정 목록에서 제거
                     _connections.Remove(selectedConnection);
+                    _modifiedConnections.Remove(selectedConnection);
+                    
                     TotalCountText.Text = $"{_connections.Count}개";
 
                     MessageBox.Show("접속 정보가 삭제되었습니다.", "성공", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -115,58 +136,87 @@ namespace FACTOVA_QueryHelper.Controls
         {
             try
             {
-                foreach (var connection in _connections)
+                // 🔥 수정된 항목이 없으면 종료
+                if (_modifiedConnections.Count == 0)
+                {
+                    MessageBox.Show("변경된 항목이 없습니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                int newCount = 0;
+                int updateCount = 0;
+
+                // 🔥 변경된 항목만 처리
+                foreach (var connection in _modifiedConnections.ToList())
                 {
                     // 필수 필드 검증
                     if (string.IsNullOrWhiteSpace(connection.Name))
                     {
-                        MessageBox.Show("접속 정보 이름을 입력해주세요.", "입력 오류", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show($"접속 정보 이름을 입력해주세요.\n(ID: {connection.Id})", "입력 오류", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
 
                     if (string.IsNullOrWhiteSpace(connection.UserId))
                     {
-                        MessageBox.Show("User ID를 입력해주세요.", "입력 오류", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show($"'{connection.Name}'의 User ID를 입력해주세요.", "입력 오류", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
 
                     if (string.IsNullOrWhiteSpace(connection.Password))
                     {
-                        MessageBox.Show("Password를 입력해주세요.", "입력 오류", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show($"'{connection.Name}'의 Password를 입력해주세요.", "입력 오류", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
 
-                    // ID가 0이면 새로 추가, 아니면 업데이트
+                    // 🔥 ID가 0이면 신규 추가, 아니면 업데이트
                     if (connection.Id == 0)
                     {
                         var newId = _connectionService.AddConnection(connection);
                         connection.Id = newId;
+                        newCount++;
+                        System.Diagnostics.Debug.WriteLine($"✅ 신규 저장: {connection.Name} (새 ID: {newId})");
                     }
                     else
                     {
                         _connectionService.UpdateConnection(connection);
+                        updateCount++;
+                        System.Diagnostics.Debug.WriteLine($"✅ 업데이트: {connection.Name} (ID: {connection.Id})");
                     }
                 }
 
+                // 🔥 수정 목록 초기화
+                _modifiedConnections.Clear();
                 _hasUnsavedChanges = false;
                 
                 // 🔥 저장 완료 이벤트 발생
                 ConnectionInfosSaved?.Invoke(this, EventArgs.Empty);
                 
-                MessageBox.Show("모든 변경사항이 저장되었습니다.", "성공", MessageBoxButton.OK, MessageBoxImage.Information);
+                // 성공 메시지
+                string message = $"저장 완료!\n\n신규: {newCount}개\n수정: {updateCount}개\n총: {newCount + updateCount}개";
+                MessageBox.Show(message, "성공", MessageBoxButton.OK, MessageBoxImage.Information);
                 
-                System.Diagnostics.Debug.WriteLine("🔔 ConnectionInfosSaved event raised");
+                System.Diagnostics.Debug.WriteLine($"🔔 ConnectionInfosSaved event raised (신규: {newCount}, 수정: {updateCount})");
+                
+                // 🔥 DataGrid 새로고침
+                ConnectionsDataGrid.Items.Refresh();
             }
             catch (System.Exception ex)
             {
                 MessageBox.Show($"저장 중 오류가 발생했습니다:\n{ex.Message}", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Diagnostics.Debug.WriteLine($"❌ 저장 오류: {ex.Message}");
             }
         }
 
         private void CancelChangesButton_Click(object sender, RoutedEventArgs e)
         {
+            if (_modifiedConnections.Count == 0)
+            {
+                MessageBox.Show("변경된 항목이 없습니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
             var result = MessageBox.Show(
-                "변경사항을 취소하고 다시 로드하시겠습니까?",
+                $"변경된 {_modifiedConnections.Count}개 항목을 취소하고 다시 로드하시겠습니까?",
                 "취소 확인",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
@@ -174,6 +224,7 @@ namespace FACTOVA_QueryHelper.Controls
             if (result == MessageBoxResult.Yes)
             {
                 LoadConnections();
+                System.Diagnostics.Debug.WriteLine("🔄 변경사항 취소 및 다시 로드");
             }
         }
 
@@ -181,7 +232,15 @@ namespace FACTOVA_QueryHelper.Controls
         {
             if (e.EditAction == DataGridEditAction.Commit)
             {
-                _hasUnsavedChanges = true;
+                // 🔥 편집된 행을 수정 목록에 추가
+                if (e.Row.Item is ConnectionInfo connection)
+                {
+                    _modifiedConnections.Add(connection);
+                    _hasUnsavedChanges = true;
+                    
+                    System.Diagnostics.Debug.WriteLine($"📝 항목 수정됨: {connection.Name} (ID: {connection.Id})");
+                    System.Diagnostics.Debug.WriteLine($"   현재 수정된 항목 수: {_modifiedConnections.Count}");
+                }
             }
         }
 
