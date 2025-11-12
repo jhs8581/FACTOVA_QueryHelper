@@ -35,6 +35,16 @@
                 <controls:SfcMonitoringControl x:Name="SfcMonitoringControl"/>
             </TabItem>
 
+            <!-- 비즈 변환 탭 -->
+            <TabItem Header="비즈 변환">
+                <controls:QueryBizTransformView x:Name="QueryBizTransformView"/>
+            </TabItem>
+
+            <!-- IN 조건 변환 탭 -->
+            <TabItem Header="IN 조건 변환">
+                <controls:QueryInTransformView x:Name="QueryInTransformView"/>
+            </TabItem>
+
             <!-- 설정 탭 -->
             <TabItem Header="설정">
                 <controls:SettingsControl x:Name="SettingsControl"/>

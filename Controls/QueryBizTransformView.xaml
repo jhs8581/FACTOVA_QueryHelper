@@ -1,0 +1,121 @@
+﻿<UserControl x:Class="FACTOVA_QueryHelper.Controls.QueryBizTransformView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:FACTOVA_QueryHelper.Controls"
+             xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
+             mc:Ignorable="d" 
+             d:DesignHeight="900" d:DesignWidth="1200">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Section -->
+        <Border Grid.Row="0" Margin="0,0,0,10" Padding="10" 
+                Background="#E3F2FD" BorderBrush="#2196F3" BorderThickness="2" CornerRadius="5">
+            <StackPanel>
+                <TextBlock Text="🔄 비즈 쿼리 변환" 
+                           FontSize="18" FontWeight="Bold" 
+                           Foreground="#1976D2" Margin="0,0,0,5"/>
+                <TextBlock Text="세미콜론(;)으로 구분된 여러 쿼리를 입력하고 변환 버튼을 누르면 각 쿼리별로 탭이 생성됩니다." 
+                           FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Query Tabs -->
+        <TabControl x:Name="QueryTabControl" Grid.Row="1">
+            <TabControl.Resources>
+                <Style TargetType="TabPanel">
+                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                </Style>
+            </TabControl.Resources>
+            <TabControl.Template>
+                <ControlTemplate TargetType="TabControl">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- ScrollViewer로 탭 헤더 감싸기 -->
+                        <ScrollViewer Grid.Row="0" 
+                                      HorizontalScrollBarVisibility="Auto" 
+                                      VerticalScrollBarVisibility="Disabled"
+                                      CanContentScroll="True">
+                            <TabPanel IsItemsHost="True" 
+                                      Background="Transparent"
+                                      HorizontalAlignment="Left"/>
+                        </ScrollViewer>
+                        
+                        <Border Grid.Row="1" 
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter ContentSource="SelectedContent"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </TabControl.Template>
+            
+            <!-- 첫 번째 탭: 쿼리 입력 및 변환 -->
+            <TabItem Header="📝 쿼리 입력" IsSelected="True">
+                <Grid Margin="5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Query Input Area -->
+                    <GroupBox Header="🖊️ 변환할 쿼리 입력" Grid.Row="0" Margin="0,0,0,10"
+                              BorderBrush="#CCCCCC" BorderThickness="1">
+                        <GroupBox.HeaderTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" FontWeight="Bold" Foreground="#2C5AA0"/>
+                            </DataTemplate>
+                        </GroupBox.HeaderTemplate>
+                        <Grid>
+                            <avalonedit:TextEditor x:Name="InputQueryTextBox"
+                                                   FontFamily="Consolas"
+                                                   FontSize="12"
+                                                   ShowLineNumbers="True"
+                                                   WordWrap="False"
+                                                   HorizontalScrollBarVisibility="Auto"
+                                                   VerticalScrollBarVisibility="Auto"
+                                                   Background="White"/>
+                        </Grid>
+                    </GroupBox>
+
+                    <!-- Transform Button -->
+                    <Border Grid.Row="1" Padding="10" 
+                            Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="3">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button x:Name="TransformButton" 
+                                    Content="🔄 쿼리 변환" 
+                                    Width="150" Height="40"
+                                    Background="#FF2196F3" 
+                                    Foreground="White" 
+                                    FontWeight="Bold" 
+                                    FontSize="14"
+                                    Click="TransformButton_Click"
+                                    ToolTip="세미콜론(;)으로 구분된 쿼리를 각각의 탭으로 변환합니다"/>
+                            
+                            <Button x:Name="ClearAllButton" 
+                                    Content="🗑️ 전체 초기화" 
+                                    Width="120" Height="40"
+                                    Margin="10,0,0,0"
+                                    Background="#FFDC3545" 
+                                    Foreground="White" 
+                                    FontWeight="Bold" 
+                                    FontSize="13"
+                                    Click="ClearAllButton_Click"
+                                    ToolTip="모든 탭을 삭제하고 초기 상태로 돌아갑니다"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>
