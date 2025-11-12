@@ -23,11 +23,12 @@ namespace FACTOVA_QueryHelper.Database
 
         /// <summary>
         /// 데이터베이스를 초기화합니다.
+        /// Queries 테이블과 Connections 테이블을 모두 생성합니다.
         /// </summary>
         private void InitializeDatabase()
         {
             string directory = Path.GetDirectoryName(_databasePath) ?? "";
-            if (!Directory.Exists(directory))
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
@@ -35,6 +36,7 @@ namespace FACTOVA_QueryHelper.Database
             using var connection = new SqliteConnection(_connectionString);
             connection.Open();
 
+            // 🔥 Queries 테이블 생성
             var command = connection.CreateCommand();
             command.CommandText = @"
                 CREATE TABLE IF NOT EXISTS Queries (
@@ -64,6 +66,26 @@ namespace FACTOVA_QueryHelper.Database
                     ModifiedDate TEXT DEFAULT CURRENT_TIMESTAMP
                 )";
             command.ExecuteNonQuery();
+            
+            // 🔥 Connections 테이블 생성 (접속 정보 관리용)
+            var connCommand = connection.CreateCommand();
+            connCommand.CommandText = @"
+                CREATE TABLE IF NOT EXISTS Connections (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Name TEXT NOT NULL,
+                    TNS TEXT,
+                    Host TEXT,
+                    Port TEXT,
+                    Service TEXT,
+                    UserId TEXT NOT NULL,
+                    Password TEXT NOT NULL,
+                    SQLQuery TEXT,
+                    IsActive INTEGER DEFAULT 0,
+                    IsFavorite INTEGER DEFAULT 0,
+                    CreatedAt TEXT DEFAULT CURRENT_TIMESTAMP,
+                    UpdatedAt TEXT DEFAULT CURRENT_TIMESTAMP
+                )";
+            connCommand.ExecuteNonQuery();
             
             // QueryType 컬럼 추가 (기존 테이블 호환성)
             try
@@ -311,14 +333,13 @@ namespace FACTOVA_QueryHelper.Database
         
         /// <summary>
         /// 기본 데이터베이스 경로를 반환합니다 (정적 메서드).
+        /// 프로그램 실행 경로에 FACTOVA_QueryHelper.db 파일 생성
         /// </summary>
         public static string GetDefaultDatabasePath()
         {
-            return Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "FACTOVA_QueryHelper",
-                "queries.db"
-            );
+            // 🔥 프로그램 실행 파일이 있는 디렉토리 경로
+            var exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            return Path.Combine(exeDirectory, "FACTOVA_QueryHelper.db");
         }
     }
 }

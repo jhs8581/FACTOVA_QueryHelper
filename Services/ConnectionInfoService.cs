@@ -10,6 +10,7 @@ namespace FACTOVA_QueryHelper.Services
 {
     /// <summary>
     /// SQLite를 사용한 접속 정보 관리 서비스
+    /// QueryDatabase와 동일한 DB 파일 사용 (FACTOVA_QueryHelper.db)
     /// </summary>
     public class ConnectionInfoService
     {
@@ -18,22 +19,23 @@ namespace FACTOVA_QueryHelper.Services
 
         public ConnectionInfoService()
         {
-            var appDataPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "FACTOVA_QueryHelper"
-            );
-
-            Directory.CreateDirectory(appDataPath);
-            _dbPath = Path.Combine(appDataPath, "queries.db");
-
+            // 🔥 QueryDatabase와 동일한 경로 사용
+            _dbPath = GetDefaultDatabasePath();
             InitializeDatabase();
         }
 
         /// <summary>
         /// 데이터베이스 초기화
+        /// Connections 테이블만 생성 (Queries 테이블은 QueryDatabase에서 생성)
         /// </summary>
         private void InitializeDatabase()
         {
+            string directory = Path.GetDirectoryName(_dbPath) ?? "";
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
             using var connection = new SqliteConnection($"Data Source={_dbPath}");
             connection.Open();
 
@@ -221,5 +223,16 @@ namespace FACTOVA_QueryHelper.Services
         /// 데이터베이스 파일 경로 가져오기
         /// </summary>
         public string GetDatabasePath() => _dbPath;
+
+        /// <summary>
+        /// 기본 데이터베이스 경로를 반환합니다 (정적 메서드).
+        /// QueryDatabase와 동일한 경로 사용
+        /// </summary>
+        public static string GetDefaultDatabasePath()
+        {
+            // 🔥 프로그램 실행 파일이 있는 디렉토리 경로
+            var exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            return Path.Combine(exeDirectory, "FACTOVA_QueryHelper.db");
+        }
     }
 }
