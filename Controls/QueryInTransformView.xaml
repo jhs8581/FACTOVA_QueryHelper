@@ -5,8 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:FACTOVA_QueryHelper.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="800">
-    <Grid Margin="20">
+             d:DesignHeight="600" d:DesignWidth="800"
+             Background="#FFF8F9FA">
+    <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -19,10 +20,10 @@
                 Background="#E3F2FD" BorderBrush="#2196F3" BorderThickness="2" CornerRadius="5">
             <StackPanel>
                 <TextBlock Text="🔄 IN 조건 변환" 
-                           FontSize="20" FontWeight="Bold" 
+                           FontSize="18" FontWeight="Bold" 
                            Foreground="#1976D2" Margin="0,0,0,5"/>
                 <TextBlock Text="여러 줄의 값을 입력하면 SQL IN 조건 형식으로 변환됩니다. (예: '1', '2', '3')" 
-                           FontSize="12" Foreground="Gray" TextWrapping="Wrap"/>
+                           FontSize="11" Foreground="Gray" TextWrapping="Wrap"/>
             </StackPanel>
         </Border>
 
@@ -46,38 +47,44 @@
         </GroupBox>
 
         <!-- Transform Button -->
-        <Border Grid.Row="2" Padding="15" Margin="0,5"
+        <Border Grid.Row="2" Padding="10" Margin="0,5"
                 Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="3">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button x:Name="TransformButton" 
                         Content="🔄 IN 조건 변환" 
-                        Width="160" Height="45"
+                        Width="150" Height="40"
                         Background="#FF2196F3" 
                         Foreground="White" 
                         FontWeight="Bold" 
-                        FontSize="15"
+                        FontSize="14"
+                        BorderThickness="0"
+                        Cursor="Hand"
                         Click="TransformButton_Click"
                         ToolTip="각 줄의 값을 SQL IN 조건 형식으로 변환합니다"/>
                 
                 <Button x:Name="ClearButton" 
                         Content="🗑️ 초기화" 
-                        Width="120" Height="45"
-                        Margin="15,0,0,0"
+                        Width="120" Height="40"
+                        Margin="10,0,0,0"
                         Background="#FFDC3545" 
                         Foreground="White" 
                         FontWeight="Bold" 
-                        FontSize="14"
+                        FontSize="13"
+                        BorderThickness="0"
+                        Cursor="Hand"
                         Click="ClearButton_Click"
                         ToolTip="입력과 출력을 모두 초기화합니다"/>
                 
                 <Button x:Name="CopyButton" 
                         Content="📋 복사" 
-                        Width="120" Height="45"
-                        Margin="15,0,0,0"
+                        Width="120" Height="40"
+                        Margin="10,0,0,0"
                         Background="#FF28A745" 
                         Foreground="White" 
                         FontWeight="Bold" 
-                        FontSize="14"
+                        FontSize="13"
+                        BorderThickness="0"
+                        Cursor="Hand"
                         Click="CopyButton_Click"
                         ToolTip="변환된 결과를 클립보드에 복사합니다"/>
             </StackPanel>

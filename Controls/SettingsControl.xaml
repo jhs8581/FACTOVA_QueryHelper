@@ -61,14 +61,8 @@
                         <TextBlock Text="파일 경로 설정"/>
                     </StackPanel>
                 </TabItem.Header>
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="10">
                     <StackPanel>
-                        <!-- 제목 -->
-                        <TextBlock Text="파일 경로 설정" 
-                                   FontSize="18" 
-                                   FontWeight="Bold"
-                                   Margin="0,0,0,20"/>
-
                         <!-- TNS 파일 경로 -->
                         <TextBlock Text="tnsnames.ora 파일 경로" 
                                    FontWeight="SemiBold" 
@@ -112,7 +106,7 @@
                                 BorderThickness="1" 
                                 CornerRadius="4"
                                 Padding="10"
-                                Margin="0,0,0,25">
+                                Margin="0,0,0,15">
                             <StackPanel>
                                 <TextBlock Text="기본 경로:" 
                                            FontSize="11" 
@@ -126,7 +120,7 @@
                         </Border>
 
                         <!-- 구분선 -->
-                        <Rectangle Height="1" Fill="#FFE0E0E0" Margin="0,0,0,25"/>
+                        <Rectangle Height="1" Fill="#FFE0E0E0" Margin="0,0,0,15"/>
 
                         <!-- 데이터베이스 파일 경로 -->
                         <TextBlock Text="FACTOVA_DB.db 파일 경로" 
@@ -136,8 +130,7 @@
 
                         <Grid Margin="0,0,0,10">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="5*"/>
-                                <ColumnDefinition Width="246*"/>
+                                <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
@@ -148,10 +141,10 @@
                                      Padding="10,0"
                                      Margin="0,0,10,0"
                                      IsReadOnly="True"
-                                     Background="#FFF8F9FA" Grid.ColumnSpan="2"/>
+                                     Background="#FFF8F9FA"/>
 
                             <Button x:Name="BrowseDatabaseButton" 
-                                    Grid.Column="2"
+                                    Grid.Column="1"
                                     Width="110" 
                                     Height="36"
                                     Click="BrowseDatabaseButton_Click"
@@ -190,7 +183,7 @@
                                 BorderThickness="1" 
                                 CornerRadius="4"
                                 Padding="10"
-                                Margin="0,0,0,25">
+                                Margin="0,0,0,15">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="⚠️" 
                                            FontSize="14"
@@ -204,7 +197,7 @@
                         </Border>
 
                         <!-- 구분선 -->
-                        <Rectangle Height="1" Fill="#FFE0E0E0" Margin="0,0,0,20"/>
+                        <Rectangle Height="1" Fill="#FFE0E0E0" Margin="0,0,0,15"/>
 
                         <!-- 저장 버튼 -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -251,14 +244,8 @@
                         <TextBlock Text="업데이트 설정"/>
                     </StackPanel>
                 </TabItem.Header>
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="10">
                     <StackPanel>
-                        <!-- 제목 -->
-                        <TextBlock Text="업데이트 설정" 
-                                   FontSize="18" 
-                                   FontWeight="Bold"
-                                   Margin="0,0,0,20"/>
-
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -366,38 +353,33 @@
                         <TextBlock Text="접속 정보 관리"/>
                     </StackPanel>
                 </TabItem.Header>
-                <Grid Margin="20">
+                <Grid Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- 제목 및 설명 -->
-                    <Grid Grid.Row="0" Margin="0,0,0,15">
-                        <TextBlock Text="접속 정보 관리" 
-                                   FontSize="18" 
-                                   FontWeight="Bold"
-                                   VerticalAlignment="Center"/>
-
-                        <Border Background="#FFF0F8FF" 
-                                BorderBrush="#FF0078D7" 
-                                BorderThickness="1" 
-                                CornerRadius="4"
-                                Padding="8,4"
-                                HorizontalAlignment="Right">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="📌" 
-                                           FontSize="12"
-                                           Margin="0,0,5,0"
-                                           VerticalAlignment="Center"/>
-                                <TextBlock Text="데이터베이스 연결 정보를 관리합니다" 
-                                           FontSize="11" 
-                                           Foreground="#FF0078D7"
-                                           FontWeight="SemiBold"
-                                           VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Border>
-                    </Grid>
+                    <!-- 설명 -->
+                    <Border Grid.Row="0" 
+                            Background="#FFF0F8FF" 
+                            BorderBrush="#FF0078D7" 
+                            BorderThickness="1" 
+                            CornerRadius="4"
+                            Padding="8,4"
+                            HorizontalAlignment="Right"
+                            Margin="0,0,0,10">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📌" 
+                                       FontSize="12"
+                                       Margin="0,0,5,0"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="데이터베이스 연결 정보를 관리합니다" 
+                                       FontSize="11" 
+                                       Foreground="#FF0078D7"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
 
                     <!-- ConnectionManagementControl 포함 -->
                     <local:ConnectionManagementControl x:Name="ConnectionManagement" 
@@ -413,7 +395,167 @@
                         <TextBlock Text="사업장 정보 관리"/>
                     </StackPanel>
                 </TabItem.Header>
-                <local:SiteManagementControl x:Name="SiteManagement"/>
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 설명 -->
+                    <Border Grid.Row="0" 
+                            Background="#FFF0F8FF" 
+                            BorderBrush="#FF0078D7" 
+                            BorderThickness="1" 
+                            CornerRadius="4"
+                            Padding="8,4"
+                            HorizontalAlignment="Right"
+                            Margin="0,0,0,10">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📌" 
+                                       FontSize="12"
+                                       Margin="0,0,5,0"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="사업장별 정보를 관리합니다" 
+                                       FontSize="11" 
+                                       Foreground="#FF0078D7"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- SiteManagementControl 포함 -->
+                    <local:SiteManagementControl x:Name="SiteManagement"
+                                                 Grid.Row="1"/>
+                </Grid>
+            </TabItem>
+            
+            <!-- 🔥 DB 계정 일괄 변경 탭 -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🔑" FontSize="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="DB 계정 일괄 변경"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+                    <StackPanel MaxWidth="800">
+                        <!-- 안내 메시지 -->
+                        <Border Background="#FFFEF5E7" 
+                                BorderBrush="#FFFFC107" 
+                                BorderThickness="2" 
+                                CornerRadius="8"
+                                Padding="15"
+                                Margin="0,0,0,25">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <TextBlock Text="⚠️" 
+                                               FontSize="20"
+                                               Margin="0,0,10,0"/>
+                                    <TextBlock Text="DB 계정 Password 일괄 변경" 
+                                               FontSize="16" 
+                                               FontWeight="Bold"
+                                               Foreground="#FF856404"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="#FF856404" LineHeight="22">
+                                    <Run FontWeight="Bold">TNS와 User ID</Run>를 기준으로 일치하는 항목들의 <Run FontWeight="Bold">Password</Run>를 일괄 변경합니다.<LineBreak/>
+                                    <LineBreak/>
+                                    변경 대상 테이블:<LineBreak/>
+                                    • 쿼리 관리 (쿼리 실행/정보 조회/비즈 조회)<LineBreak/>
+                                    • 접속 정보 관리<LineBreak/>
+                                    <LineBreak/>
+                                    <Run FontWeight="Bold" Foreground="#FFDC3545">⚠️ 주의: TNS, User ID, Password는 모두 필수 입력 항목입니다.</Run>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- TNS 입력 (필수) -->
+                        <TextBlock Text="🔍 TNS 이름 (필수)" 
+                                   FontWeight="SemiBold" 
+                                   FontSize="14"
+                                   Margin="0,0,0,10"/>
+                        <TextBox x:Name="BulkTnsTextBox"
+                                 Height="40"
+                                 FontSize="13"
+                                 VerticalContentAlignment="Center"
+                                 Padding="12,0"
+                                 Margin="0,0,0,5"/>
+                        <TextBlock Text="변경할 대상 TNS 이름 (예: ORACLE_PRD)" 
+                                   FontSize="11" 
+                                   Foreground="#FF6C757D"
+                                   Margin="0,0,0,20"/>
+
+                        <!-- User ID 입력 (필수) -->
+                        <TextBlock Text="👤 User ID (필수)" 
+                                   FontWeight="SemiBold" 
+                                   FontSize="14"
+                                   Margin="0,0,0,10"/>
+                        <TextBox x:Name="BulkUserIdTextBox"
+                                 Height="40"
+                                 FontSize="13"
+                                 VerticalContentAlignment="Center"
+                                 Padding="12,0"
+                                 Margin="0,0,0,5"/>
+                        <TextBlock Text="변경할 대상 User ID (예: admin)" 
+                                   FontSize="11" 
+                                   Foreground="#FF6C757D"
+                                   Margin="0,0,0,20"/>
+
+                        <!-- Password 입력 (필수) -->
+                        <TextBlock Text="🔐 새 Password (필수)" 
+                                   FontWeight="SemiBold" 
+                                   FontSize="14"
+                                   Margin="0,0,0,10"/>
+                        <TextBox x:Name="BulkPasswordBox"
+                                 Height="40"
+                                 FontSize="13"
+                                 VerticalContentAlignment="Center"
+                                 Padding="12,0"
+                                 Margin="0,0,0,5"/>
+                        <TextBlock Text="위의 TNS와 User ID가 일치하는 모든 항목의 Password를 이 값으로 변경합니다" 
+                                   FontSize="11" 
+                                   Foreground="#FF6C757D"
+                                   Margin="0,0,0,30"/>
+
+                        <!-- 일괄 변경 버튼 -->
+                        <Button x:Name="BulkUpdateButton" 
+                                Width="250" 
+                                Height="50"
+                                Click="BulkUpdateButton_Click"
+                                Background="#FFDC3545" 
+                                Foreground="White"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                FontWeight="Bold"
+                                FontSize="16"
+                                HorizontalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🔑" FontSize="20" Margin="0,0,10,0"/>
+                                <TextBlock Text="Password 일괄 변경"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- 변경 결과 표시 -->
+                        <Border x:Name="BulkUpdateResultPanel"
+                                Margin="0,30,0,0"
+                                Padding="15"
+                                BorderThickness="2"
+                                CornerRadius="8"
+                                Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock x:Name="BulkUpdateResultTitle"
+                                           Text="✅ 일괄 변경 완료"
+                                           FontSize="16"
+                                           FontWeight="Bold"
+                                           Margin="0,0,0,10"/>
+                                <TextBlock x:Name="BulkUpdateResultMessage"
+                                           TextWrapping="Wrap"
+                                           FontSize="13"
+                                           LineHeight="22"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
             </TabItem>
         </TabControl>
     </Grid>

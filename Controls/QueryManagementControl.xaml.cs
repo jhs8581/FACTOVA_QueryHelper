@@ -399,11 +399,20 @@ namespace FACTOVA_QueryHelper.Controls
             Grid.SetRow(editModeBorder, 1);
             grid.Children.Add(editModeBorder);
 
+            // 🔥 ScrollViewer로 DataGrid를 감싸기
+            var scrollViewer = new ScrollViewer
+            {
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+            };
+            
             // DataGrid
             var dataGrid = CreateDataGrid(queryType);
             _currentDataGrid = dataGrid;
-            Grid.SetRow(dataGrid, 2);
-            grid.Children.Add(dataGrid);
+            scrollViewer.Content = dataGrid;
+            
+            Grid.SetRow(scrollViewer, 2);
+            grid.Children.Add(scrollViewer);
 
             border.Child = grid;
             return border;
@@ -505,7 +514,9 @@ namespace FACTOVA_QueryHelper.Controls
                 FontSize = 11,
                 BorderThickness = new Thickness(1),
                 BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224)),
-                Background = Brushes.White
+                Background = Brushes.White,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,  // 🔥 가로 스크롤바 추가
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto
             };
 
             dataGrid.SelectionChanged += QueriesDataGrid_SelectionChanged;

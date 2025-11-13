@@ -5,50 +5,84 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="1400">
-    <Grid Margin="20">
+    <Grid Margin="0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- 제목 -->
-        <TextBlock Text="사업장 정보 관리" FontSize="24" FontWeight="Bold" Margin="0,0,0,20" Grid.Row="0"/>
-
         <!-- 버튼 영역 -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
             <Button x:Name="RefreshButton" Content="🔄 새로고침" Width="120" Height="40" Margin="0,0,5,0"
-                    Background="#FF2196F3" Foreground="White" FontWeight="Bold" FontSize="14"
+                    Background="#FF2196F3" Foreground="White" FontWeight="Bold" FontSize="13"
                     Click="RefreshButton_Click"/>
             <Button x:Name="AddButton" Content="➕ 사업장 추가" Width="130" Height="40" Margin="0,0,5,0"
-                    Background="#FF4CAF50" Foreground="White" FontWeight="Bold" FontSize="14"
+                    Background="#FF4CAF50" Foreground="White" FontWeight="Bold" FontSize="13"
                     Click="AddButton_Click"/>
             <Button x:Name="DeleteButton" Content="🗑️ 삭제" Width="100" Height="40" Margin="0,0,5,0"
-                    Background="#FFF44336" Foreground="White" FontWeight="Bold" FontSize="14"
+                    Background="#FFF44336" Foreground="White" FontWeight="Bold" FontSize="13"
                     Click="DeleteButton_Click"/>
-            <TextBlock Text="모든 사업장: " VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Margin="30,0,5,0"/>
-            <TextBlock x:Name="TotalCountText" Text="0개" VerticalAlignment="Center" FontSize="16" FontWeight="Bold"
+            <TextBlock Text="모든 사업장: " VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Margin="30,0,5,0"/>
+            <TextBlock x:Name="TotalCountText" Text="0개" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"
                        Foreground="#FF2196F3"/>
         </StackPanel>
 
-        <!-- 편집 중 경고 메시지 -->
-        <Border Grid.Row="2" Margin="0,0,0,10" Padding="10" Background="#FFFFF9C4" BorderBrush="#FFFFA726" 
-                BorderThickness="2" CornerRadius="5" VerticalAlignment="Top" Height="50">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="✏️" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <TextBlock Text="편집 중입니다. 필드를 수정한 후 저장하거나 취소하세요. Ctrl+C: 복사" 
-                           FontWeight="SemiBold" VerticalAlignment="Center" FontSize="12"/>
-                <Button Content="💾 변경사항 저장" Background="#FF4CAF50" Foreground="White" 
-                        Padding="10,5" Margin="20,0,5,0" FontWeight="Bold"
-                        Click="SaveChangesButton_Click"/>
-                <Button Content="❌ 취소" Background="#FF607D8B" Foreground="White" 
-                        Padding="10,5" FontWeight="Bold"
-                        Click="CancelChangesButton_Click"/>
-            </StackPanel>
+        <!-- 편집 중 경고 메시지 (동적 높이) -->
+        <Border x:Name="EditModeBorder" 
+                Grid.Row="1" 
+                Margin="0,0,0,10" 
+                Padding="12,8" 
+                Background="#FFFFEAA7" 
+                BorderBrush="#FFFFC107" 
+                BorderThickness="1" 
+                CornerRadius="6"
+                Visibility="Collapsed">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" 
+                           Text="✏️" 
+                           FontSize="16" 
+                           VerticalAlignment="Center" 
+                           Margin="0,0,10,0"/>
+
+                <TextBlock Grid.Column="1" 
+                           VerticalAlignment="Center">
+                    <Run Text="편집 중입니다. " FontWeight="Bold"/>
+                    <Run Text="필드를 수정한 후 저장하거나 취소하세요."/>
+                </TextBlock>
+
+                <StackPanel Grid.Column="2" 
+                            Orientation="Horizontal">
+                    <Button Content="💾 변경사항 저장" 
+                            Background="#FF28A745" 
+                            Foreground="White" 
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Width="130" 
+                            Height="30"
+                            Margin="0,0,8,0"
+                            FontWeight="SemiBold"
+                            Click="SaveChangesButton_Click"/>
+                    <Button Content="❌ 취소" 
+                            Background="#FF6C757D" 
+                            Foreground="White" 
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Width="80" 
+                            Height="30"
+                            Click="CancelChangesButton_Click"/>
+                </StackPanel>
+            </Grid>
         </Border>
 
         <!-- 데이터 그리드 -->
-        <Border Grid.Row="2" BorderThickness="1" BorderBrush="#FFCCCCCC" CornerRadius="5" Margin="0,60,0,0">
+        <Border Grid.Row="2" BorderThickness="1" BorderBrush="#FFCCCCCC" CornerRadius="5">
             <DataGrid x:Name="SiteDataGrid" 
                       AutoGenerateColumns="False"
                       CanUserAddRows="False"
@@ -57,8 +91,8 @@
                       HeadersVisibility="Column"
                       GridLinesVisibility="All"
                       AlternatingRowBackground="#FFF5F5F5"
-                      RowHeight="40"
-                      FontSize="12"
+                      RowHeight="35"
+                      FontSize="11"
                       CellEditEnding="SiteDataGrid_CellEditEnding"
                       SelectionChanged="SiteDataGrid_SelectionChanged">
                 
@@ -70,6 +104,7 @@
                                 <Setter Property="Background" Value="#FF2196F3"/>
                                 <Setter Property="Foreground" Value="White"/>
                                 <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="11"/>
                                 <Setter Property="Padding" Value="10,5"/>
                                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
                             </Style>
@@ -77,11 +112,9 @@
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
-                                <Setter Property="Background">
-                                    <Setter.Value>
-                                        <SolidColorBrush Color="LightBlue" Opacity="0.3"/>
-                                    </Setter.Value>
-                                </Setter>
+                                <Setter Property="FontSize" Value="11"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Foreground" Value="#FF6C757D"/>
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
@@ -93,6 +126,7 @@
                                 <Setter Property="Background" Value="#FF2196F3"/>
                                 <Setter Property="Foreground" Value="White"/>
                                 <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="11"/>
                                 <Setter Property="Padding" Value="10,5"/>
                             </Style>
                         </DataGridTextColumn.HeaderStyle>
@@ -105,6 +139,7 @@
                                 <Setter Property="Background" Value="#FF2196F3"/>
                                 <Setter Property="Foreground" Value="White"/>
                                 <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="11"/>
                                 <Setter Property="Padding" Value="10,5"/>
                             </Style>
                         </DataGridTextColumn.HeaderStyle>
@@ -117,6 +152,7 @@
                                 <Setter Property="Background" Value="#FF2196F3"/>
                                 <Setter Property="Foreground" Value="White"/>
                                 <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="11"/>
                                 <Setter Property="Padding" Value="10,5"/>
                             </Style>
                         </DataGridTextColumn.HeaderStyle>
@@ -129,6 +165,7 @@
                                 <Setter Property="Background" Value="#FF2196F3"/>
                                 <Setter Property="Foreground" Value="White"/>
                                 <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="11"/>
                                 <Setter Property="Padding" Value="10,5"/>
                             </Style>
                         </DataGridTextColumn.HeaderStyle>
@@ -141,6 +178,7 @@
                                 <Setter Property="Background" Value="#FF2196F3"/>
                                 <Setter Property="Foreground" Value="White"/>
                                 <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="11"/>
                                 <Setter Property="Padding" Value="10,5"/>
                             </Style>
                         </DataGridTextColumn.HeaderStyle>
@@ -153,6 +191,7 @@
                                 <Setter Property="Background" Value="#FF2196F3"/>
                                 <Setter Property="Foreground" Value="White"/>
                                 <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="11"/>
                                 <Setter Property="Padding" Value="10,5"/>
                             </Style>
                         </DataGridTextColumn.HeaderStyle>
@@ -165,6 +204,7 @@
                                 <Setter Property="Background" Value="#FF2196F3"/>
                                 <Setter Property="Foreground" Value="White"/>
                                 <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="11"/>
                                 <Setter Property="Padding" Value="10,5"/>
                                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
                             </Style>

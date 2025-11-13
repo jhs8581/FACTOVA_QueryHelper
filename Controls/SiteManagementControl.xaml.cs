@@ -51,6 +51,9 @@ namespace FACTOVA_QueryHelper.Controls
 
                 TotalCountText.Text = $"{_sites.Count}개";
                 _hasUnsavedChanges = false;
+                
+                // 🔥 편집 모드 Border 숨김
+                EditModeBorder.Visibility = Visibility.Collapsed;
             }
             catch (Exception ex)
             {
@@ -99,6 +102,9 @@ namespace FACTOVA_QueryHelper.Controls
             
             TotalCountText.Text = $"{_sites.Count}개";
             _hasUnsavedChanges = true;
+            
+            // 🔥 편집 모드 Border 표시
+            EditModeBorder.Visibility = Visibility.Visible;
 
             // 새로 추가된 행으로 스크롤 & 선택
             SiteDataGrid.SelectedItem = newSite;
@@ -209,6 +215,9 @@ namespace FACTOVA_QueryHelper.Controls
                 _modifiedSites.Clear();
                 _hasUnsavedChanges = false;
                 
+                // 🔥 편집 모드 Border 숨김
+                EditModeBorder.Visibility = Visibility.Collapsed;
+                
                 // 🔥 저장 완료 이벤트 발생
                 SiteInfosSaved?.Invoke(this, EventArgs.Empty);
                 
@@ -245,6 +254,10 @@ namespace FACTOVA_QueryHelper.Controls
             if (result == MessageBoxResult.Yes)
             {
                 LoadSites();
+                
+                // 🔥 편집 모드 Border 숨김
+                EditModeBorder.Visibility = Visibility.Collapsed;
+                
                 System.Diagnostics.Debug.WriteLine("🔄 변경사항 취소 및 다시 로드");
             }
         }
@@ -258,6 +271,9 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     _modifiedSites.Add(site);
                     _hasUnsavedChanges = true;
+                    
+                    // 🔥 편집 모드 Border 표시
+                    EditModeBorder.Visibility = Visibility.Visible;
                     
                     System.Diagnostics.Debug.WriteLine($"📝 사업장 수정됨: {site.SiteName} (ID: {site.Id})");
                     System.Diagnostics.Debug.WriteLine($"   현재 수정된 항목 수: {_modifiedSites.Count}");

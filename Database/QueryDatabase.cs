@@ -534,5 +534,39 @@ namespace FACTOVA_QueryHelper.Database
         }
 
         #endregion
+        
+        #region 일괄 계정 변경
+        
+        /// <summary>
+        /// TNS와 User ID를 기준으로 Password를 일괄 변경합니다.
+        /// </summary>
+        /// <param name="tns">변경 대상 TNS (필수)</param>
+        /// <param name="userId">변경 대상 User ID (필수)</param>
+        /// <param name="password">변경할 Password (필수)</param>
+        /// <returns>변경된 행 수</returns>
+        public int BulkUpdateCredentials(string? tns, string? userId, string? password)
+        {
+            // 필수 파라미터 검증
+            if (string.IsNullOrWhiteSpace(tns) || string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(password))
+            {
+                throw new ArgumentException("TNS, User ID, Password는 모두 필수입니다.");
+            }
+
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            
+            // TNS와 User ID가 일치하는 행의 Password만 업데이트
+            command.CommandText = "UPDATE Queries SET Password = $password WHERE TnsName = $tns AND UserId = $userId";
+            
+            command.Parameters.AddWithValue("$tns", tns);
+            command.Parameters.AddWithValue("$userId", userId);
+            command.Parameters.AddWithValue("$password", password);
+
+            return command.ExecuteNonQuery();
+        }
+        
+        #endregion
     }
 }

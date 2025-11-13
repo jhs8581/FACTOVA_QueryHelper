@@ -375,5 +375,176 @@ namespace FACTOVA_QueryHelper.Controls
             // 메인 윈도우 상태바 업데이트
             _sharedData?.UpdateStatusCallback?.Invoke(message, color);
         }
+        
+        /// <summary>
+        /// DB 계정 정보 일괄 변경
+        /// </summary>
+        private void BulkUpdateButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var tns = BulkTnsTextBox.Text.Trim();
+                var userId = BulkUserIdTextBox.Text.Trim();
+                var password = BulkPasswordBox.Text.Trim();
+
+                // 필수 필드 검증
+                if (string.IsNullOrEmpty(tns))
+                {
+                    MessageBox.Show("TNS 이름을 입력해주세요.", "입력 오류",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    BulkTnsTextBox.Focus();
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    MessageBox.Show("User ID를 입력해주세요.", "입력 오류",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    BulkUserIdTextBox.Focus();
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(password))
+                {
+                    MessageBox.Show("새 Password를 입력해주세요.", "입력 오류",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    BulkPasswordBox.Focus();
+                    return;
+                }
+
+                // 확인 메시지
+                var confirmMessage = $"다음 조건에 일치하는 모든 항목의 Password를 변경하시겠습니까?\n\n";
+                confirmMessage += $"🔍 조건:\n";
+                confirmMessage += $"  • TNS: {tns}\n";
+                confirmMessage += $"  • User ID: {userId}\n\n";
+                confirmMessage += $"🔐 새 Password: {password}\n\n";
+                confirmMessage += $"변경 대상 테이블:\n";
+                confirmMessage += $"  • 쿼리 관리 (모든 쿼리 타입)\n";
+                confirmMessage += $"  • 접속 정보 관리\n\n";
+                confirmMessage += "⚠️ 이 작업은 되돌릴 수 없습니다!";
+
+                var result = MessageBox.Show(
+                    confirmMessage,
+                    "Password 일괄 변경 확인",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result != MessageBoxResult.Yes)
+                    return;
+
+                BulkUpdateButton.IsEnabled = false;
+                BulkUpdateButton.Content = "🔄 변경 중...";
+                BulkUpdateResultPanel.Visibility = Visibility.Collapsed;
+
+                int queryUpdated = 0;
+                int connectionUpdated = 0;
+
+                // 1. 쿼리 테이블 업데이트
+                if (_sharedData?.Settings.DatabasePath != null)
+                {
+                    var database = new QueryDatabase(_sharedData.Settings.DatabasePath);
+                    queryUpdated = database.BulkUpdateCredentials(tns, userId, password);
+                }
+
+                // 2. 접속 정보 테이블 업데이트
+                if (_sharedData?.Settings.DatabasePath != null)
+                {
+                    var connectionService = new Services.ConnectionInfoService(_sharedData.Settings.DatabasePath);
+                    connectionUpdated = connectionService.BulkUpdateCredentials(tns, userId, password);
+                }
+
+                // 결과 표시
+                ShowBulkUpdateResult(queryUpdated, connectionUpdated, tns, userId, password);
+
+                // 입력 필드 초기화
+                BulkTnsTextBox.Clear();
+                BulkUserIdTextBox.Clear();
+                BulkPasswordBox.Clear();
+
+                // 다른 컨트롤들에게 변경 알림
+                ConnectionInfoChanged?.Invoke(this, EventArgs.Empty);
+
+                UpdateStatus($"Password 일괄 변경 완료: 쿼리 {queryUpdated}개, 접속정보 {connectionUpdated}개", Colors.Green);
+            }
+            catch (ArgumentException ex)
+            {
+                MessageBox.Show(ex.Message, "입력 오류",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"일괄 변경 중 오류가 발생했습니다:\n\n{ex.Message}",
+                    "오류",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                
+                UpdateStatus($"Password 일괄 변경 실패: {ex.Message}", Colors.Red);
+            }
+            finally
+            {
+                BulkUpdateButton.IsEnabled = true;
+                
+                var updateButtonContent = new StackPanel { Orientation = Orientation.Horizontal };
+                updateButtonContent.Children.Add(new TextBlock { Text = "🔑", FontSize = 20, Margin = new Thickness(0, 0, 10, 0) });
+                updateButtonContent.Children.Add(new TextBlock { Text = "Password 일괄 변경" });
+                BulkUpdateButton.Content = updateButtonContent;
+            }
+        }
+
+        /// <summary>
+        /// 일괄 변경 결과를 표시합니다.
+        /// </summary>
+        private void ShowBulkUpdateResult(int queryCount, int connectionCount, string tns, string userId, string password)
+        {
+            BulkUpdateResultPanel.Visibility = Visibility.Visible;
+            
+            if (queryCount + connectionCount > 0)
+            {
+                BulkUpdateResultTitle.Text = "✅ Password 일괄 변경 완료";
+                
+                var resultMessage = $"총 {queryCount + connectionCount}개의 Password가 변경되었습니다.\n\n";
+                resultMessage += $"🔍 변경 조건:\n";
+                resultMessage += $"  • TNS: {tns}\n";
+                resultMessage += $"  • User ID: {userId}\n\n";
+                resultMessage += $"📊 변경 결과:\n";
+                resultMessage += $"  • 쿼리 관리: {queryCount}개\n";
+                resultMessage += $"  • 접속 정보: {connectionCount}개\n\n";
+                resultMessage += $"🔐 새 Password: {password}";
+
+                BulkUpdateResultMessage.Text = resultMessage;
+                BulkUpdateResultPanel.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D4EDDA"));
+                BulkUpdateResultPanel.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#28A745"));
+
+                MessageBox.Show(
+                    resultMessage,
+                    "Password 일괄 변경 완료",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            else
+            {
+                BulkUpdateResultTitle.Text = "⚠️ 변경된 항목 없음";
+                
+                var resultMessage = $"조건에 일치하는 항목을 찾을 수 없습니다.\n\n";
+                resultMessage += $"🔍 입력한 조건:\n";
+                resultMessage += $"  • TNS: {tns}\n";
+                resultMessage += $"  • User ID: {userId}\n\n";
+                resultMessage += $"💡 확인 사항:\n";
+                resultMessage += $"  • TNS 이름이 정확한지 확인하세요\n";
+                resultMessage += $"  • User ID가 정확한지 확인하세요\n";
+                resultMessage += $"  • 대소문자를 구분합니다";
+
+                BulkUpdateResultMessage.Text = resultMessage;
+                BulkUpdateResultPanel.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFF3CD"));
+                BulkUpdateResultPanel.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC107"));
+
+                MessageBox.Show(
+                    resultMessage,
+                    "변경된 항목 없음",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+        }
     }
 }

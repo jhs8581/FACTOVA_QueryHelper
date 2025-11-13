@@ -49,46 +49,52 @@
                 </Button>
 
                 <!-- 조회 조건 그리드 -->
-                <Grid x:Name="SearchConditionGrid" Grid.Row="1">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="90"/>
-                        <ColumnDefinition Width="400"/>
-                        <ColumnDefinition Width="90"/>
-                        <ColumnDefinition Width="150"/>
-                        <ColumnDefinition Width="90"/>
-                        <ColumnDefinition Width="150"/>
-                        <ColumnDefinition Width="90"/>
-                        <ColumnDefinition Width="150"/>
-                        <ColumnDefinition Width="90"/>
-                        <ColumnDefinition Width="150"/>
-                        <ColumnDefinition Width="90"/>
-                        <ColumnDefinition Width="150"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="40"/>
-                        <RowDefinition Height="40"/>
-                        <RowDefinition Height="40"/>
-                    </Grid.RowDefinitions>
+                <ScrollViewer x:Name="SearchConditionScrollViewer"
+                              Grid.Row="1"
+                              HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Disabled">
+                    <Grid x:Name="SearchConditionGrid">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="90"/>
+                            <ColumnDefinition Width="400"/>
+                            <ColumnDefinition Width="90"/>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="90"/>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="90"/>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="90"/>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="90"/>
+                            <ColumnDefinition Width="150"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                        </Grid.RowDefinitions>
 
-                    <!-- Row 1: 사업장 | 계획일자(시작) | 계획일자(종료) | W/O | W/O 명 | Model.Suffix -->
-                    <Border Grid.Column="0" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
-                        <TextBlock Text="사업장" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
-                    </Border>
-                    <Border Grid.Column="1" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <Grid Margin="5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                        <!-- Row 1: 사업장 | 계획일자(시작) | 계획일자(종료) | W/O | W/O 명 | Model.Suffix -->
+                        <Border Grid.Column="0" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
+                            <TextBlock Text="사업장" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
+                        </Border>
+                        <Border Grid.Column="1" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1">
+                            <Grid Margin="5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <ComboBox x:Name="SiteComboBox" 
+                                          Grid.Column="0"
+                                          Height="28" 
+                                          FontSize="11"
+                                          DisplayMemberPath="DisplayText"
+                                          Margin="0,0,5,0"
+                                          SelectionChanged="SiteComboBox_SelectionChanged"
+                                          ToolTip="치환: @REPRESENTATIVE_FACTORY_CODE, @ORGANIZATION_ID, @FACILITY_CODE, @WIP_LINE_ID, @LINE_ID"/>
                             
-                            <ComboBox x:Name="SiteComboBox" 
-                                      Grid.Column="0"
-                                      Height="28" 
-                                      FontSize="11"
-                                      DisplayMemberPath="DisplayText"
-                                      Margin="0,0,5,0"
-                                      SelectionChanged="SiteComboBox_SelectionChanged"/>
-                            
+
                             <Button x:Name="RefreshSiteButton"
                                     Grid.Column="1"
                                     Content="🔄"
@@ -108,35 +114,60 @@
                         <TextBlock Text="일자(시작)" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
                     <Border Grid.Column="3" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <DatePicker x:Name="DateFromPicker" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
+                        <DatePicker x:Name="DateFromPicker" 
+                                    Height="28" 
+                                    VerticalContentAlignment="Center" 
+                                    Margin="5" 
+                                    FontSize="11"
+                                    ToolTip="치환: @PRODUCTION_YMD_START (형식: yyyyMMdd)"/>
                     </Border>
 
                     <Border Grid.Column="4" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="일자(종료)" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
                     <Border Grid.Column="5" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <DatePicker x:Name="DateToPicker" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
+                        <DatePicker x:Name="DateToPicker" 
+                                    Height="28" 
+                                    VerticalContentAlignment="Center" 
+                                    Margin="5" 
+                                    FontSize="11"
+                                    ToolTip="치환: @PRODUCTION_YMD_END (형식: yyyyMMdd)"/>
                     </Border>
 
                     <Border Grid.Column="6" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="W/O" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
                     <Border Grid.Column="7" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBox x:Name="WorkOrderTextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
+                        <TextBox x:Name="WorkOrderTextBox" 
+                                 Height="28" 
+                                 VerticalContentAlignment="Center" 
+                                 Margin="5" 
+                                 FontSize="11"
+                                 ToolTip="치환: @WORK_ORDER_ID"/>
                     </Border>
 
                     <Border Grid.Column="8" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="W/O 명" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
                     <Border Grid.Column="9" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBox x:Name="WorkOrderNameTextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
+                        <TextBox x:Name="WorkOrderNameTextBox" 
+                                 Height="28" 
+                                 VerticalContentAlignment="Center" 
+                                 Margin="5" 
+                                 FontSize="11"
+                                 ToolTip="치환: @WORK_ORDER_NAME"/>
                     </Border>
 
                     <Border Grid.Column="10" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="Model" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
                     <Border Grid.Column="11" Grid.Row="0" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBox x:Name="ModelSuffixTextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
+                        <TextBox x:Name="ModelSuffixTextBox" 
+                                 Height="28" 
+                                 VerticalContentAlignment="Center" 
+                                 Margin="5" 
+                                 FontSize="11"
+                                 ToolTip="치환: @PRODUCT_SPECIFICATION_ID"/>
                     </Border>
 
                     <!-- Row 2: 설비 ID | LOT ID | PARAM1 | PARAM2 | PARAM3 | PARAM4 -->
@@ -144,44 +175,75 @@
                         <TextBlock Text="설비 ID" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
                     <Border Grid.Column="1" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBox x:Name="EquipmentIdTextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
+                        <TextBox x:Name="EquipmentIdTextBox" 
+                                 Height="28" 
+                                 VerticalContentAlignment="Center" 
+                                 Margin="5" 
+                                 FontSize="11"
+                                 ToolTip="치환: @EQUIPMENT_ID"/>
                     </Border>
 
                     <Border Grid.Column="2" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="LOT ID" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
                     <Border Grid.Column="3" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBox x:Name="LotIdTextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
+                        <TextBox x:Name="LotIdTextBox" 
+                                 Height="28" 
+                                 VerticalContentAlignment="Center" 
+                                 Margin="5" 
+                                 FontSize="11"
+                                 ToolTip="치환: @LOT_ID"/>
                     </Border>
 
                     <Border Grid.Column="4" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="변수1" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
                     <Border Grid.Column="5" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBox x:Name="Param1TextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
+                        <TextBox x:Name="Param1TextBox" 
+                                 Height="28" 
+                                 VerticalContentAlignment="Center" 
+                                 Margin="5" 
+                                 FontSize="11"
+                                 ToolTip="치환: @PARAM1"/>
                     </Border>
 
                     <Border Grid.Column="6" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="변수2" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
                     <Border Grid.Column="7" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBox x:Name="Param2TextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
+                        <TextBox x:Name="Param2TextBox" 
+                                 Height="28" 
+                                 VerticalContentAlignment="Center" 
+                                 Margin="5" 
+                                 FontSize="11"
+                                 ToolTip="치환: @PARAM2"/>
                     </Border>
 
                     <Border Grid.Column="8" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="변수3" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
                     <Border Grid.Column="9" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBox x:Name="Param3TextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
+                        <TextBox x:Name="Param3TextBox" 
+                                 Height="28" 
+                                 VerticalContentAlignment="Center" 
+                                 Margin="5" 
+                                 FontSize="11"
+                                 ToolTip="치환: @PARAM3"/>
                     </Border>
 
                     <Border Grid.Column="10" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                         <TextBlock Text="변수4" FontWeight="SemiBold" VerticalAlignment="Center" Margin="5,0" FontSize="11"/>
                     </Border>
                     <Border Grid.Column="11" Grid.Row="1" BorderBrush="#FFE0E0E0" BorderThickness="1">
-                        <TextBox x:Name="Param4TextBox" Height="28" VerticalContentAlignment="Center" Margin="5" FontSize="11"/>
+                        <TextBox x:Name="Param4TextBox" 
+                                 Height="28" 
+                                 VerticalContentAlignment="Center" 
+                                 Margin="5" 
+                                 FontSize="11"
+                                 ToolTip="치환: @PARAM4"/>
                     </Border>
                 </Grid>
+                </ScrollViewer>
             </Grid>
         </Border>
 
@@ -256,7 +318,7 @@
                                       Height="32"
                                       DisplayMemberPath="QueryName"
                                       Margin="0,0,5,0"/>
-                            
+      
                             <!-- 쿼리 보기 버튼 -->
                             <Button x:Name="ViewPlanQueryButton"
                                     Grid.Column="1"
@@ -339,8 +401,6 @@
                             </Style>
                         </DataGrid.ColumnHeaderStyle>
                     </DataGrid>
-
-                
 
                     <!-- 전체 조회 버튼 -->
                     <Button x:Name="ExecuteAllGridsButton" 
@@ -572,7 +632,7 @@
                 <!-- 동적 그리드 스크롤 영역 -->
                 <ScrollViewer Grid.Row="1"
                               VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled"
+                              HorizontalScrollBarVisibility="Auto"
                               Padding="5"
                               x:Name="GridScrollViewer">
                     <Grid x:Name="DynamicGridsContainer">
