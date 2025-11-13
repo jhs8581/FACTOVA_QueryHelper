@@ -17,10 +17,10 @@ namespace FACTOVA_QueryHelper.Services
         private readonly string _dbPath;
         private readonly string _encryptionKey = "FACTOVA_QueryHelper_2025"; // 실제로는 더 안전한 키 관리 필요
 
-        public ConnectionInfoService()
+        public ConnectionInfoService(string? customPath = null)
         {
-            // 🔥 QueryDatabase와 동일한 경로 사용
-            _dbPath = GetDefaultDatabasePath();
+            // 🔥 사용자 지정 경로가 있으면 사용, 없으면 기본 경로 사용
+            _dbPath = string.IsNullOrWhiteSpace(customPath) ? GetDefaultDatabasePath() : customPath;
             InitializeDatabase();
         }
 
@@ -232,7 +232,7 @@ namespace FACTOVA_QueryHelper.Services
         {
             // 🔥 프로그램 실행 파일이 있는 디렉토리 경로
             var exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            return Path.Combine(exeDirectory, "FACTOVA_QueryHelper.db");
+            return Path.Combine(exeDirectory, "FACTOVA_DB.db");
         }
     }
 }

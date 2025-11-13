@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using FACTOVA_QueryHelper.Models;
 
 namespace FACTOVA_QueryHelper.Database
 {
@@ -146,6 +147,23 @@ namespace FACTOVA_QueryHelper.Database
             {
                 // 컬럼이 이미 존재하면 무시
             }
+            
+            // 🔥 SiteInfo 테이블 생성 (사업장 정보 관리용)
+            var siteCommand = connection.CreateCommand();
+            siteCommand.CommandText = @"
+                CREATE TABLE IF NOT EXISTS SiteInfo (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    SiteName TEXT NOT NULL,
+                    RepresentativeFactory TEXT,
+                    Organization TEXT,
+                    Facility TEXT,
+                    WipLineId TEXT,
+                    EquipLineId TEXT,
+                    IsDefault INTEGER DEFAULT 0,
+                    CreatedDate TEXT DEFAULT CURRENT_TIMESTAMP,
+                    ModifiedDate TEXT DEFAULT CURRENT_TIMESTAMP
+                )";
+            siteCommand.ExecuteNonQuery();
         }
 
         /// <summary>
@@ -333,13 +351,172 @@ namespace FACTOVA_QueryHelper.Database
         
         /// <summary>
         /// 기본 데이터베이스 경로를 반환합니다 (정적 메서드).
-        /// 프로그램 실행 경로에 FACTOVA_QueryHelper.db 파일 생성
+        /// 프로그램 실행 경로에 FACTOVA_DB.db 파일 생성
         /// </summary>
         public static string GetDefaultDatabasePath()
         {
             // 🔥 프로그램 실행 파일이 있는 디렉토리 경로
             var exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            return Path.Combine(exeDirectory, "FACTOVA_QueryHelper.db");
+            return Path.Combine(exeDirectory, "FACTOVA_DB.db");
         }
+
+        #region 사업장 정보 관리
+
+        /// <summary>
+        /// 모든 사업장 정보를 조회합니다.
+        /// </summary>
+        public List<SiteInfo> GetAllSites()
+        {
+            var sites = new List<SiteInfo>();
+
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM SiteInfo ORDER BY IsDefault DESC, SiteName";
+
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                sites.Add(new SiteInfo
+                {
+                    Id = Convert.ToInt32(reader["Id"]),
+                    SiteName = reader["SiteName"]?.ToString() ?? "",
+                    RepresentativeFactory = reader["RepresentativeFactory"]?.ToString() ?? "",
+                    Organization = reader["Organization"]?.ToString() ?? "",
+                    Facility = reader["Facility"]?.ToString() ?? "",
+                    WipLineId = reader["WipLineId"]?.ToString() ?? "",
+                    EquipLineId = reader["EquipLineId"]?.ToString() ?? "",
+                    IsDefault = Convert.ToInt32(reader["IsDefault"]) == 1
+                });
+            }
+
+            return sites;
+        }
+
+        /// <summary>
+        /// 사업장 정보를 추가합니다.
+        /// </summary>
+        public void AddSite(SiteInfo site)
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            // 기본 사업장으로 설정하는 경우 기존 기본 설정 해제
+            if (site.IsDefault)
+            {
+                var clearDefaultCommand = connection.CreateCommand();
+                clearDefaultCommand.CommandText = "UPDATE SiteInfo SET IsDefault = 0";
+                clearDefaultCommand.ExecuteNonQuery();
+            }
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                INSERT INTO SiteInfo (
+                    SiteName, RepresentativeFactory, Organization, Facility, 
+                    WipLineId, EquipLineId, IsDefault
+                ) VALUES (
+                    $siteName, $representativeFactory, $organization, $facility,
+                    $wipLineId, $equipLineId, $isDefault
+                )";
+
+            command.Parameters.AddWithValue("$siteName", site.SiteName);
+            command.Parameters.AddWithValue("$representativeFactory", site.RepresentativeFactory ?? "");
+            command.Parameters.AddWithValue("$organization", site.Organization ?? "");
+            command.Parameters.AddWithValue("$facility", site.Facility ?? "");
+            command.Parameters.AddWithValue("$wipLineId", site.WipLineId ?? "");
+            command.Parameters.AddWithValue("$equipLineId", site.EquipLineId ?? "");
+            command.Parameters.AddWithValue("$isDefault", site.IsDefault ? 1 : 0);
+
+            command.ExecuteNonQuery();
+        }
+
+        /// <summary>
+        /// 사업장 정보를 수정합니다.
+        /// </summary>
+        public void UpdateSite(SiteInfo site)
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            // 기본 사업장으로 설정하는 경우 기존 기본 설정 해제
+            if (site.IsDefault)
+            {
+                var clearDefaultCommand = connection.CreateCommand();
+                clearDefaultCommand.CommandText = "UPDATE SiteInfo SET IsDefault = 0 WHERE Id != $id";
+                clearDefaultCommand.Parameters.AddWithValue("$id", site.Id);
+                clearDefaultCommand.ExecuteNonQuery();
+            }
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                UPDATE SiteInfo SET
+                    SiteName = $siteName,
+                    RepresentativeFactory = $representativeFactory,
+                    Organization = $organization,
+                    Facility = $facility,
+                    WipLineId = $wipLineId,
+                    EquipLineId = $equipLineId,
+                    IsDefault = $isDefault,
+                    ModifiedDate = CURRENT_TIMESTAMP
+                WHERE Id = $id";
+
+            command.Parameters.AddWithValue("$id", site.Id);
+            command.Parameters.AddWithValue("$siteName", site.SiteName);
+            command.Parameters.AddWithValue("$representativeFactory", site.RepresentativeFactory ?? "");
+            command.Parameters.AddWithValue("$organization", site.Organization ?? "");
+            command.Parameters.AddWithValue("$facility", site.Facility ?? "");
+            command.Parameters.AddWithValue("$wipLineId", site.WipLineId ?? "");
+            command.Parameters.AddWithValue("$equipLineId", site.EquipLineId ?? "");
+            command.Parameters.AddWithValue("$isDefault", site.IsDefault ? 1 : 0);
+
+            command.ExecuteNonQuery();
+        }
+
+        /// <summary>
+        /// 사업장 정보를 삭제합니다.
+        /// </summary>
+        public void DeleteSite(int id)
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = "DELETE FROM SiteInfo WHERE Id = $id";
+            command.Parameters.AddWithValue("$id", id);
+            command.ExecuteNonQuery();
+        }
+
+        /// <summary>
+        /// 기본 사업장 정보를 조회합니다.
+        /// </summary>
+        public SiteInfo? GetDefaultSite()
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM SiteInfo WHERE IsDefault = 1 LIMIT 1";
+
+            using var reader = command.ExecuteReader();
+            if (reader.Read())
+            {
+                return new SiteInfo
+                {
+                    Id = Convert.ToInt32(reader["Id"]),
+                    SiteName = reader["SiteName"]?.ToString() ?? "",
+                    RepresentativeFactory = reader["RepresentativeFactory"]?.ToString() ?? "",
+                    Organization = reader["Organization"]?.ToString() ?? "",
+                    Facility = reader["Facility"]?.ToString() ?? "",
+                    WipLineId = reader["WipLineId"]?.ToString() ?? "",
+                    EquipLineId = reader["EquipLineId"]?.ToString() ?? "",
+                    IsDefault = true
+                };
+            }
+
+            return null;
+        }
+
+        #endregion
     }
 }

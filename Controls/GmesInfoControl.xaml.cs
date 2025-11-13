@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using FACTOVA_QueryHelper.Database;
+using FACTOVA_QueryHelper.Models;
 using OfficeOpenXml;
 using System.IO;
 using Microsoft.Win32;
@@ -37,13 +38,9 @@ namespace FACTOVA_QueryHelper.Controls
         {
             InitializeComponent();
             
-            FactoryTextBox.LostFocus += InputField_LostFocus;
-            OrgTextBox.LostFocus += InputField_LostFocus;
+            // 🔥 사업장 정보 관련 필드 제거 (Factory, Org, Facility, WipLineId, EquipLineId)
             DateFromPicker.SelectedDateChanged += DatePicker_SelectedDateChanged;
             DateToPicker.SelectedDateChanged += DatePicker_SelectedDateChanged;
-            WipLineIdTextBox.LostFocus += InputField_LostFocus;
-            EquipLineIdTextBox.LostFocus += InputField_LostFocus;
-            FacilityTextBox.LostFocus += InputField_LostFocus;
             WorkOrderTextBox.LostFocus += InputField_LostFocus;
             WorkOrderNameTextBox.LostFocus += InputField_LostFocus;
             ModelSuffixTextBox.LostFocus += InputField_LostFocus;
@@ -262,6 +259,9 @@ namespace FACTOVA_QueryHelper.Controls
             _sharedData = sharedData;
             _database = new QueryDatabase(sharedData.Settings.DatabasePath);
             
+            // 🔥 사업장 정보 로드
+            LoadSiteInfos();
+            
             LoadInputValues();
             LoadInfoQueries();
             
@@ -273,6 +273,71 @@ namespace FACTOVA_QueryHelper.Controls
             UpdateFontSizeDisplay();
             
             _isInitializing = false;
+        }
+
+        /// <summary>
+        /// 사업장 정보를 로드합니다.
+        /// </summary>
+        private void LoadSiteInfos()
+        {
+            if (_database == null) return;
+
+            try
+            {
+                var sites = _database.GetAllSites();
+                
+                // 현재 선택된 사업장 ID 저장
+                var currentSelectedSite = SiteComboBox.SelectedItem as SiteInfo;
+                int? currentSelectedId = currentSelectedSite?.Id;
+                
+                SiteComboBox.ItemsSource = sites;
+
+                // 이전에 선택된 사업장이 있으면 다시 선택
+                if (currentSelectedId.HasValue)
+                {
+                    var siteToSelect = sites.FirstOrDefault(s => s.Id == currentSelectedId.Value);
+                    if (siteToSelect != null)
+                    {
+                        SiteComboBox.SelectedItem = siteToSelect;
+                        return;
+                    }
+                }
+
+                // 기본 사업장 선택
+                var defaultSite = sites.FirstOrDefault(s => s.IsDefault);
+                if (defaultSite != null)
+                {
+                    SiteComboBox.SelectedItem = defaultSite;
+                }
+                else if (sites.Count > 0)
+                {
+                    SiteComboBox.SelectedIndex = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ 사업장 정보 로드 오류: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 사업장 ComboBox 선택 변경 이벤트
+        /// </summary>
+        private void SiteComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isInitializing || SiteComboBox.SelectedItem is not SiteInfo selectedSite)
+                return;
+
+            // 선택된 사업장 정보를 숨겨진 필드에 적용
+            if (_sharedData != null)
+            {
+                _sharedData.Settings.GmesFactory = selectedSite.RepresentativeFactory;
+                _sharedData.Settings.GmesOrg = selectedSite.Organization;
+                _sharedData.Settings.GmesFacility = selectedSite.Facility;
+                _sharedData.Settings.GmesWipLineId = selectedSite.WipLineId;
+                _sharedData.Settings.GmesEquipLineId = selectedSite.EquipLineId;
+                _sharedData.SaveSettingsCallback?.Invoke();
+            }
         }
 
         /// <summary>
@@ -335,16 +400,12 @@ namespace FACTOVA_QueryHelper.Controls
         {
             if (_sharedData == null) return;
 
-            FactoryTextBox.Text = _sharedData.Settings.GmesFactory;
-            OrgTextBox.Text = _sharedData.Settings.GmesOrg;
+            // 🔥 사업장 정보는 LoadSiteInfos에서 처리
             
             // 일자는 항상 오늘 날짜로 설정 (저장하지 않음)
             DateFromPicker.SelectedDate = DateTime.Today;
             DateToPicker.SelectedDate = DateTime.Today;
             
-            WipLineIdTextBox.Text = _sharedData.Settings.GmesWipLineId;
-            EquipLineIdTextBox.Text = _sharedData.Settings.GmesEquipLineId;
-            FacilityTextBox.Text = _sharedData.Settings.GmesFacility;
             WorkOrderTextBox.Text = _sharedData.Settings.GmesWorkOrder;
             WorkOrderNameTextBox.Text = _sharedData.Settings.GmesWorkOrderName;
             ModelSuffixTextBox.Text = _sharedData.Settings.GmesModelSuffix;
@@ -356,16 +417,10 @@ namespace FACTOVA_QueryHelper.Controls
         {
             if (_sharedData == null || _isInitializing) return;
 
-            _sharedData.Settings.GmesFactory = FactoryTextBox.Text;
-            _sharedData.Settings.GmesOrg = OrgTextBox.Text;
+            // 🔥 사업장 정보는 SiteComboBox_SelectionChanged에서 처리
             
             // 일자는 저장하지 않음 (항상 현재 날짜 사용)
-            // _sharedData.Settings.GmesDateFrom = DateFromPicker.SelectedDate;
-            // _sharedData.Settings.GmesDateTo = DateToPicker.SelectedDate;
             
-            _sharedData.Settings.GmesWipLineId = WipLineIdTextBox.Text;
-            _sharedData.Settings.GmesEquipLineId = EquipLineIdTextBox.Text;
-            _sharedData.Settings.GmesFacility = FacilityTextBox.Text;
             _sharedData.Settings.GmesWorkOrder = WorkOrderTextBox.Text;
             _sharedData.Settings.GmesWorkOrderName = WorkOrderNameTextBox.Text;
             _sharedData.Settings.GmesModelSuffix = ModelSuffixTextBox.Text;
@@ -886,7 +941,7 @@ namespace FACTOVA_QueryHelper.Controls
         {
             foreach (var gridInfo in _dynamicGrids)
             {
-                // 모든 정보 조회 쿼리를 콤보박스에 바인딩
+                // 모든 정보 조회 쿼리를 콜박스에 바인딩
                 gridInfo.QueryComboBox.ItemsSource = _infoQueries;
                 
                 // 콤보박스 활성화 및 취소 버튼 활성화
@@ -1310,13 +1365,20 @@ namespace FACTOVA_QueryHelper.Controls
         {
             string result = query;
 
-            result = result.Replace("@REPRESENTATIVE_FACTORY_CODE", $"'{FactoryTextBox.Text}'");
-            result = result.Replace("@ORGANIZATION_ID", $"'{OrgTextBox.Text}'");
+            // 🔥 사업장 정보가 선택되어 있으면 해당 정보 사용
+            string factory = _sharedData?.Settings.GmesFactory ?? "";
+            string org = _sharedData?.Settings.GmesOrg ?? "";
+            string facility = _sharedData?.Settings.GmesFacility ?? "";
+            string wipLineId = _sharedData?.Settings.GmesWipLineId ?? "";
+            string equipLineId = _sharedData?.Settings.GmesEquipLineId ?? "";
+
+            result = result.Replace("@REPRESENTATIVE_FACTORY_CODE", $"'{factory}'");
+            result = result.Replace("@ORGANIZATION_ID", $"'{org}'");
             result = result.Replace("@PRODUCTION_YMD_START", $"'{DateFromPicker.SelectedDate?.ToString("yyyyMMdd") ?? ""}'");
             result = result.Replace("@PRODUCTION_YMD_END", $"'{DateToPicker.SelectedDate?.ToString("yyyyMMdd") ?? ""}'");
-            result = result.Replace("@WIP_LINE_ID", $"'{WipLineIdTextBox.Text}'");
-            result = result.Replace("@LINE_ID", $"'{EquipLineIdTextBox.Text}'");
-            result = result.Replace("@FACILITY_CODE", $"'{FacilityTextBox.Text}'");
+            result = result.Replace("@WIP_LINE_ID", $"'{wipLineId}'");
+            result = result.Replace("@LINE_ID", $"'{equipLineId}'");
+            result = result.Replace("@FACILITY_CODE", $"'{facility}'");
             result = result.Replace("@WORK_ORDER_ID", $"'{WorkOrderTextBox.Text}'");
             result = result.Replace("@WORK_ORDER_NAME", $"'{WorkOrderNameTextBox.Text}'");
             result = result.Replace("@PRODUCT_SPECIFICATION_ID", $"'{ModelSuffixTextBox.Text}'");
@@ -1725,6 +1787,16 @@ namespace FACTOVA_QueryHelper.Controls
                 (double)fontSize));
             
             dataGrid.ColumnHeaderStyle = headerStyle;
+        }
+
+        /// <summary>
+        /// 사업장 새로고침 버튼 클릭
+        /// </summary>
+        private void RefreshSiteButton_Click(object sender, RoutedEventArgs e)
+        {
+            LoadSiteInfos();
+            MessageBox.Show("사업장 정보가 새로고침되었습니다.", "완료",
+                MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }

@@ -50,8 +50,26 @@ namespace FACTOVA_QueryHelper.Controls
             _sharedData = sharedData;
             LoadSettings();
             
-            // ConnectionManagementControl 초기화
-            // 별도의 SharedDataContext가 필요 없이 독립적으로 동작
+            // 🔥 ConnectionManagementControl 초기화 (동일한 DB 경로 사용)
+            ConnectionManagement.Initialize(sharedData.Settings.DatabasePath);
+            
+            // 🔥 SiteManagementControl 초기화 (동일한 DB 경로 사용)
+            var database = new QueryDatabase(sharedData.Settings.DatabasePath);
+            SiteManagement.Initialize(database);
+            
+            // 🔥 SiteManagementControl의 저장 이벤트 구독
+            SiteManagement.SiteInfosSaved += OnSiteInfosSaved;
+        }
+
+        /// <summary>
+        /// 사업장 정보가 저장되었을 때 호출됩니다.
+        /// </summary>
+        private void OnSiteInfosSaved(object? sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("✅ Site infos saved in SiteManagementControl");
+            
+            // 상태바 업데이트
+            UpdateStatus("사업장 정보가 저장되었습니다.", Colors.Green);
         }
 
         /// <summary>
@@ -95,7 +113,7 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 Filter = "SQLite Database (*.db)|*.db|All Files (*.*)|*.*",
                 Title = "데이터베이스 파일 위치 선택",
-                FileName = "queries.db",
+                FileName = "FACTOVA_DB.db",
                 DefaultExt = ".db"
             };
 

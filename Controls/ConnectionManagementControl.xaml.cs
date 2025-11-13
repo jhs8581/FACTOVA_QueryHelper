@@ -8,7 +8,7 @@ namespace FACTOVA_QueryHelper.Controls
 {
     public partial class ConnectionManagementControl : UserControl
     {
-        private readonly ConnectionInfoService _connectionService;
+        private ConnectionInfoService _connectionService;
         private ObservableCollection<ConnectionInfo> _connections;
         private bool _hasUnsavedChanges = false;
         
@@ -21,10 +21,18 @@ namespace FACTOVA_QueryHelper.Controls
         public ConnectionManagementControl()
         {
             InitializeComponent();
-            _connectionService = new ConnectionInfoService();
+            // 🔥 초기화는 Initialize에서 수행
+            _connectionService = null!;
             _connections = new ObservableCollection<ConnectionInfo>();
             ConnectionsDataGrid.ItemsSource = _connections;
+        }
 
+        /// <summary>
+        /// DB 경로를 지정하여 초기화합니다.
+        /// </summary>
+        public void Initialize(string? databasePath = null)
+        {
+            _connectionService = new ConnectionInfoService(databasePath);
             LoadConnections();
         }
 

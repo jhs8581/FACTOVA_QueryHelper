@@ -188,8 +188,9 @@ namespace FACTOVA_QueryHelper.Controls
             _selectedQuery = QueriesDataGrid.SelectedItem as QueryItem;
             bool hasSelection = _selectedQuery != null;
             
-            // 🔥 삭제 버튼만 활성화 제어
+            // 🔥 삭제 및 복제 버튼 활성화 제어
             DeleteQueryButton.IsEnabled = hasSelection;
+            DuplicateQueryButton.IsEnabled = hasSelection;
             
             if (hasSelection && _selectedQuery != null)
             {
@@ -439,6 +440,84 @@ namespace FACTOVA_QueryHelper.Controls
                     
                     UpdateStatus($"'{query.QueryName}' 쿼리가 수정되었습니다. '💾 변경사항 저장'을 클릭하세요.", Colors.Orange);
                 }
+            }
+        }
+
+        /// <summary>
+        /// 쿼리 복제 버튼 클릭
+        /// </summary>
+        private void DuplicateQueryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_selectedQuery == null)
+            {
+                MessageBox.Show("복제할 쿼리를 선택하세요.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (_queries == null) return;
+
+            try
+            {
+                // 🔥 선택된 쿼리를 복제 (새 인스턴스 생성)
+                var duplicatedQuery = new QueryItem
+                {
+                    RowNumber = 0, // 신규 항목 표시
+                    QueryName = $"{_selectedQuery.QueryName} (복사)",
+                    QueryType = _selectedQuery.QueryType,
+                    BizName = _selectedQuery.BizName,
+                    Description2 = _selectedQuery.Description2,
+                    OrderNumber = _selectedQuery.OrderNumber,
+                    TnsName = _selectedQuery.TnsName,
+                    Host = _selectedQuery.Host,
+                    Port = _selectedQuery.Port,
+                    ServiceName = _selectedQuery.ServiceName,
+                    UserId = _selectedQuery.UserId,
+                    Password = _selectedQuery.Password,
+                    Query = _selectedQuery.Query,
+                    EnabledFlag = _selectedQuery.EnabledFlag,
+                    NotifyFlag = _selectedQuery.NotifyFlag,
+                    ExcludeFlag = _selectedQuery.ExcludeFlag,
+                    DefaultFlag = "N", // 복제본은 기본값으로 설정하지 않음
+                    CountGreaterThan = _selectedQuery.CountGreaterThan,
+                    CountEquals = _selectedQuery.CountEquals,
+                    CountLessThan = _selectedQuery.CountLessThan,
+                    ColumnNames = _selectedQuery.ColumnNames,
+                    ColumnValues = _selectedQuery.ColumnValues
+                };
+
+                // 컬렉션에 추가
+                _queries.Add(duplicatedQuery);
+                
+                // 🔥 수정 목록에 추가 (신규 항목)
+                _modifiedQueries.Add(duplicatedQuery);
+                _hasUnsavedChanges = true;
+                EditModeBorder.Visibility = Visibility.Visible;
+
+                DbQueryCountTextBlock.Text = $"{_queries.Count}개";
+
+                // 새로 추가된 행으로 스크롤 및 선택
+                QueriesDataGrid.SelectedItem = duplicatedQuery;
+                QueriesDataGrid.ScrollIntoView(duplicatedQuery);
+                
+                System.Diagnostics.Debug.WriteLine($"📋 쿼리 복제됨: {_selectedQuery.QueryName} → {duplicatedQuery.QueryName}");
+                
+                UpdateStatus($"'{_selectedQuery.QueryName}' 쿼리가 복제되었습니다. 필요시 수정 후 '💾 변경사항 저장'을 클릭하세요.", Colors.Blue);
+                
+                MessageBox.Show(
+                    $"'{_selectedQuery.QueryName}' 쿼리가 복제되었습니다.\n\n" +
+                    "복제된 쿼리명: " + duplicatedQuery.QueryName + "\n\n" +
+                    "필요한 경우 쿼리명과 내용을 수정한 후\n" +
+                    "'💾 변경사항 저장' 버튼을 클릭하여 저장하세요.",
+                    "복제 완료",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"쿼리 복제 실패:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                UpdateStatus($"쿼리 복제 실패: {ex.Message}", Colors.Red);
             }
         }
 

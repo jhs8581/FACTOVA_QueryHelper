@@ -68,19 +68,19 @@
                                    FontSize="18" 
                                    FontWeight="Bold"
                                    Margin="0,0,0,20"/>
-                        
+
                         <!-- TNS 파일 경로 -->
                         <TextBlock Text="tnsnames.ora 파일 경로" 
                                    FontWeight="SemiBold" 
                                    FontSize="13"
                                    Margin="0,0,0,10"/>
-                        
+
                         <Grid Margin="0,0,0,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            
+
                             <TextBox x:Name="TnsPathTextBox" 
                                      Grid.Column="0"
                                      Height="36"
@@ -89,7 +89,7 @@
                                      Margin="0,0,10,0"
                                      IsReadOnly="True"
                                      Background="#FFF8F9FA"/>
-                            
+
                             <Button x:Name="BrowseButton" 
                                     Grid.Column="1"
                                     Width="110" 
@@ -129,17 +129,18 @@
                         <Rectangle Height="1" Fill="#FFE0E0E0" Margin="0,0,0,25"/>
 
                         <!-- 데이터베이스 파일 경로 -->
-                        <TextBlock Text="queries.db 파일 경로" 
+                        <TextBlock Text="FACTOVA_DB.db 파일 경로" 
                                    FontWeight="SemiBold" 
                                    FontSize="13"
                                    Margin="0,0,0,10"/>
-                        
+
                         <Grid Margin="0,0,0,10">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="5*"/>
+                                <ColumnDefinition Width="246*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            
+
                             <TextBox x:Name="DatabasePathTextBox" 
                                      Grid.Column="0"
                                      Height="36"
@@ -147,10 +148,10 @@
                                      Padding="10,0"
                                      Margin="0,0,10,0"
                                      IsReadOnly="True"
-                                     Background="#FFF8F9FA"/>
-                            
+                                     Background="#FFF8F9FA" Grid.ColumnSpan="2"/>
+
                             <Button x:Name="BrowseDatabaseButton" 
-                                    Grid.Column="1"
+                                    Grid.Column="2"
                                     Width="110" 
                                     Height="36"
                                     Click="BrowseDatabaseButton_Click"
@@ -183,7 +184,7 @@
                                            TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
-                        
+
                         <Border Background="#FFFEF5E7" 
                                 BorderBrush="#FFFFC107" 
                                 BorderThickness="1" 
@@ -257,7 +258,7 @@
                                    FontSize="18" 
                                    FontWeight="Bold"
                                    Margin="0,0,0,20"/>
-                        
+
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -305,13 +306,13 @@
                                         <TextBlock Text="지금 업데이트 확인"/>
                                     </StackPanel>
                                 </Button>
-                                
+
                                 <TextBlock x:Name="LastCheckTextBlock" 
                                            Text="" 
                                            FontSize="11" 
                                            Foreground="#FF6C757D" 
                                            Margin="0,10,0,5"/>
-                                
+
                                 <TextBlock x:Name="RateLimitTextBlock" 
                                            Text="API 호출 제한: 정보 없음" 
                                            FontSize="11" 
@@ -319,7 +320,7 @@
                                            Margin="0,0,0,0"/>
                             </StackPanel>
                         </Grid>
-                        
+
                         <!-- 업데이트 상태 표시 패널 -->
                         <Border x:Name="UpdateStatusPanel"
                                 Margin="0,20,0,0"
@@ -332,13 +333,13 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                
+
                                 <TextBlock x:Name="UpdateStatusIcon"
                                            Text="✅"
                                            FontSize="32"
                                            VerticalAlignment="Top"
                                            Margin="0,0,15,0"/>
-                                
+
                                 <StackPanel Grid.Column="1">
                                     <TextBlock x:Name="UpdateStatusTitle"
                                                Text="최신 버전입니다"
@@ -370,14 +371,14 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    
+
                     <!-- 제목 및 설명 -->
                     <Grid Grid.Row="0" Margin="0,0,0,15">
                         <TextBlock Text="접속 정보 관리" 
                                    FontSize="18" 
                                    FontWeight="Bold"
                                    VerticalAlignment="Center"/>
-                        
+
                         <Border Background="#FFF0F8FF" 
                                 BorderBrush="#FF0078D7" 
                                 BorderThickness="1" 
@@ -402,6 +403,17 @@
                     <local:ConnectionManagementControl x:Name="ConnectionManagement" 
                                                        Grid.Row="1"/>
                 </Grid>
+            </TabItem>
+
+            <!-- 사업장 정보 관리 탭 -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🏭" FontSize="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="사업장 정보 관리"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <local:SiteManagementControl x:Name="SiteManagement"/>
             </TabItem>
         </TabControl>
     </Grid>

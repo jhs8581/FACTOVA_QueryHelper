@@ -415,7 +415,7 @@
                     <TextBlock Text="❌ 데이터베이스 파일을 찾을 수 없습니다" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,0,0,5"/>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,15">
                         → 설정 탭에서 데이터베이스 파일 경로를 확인하세요.<LineBreak/>
-                        → 기본 경로: C:\Users\사용자명\AppData\Local\FACTOVA_QueryHelper\queries.db
+                        → 기본 경로: {실행파일경로}\FACTOVA_DB.db
                     </TextBlock>
                 </StackPanel>
             </Border>
@@ -433,7 +433,7 @@
                                FontWeight="Bold"
                                Foreground="#FF0078D7"
                                Margin="0,0,0,15"/>
-                    
+                     
                     <StackPanel Orientation="Horizontal" Margin="0,5">
                         <TextBlock Text="버전: " FontSize="13" FontWeight="SemiBold" Foreground="Black"/>
                         <TextBlock Text="2.1.0" FontSize="13" Foreground="Black"/>
