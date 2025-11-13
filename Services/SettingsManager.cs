@@ -39,6 +39,12 @@ namespace FACTOVA_QueryHelper
         public string GmesLotId { get; set; } = string.Empty; // LOT ID
         public string GmesEquipmentId { get; set; } = string.Empty; // 설비 ID
         
+        // 🔥 GMES 사용자 정의 파라미터 (PARAM1~PARAM4)
+        public string GmesParam1 { get; set; } = string.Empty; // 변수1 (PARAM1)
+        public string GmesParam2 { get; set; } = string.Empty; // 변수2 (PARAM2)
+        public string GmesParam3 { get; set; } = string.Empty; // 변수3 (PARAM3)
+        public string GmesParam4 { get; set; } = string.Empty; // 변수4 (PARAM4)
+        
         // GMES 비즈명 및 쿼리 정보
         public string GmesBizName { get; set; } = string.Empty; // 선택된 비즈명
         

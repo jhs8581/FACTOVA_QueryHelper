@@ -107,14 +107,34 @@
                     <Button x:Name="CancelQueryButton" 
                             Content="⏹️ Cancel" 
                             Grid.Column="3" 
-                            Background="#FFDC3545" 
-                            Foreground="White" 
                             FontWeight="Bold" 
                             FontSize="13"
                             Padding="10,5" 
                             Margin="0,0,5,0"
                             Click="CancelQueryButton_Click"
-                            IsEnabled="False"/>
+                            IsEnabled="False">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="BorderThickness" Value="1"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsEnabled" Value="True">
+                                        <Setter Property="Background" Value="#FFF44336"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="BorderBrush" Value="#FFD32F2F"/>
+                                        <Setter Property="Cursor" Value="Hand"/>
+                                    </Trigger>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Background" Value="#FFE0E0E0"/>
+                                        <Setter Property="Foreground" Value="#FF212121"/>
+                                        <Setter Property="BorderBrush" Value="#FFBDBDBD"/>
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#FFE53935"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                     
                     <Button x:Name="ClearButton" 
                             Content="🔄 Clear" 

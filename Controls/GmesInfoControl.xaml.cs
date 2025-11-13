@@ -47,6 +47,12 @@ namespace FACTOVA_QueryHelper.Controls
             LotIdTextBox.LostFocus += InputField_LostFocus;
             EquipmentIdTextBox.LostFocus += InputField_LostFocus;
             
+            // 🔥 PARAM1~PARAM4 이벤트 핸들러 추가
+            Param1TextBox.LostFocus += InputField_LostFocus;
+            Param2TextBox.LostFocus += InputField_LostFocus;
+            Param3TextBox.LostFocus += InputField_LostFocus;
+            Param4TextBox.LostFocus += InputField_LostFocus;
+            
             QuerySelectComboBox.SelectionChanged += QueryComboBox_SelectionChanged;
             PlanInfoDataGrid.AutoGeneratingColumn += DataGrid_AutoGeneratingColumn;
             PlanInfoDataGrid.LoadingRow += DataGrid_LoadingRow; // CHK 컬럼 체크
@@ -411,6 +417,12 @@ namespace FACTOVA_QueryHelper.Controls
             ModelSuffixTextBox.Text = _sharedData.Settings.GmesModelSuffix;
             LotIdTextBox.Text = _sharedData.Settings.GmesLotId;
             EquipmentIdTextBox.Text = _sharedData.Settings.GmesEquipmentId;
+            
+            // 🔥 PARAM1~PARAM4 로드
+            Param1TextBox.Text = _sharedData.Settings.GmesParam1 ?? "";
+            Param2TextBox.Text = _sharedData.Settings.GmesParam2 ?? "";
+            Param3TextBox.Text = _sharedData.Settings.GmesParam3 ?? "";
+            Param4TextBox.Text = _sharedData.Settings.GmesParam4 ?? "";
         }
 
         private void SaveInputValues()
@@ -426,6 +438,12 @@ namespace FACTOVA_QueryHelper.Controls
             _sharedData.Settings.GmesModelSuffix = ModelSuffixTextBox.Text;
             _sharedData.Settings.GmesLotId = LotIdTextBox.Text;
             _sharedData.Settings.GmesEquipmentId = EquipmentIdTextBox.Text;
+            
+            // 🔥 PARAM1~PARAM4 저장
+            _sharedData.Settings.GmesParam1 = Param1TextBox.Text;
+            _sharedData.Settings.GmesParam2 = Param2TextBox.Text;
+            _sharedData.Settings.GmesParam3 = Param3TextBox.Text;
+            _sharedData.Settings.GmesParam4 = Param4TextBox.Text;
 
             _sharedData.SaveSettingsCallback?.Invoke();
         }
@@ -444,17 +462,58 @@ namespace FACTOVA_QueryHelper.Controls
         {
             if (_isInitializing) return;
 
-            // 선택된 계획정보 쿼리의 비즈명으로 상세 쿼리 자동 로드
+            // 선택된 계획정보 쿼리의 그룹명으로 상세 쿼리 자동 로드
             if (QuerySelectComboBox.SelectedItem is QueryItem selectedPlanQuery &&
-                !string.IsNullOrWhiteSpace(selectedPlanQuery.BizName) &&
+                !string.IsNullOrWhiteSpace(selectedPlanQuery.QueryName) &&
                 selectedPlanQuery.OrderNumber >= 0) // 플레이스홀더가 아닌 경우만
             {
-                LoadDetailQueriesByBizName(selectedPlanQuery.BizName);
+                LoadDetailQueriesByQueryName(selectedPlanQuery.QueryName);
             }
             else
             {
                 // 플레이스홀더 선택 시 모든 콤보박스 활성화 및 전체 쿼리 바인딩
                 UpdateAllGridComboBoxes();
+            }
+        }
+
+        /// <summary>
+        /// 그룹명(QueryName)으로 상세 쿼리(순번 1 이상)를 로드하여 동적 그리드에 자동 바인딩
+        /// </summary>
+        private void LoadDetailQueriesByQueryName(string queryName)
+        {
+            if (_database == null) return;
+
+            try
+            {
+                var allQueries = _database.GetAllQueries();
+
+                // 선택된 그룹명과 일치하고 순번이 1 이상인 쿼리만 필터링
+                var detailQueries = allQueries
+                    .Where(q => q.QueryType == "정보 조회" && 
+                                q.QueryName == queryName && 
+                                q.OrderNumber >= 1)
+                    .OrderBy(q => q.OrderNumber)
+                    .ToList();
+
+                if (detailQueries.Count > 0)
+                {
+                    // 동적 그리드 생성 및 쿼리 자동 바인딩 (최대 20개)
+                    GenerateDynamicGridsWithQueries(detailQueries);
+                    
+                    System.Diagnostics.Debug.WriteLine($"✅ 그룹명 '{queryName}'에 대한 {detailQueries.Count}개의 상세 쿼리가 자동 바인딩되었습니다.");
+                }
+                else
+                {
+                    // 상세 쿼리가 없으면 동적 그리드를 20개 빈 상태로 재생성
+                    GenerateDynamicGridsWithoutBinding(20);
+                    
+                    System.Diagnostics.Debug.WriteLine($"⚠️ 그룹명 '{queryName}'에 대한 상세 쿼리(순번 1 이상)가 없습니다. 빈 그리드 20개를 생성했습니다.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"상세 쿼리 로드 실패:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -552,9 +611,12 @@ namespace FACTOVA_QueryHelper.Controls
             }
 
             // 모든 정보 조회 쿼리를 콤보박스에 바인딩 (항상 활성화 - 사용자가 변경 가능)
+            // 🔥 비즈명이 있는 쿼리만 필터링
+            var queriesWithBizName = _infoQueries.Where(q => !string.IsNullOrWhiteSpace(q.BizName)).ToList();
+            
             foreach (var gridInfo in _dynamicGrids)
             {
-                gridInfo.QueryComboBox.ItemsSource = _infoQueries;
+                gridInfo.QueryComboBox.ItemsSource = queriesWithBizName;
                 gridInfo.QueryComboBox.IsEnabled = true;  // 항상 활성화
                 gridInfo.ClearButton.IsEnabled = true;     // 항상 활성화
             }
@@ -566,9 +628,9 @@ namespace FACTOVA_QueryHelper.Controls
                 var gridInfo = _dynamicGrids[i];
                 var query = queries[i];
 
-                // _infoQueries에서 같은 쿼리를 찾아서 선택
+                // 🔥 queriesWithBizName에서 같은 쿼리를 찾아서 선택
                 // QueryName과 BizName, OrderNumber로 매칭
-                var matchingQuery = _infoQueries.FirstOrDefault(q => 
+                var matchingQuery = queriesWithBizName.FirstOrDefault(q => 
                     q.QueryName == query.QueryName && 
                     q.BizName == query.BizName && 
                     q.OrderNumber == query.OrderNumber);
@@ -576,10 +638,11 @@ namespace FACTOVA_QueryHelper.Controls
                 if (matchingQuery != null)
                 {
                     gridInfo.QueryComboBox.SelectedItem = matchingQuery;
+                    System.Diagnostics.Debug.WriteLine($"✅ 그리드 {gridInfo.Index}: '{query.QueryBizName}' (순번 {query.OrderNumber}) 자동 선택됨");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"경고: '{query.QueryName}' 쿼리를 _infoQueries에서 찾을 수 없습니다.");
+                    System.Diagnostics.Debug.WriteLine($"❌ 그리드 {gridInfo.Index}: '{query.QueryName}' (비즈명: {query.BizName}, 순번: {query.OrderNumber}) 쿼리를 찾을 수 없습니다.");
                 }
             }
             
@@ -769,7 +832,7 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 Width = 180,
                 Height = 28,
-                DisplayMemberPath = "QueryName",
+                DisplayMemberPath = "BizName", // 🔥 QueryName → BizName으로 변경
                 Margin = new Thickness(10, 0, 5, 0),
                 VerticalAlignment = VerticalAlignment.Center
             };
@@ -802,7 +865,7 @@ namespace FACTOVA_QueryHelper.Controls
             var dataGrid = new DataGrid
             {
                 AutoGenerateColumns = true,
-                IsReadOnly = false,  // 셀 복스를 위해 편집 가능하도록 변경
+                IsReadOnly = false,  // 셀 복사를 위해 편집 가능하도록 변경
                 CanUserAddRows = false,  // 빈 행 생성 방지
                 AlternatingRowBackground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
                 GridLinesVisibility = DataGridGridLinesVisibility.All,
@@ -939,10 +1002,13 @@ namespace FACTOVA_QueryHelper.Controls
 
         private void UpdateAllGridComboBoxes()
         {
+            // 🔥 비즈명이 있는 쿼리만 필터링
+            var queriesWithBizName = _infoQueries.Where(q => !string.IsNullOrWhiteSpace(q.BizName)).ToList();
+            
             foreach (var gridInfo in _dynamicGrids)
             {
-                // 모든 정보 조회 쿼리를 콜박스에 바인딩
-                gridInfo.QueryComboBox.ItemsSource = _infoQueries;
+                // 비즈명이 있는 정보 조회 쿼리를 콤보박스에 바인딩
+                gridInfo.QueryComboBox.ItemsSource = queriesWithBizName;
                 
                 // 콤보박스 활성화 및 취소 버튼 활성화
                 gridInfo.QueryComboBox.IsEnabled = true;
@@ -1384,6 +1450,12 @@ namespace FACTOVA_QueryHelper.Controls
             result = result.Replace("@PRODUCT_SPECIFICATION_ID", $"'{ModelSuffixTextBox.Text}'");
             result = result.Replace("@LOT_ID", $"'{LotIdTextBox.Text}'");
             result = result.Replace("@EQUIPMENT_ID", $"'{EquipmentIdTextBox.Text}'");
+            
+            // 🔥 PARAM1~PARAM4 치환
+            result = result.Replace("@PARAM1", $"'{Param1TextBox.Text}'");
+            result = result.Replace("@PARAM2", $"'{Param2TextBox.Text}'");
+            result = result.Replace("@PARAM3", $"'{Param3TextBox.Text}'");
+            result = result.Replace("@PARAM4", $"'{Param4TextBox.Text}'");
 
             return result;
         }

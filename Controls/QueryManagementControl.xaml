@@ -8,360 +8,84 @@
              Background="#FFF8F9FA">
     
     <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+        <TabControl x:Name="QueryTypeTabControl"
+                    Background="White"
+                    BorderBrush="#FFE0E0E0"
+                    BorderThickness="1"
+                    SelectionChanged="QueryTypeTabControl_SelectionChanged">
+            <TabControl.Resources>
+                <!-- 탭 헤더 스타일 -->
+                <Style TargetType="TabItem">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="TabItem">
+                                <Border x:Name="Border"
+                                        Background="Transparent"
+                                        BorderBrush="#FFE0E0E0"
+                                        BorderThickness="1,1,1,0"
+                                        CornerRadius="8,8,0,0"
+                                        Padding="20,12"
+                                        Margin="2,0,0,0">
+                                    <ContentPresenter x:Name="ContentSite"
+                                                      ContentSource="Header"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="Border" Property="Background" Value="White"/>
+                                        <Setter TargetName="Border" Property="BorderBrush" Value="#FF0078D7"/>
+                                        <Setter TargetName="Border" Property="BorderThickness" Value="2,2,2,0"/>
+                                        <Setter Property="Panel.ZIndex" Value="100"/>
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="False">
+                                        <Setter TargetName="Border" Property="Background" Value="#FFF8F9FA"/>
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Border" Property="Background" Value="#FFF0F8FF"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="FontSize" Value="14"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Setter Property="Foreground" Value="#FF495057"/>
+                </Style>
+            </TabControl.Resources>
 
-        <!-- 상단 툴바 -->
-        <Border Grid.Row="0" 
-                Background="White" 
-                BorderBrush="#FFE0E0E0" 
-                BorderThickness="1" 
-                CornerRadius="8"
-                Padding="15"
-                Margin="0,0,0,15">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <!-- 왼쪽: 버튼 그룹 -->
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="LoadFromDbButton" 
-                            Width="120" Height="36"
-                            Click="LoadFromDbButton_Click"
-                            Background="#FF0078D7" 
-                            Foreground="White"
-                            BorderThickness="0"
-                            Cursor="Hand"
-                            FontWeight="SemiBold"
-                            Margin="0,0,10,0">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🔄" FontSize="14" Margin="0,0,5,0"/>
-                            <TextBlock Text="새로고침"/>
-                        </StackPanel>
-                    </Button>
-                    
-                    <Rectangle Width="1" Height="24" Fill="#FFE0E0E0" Margin="5,0"/>
-                    
-                    <Button x:Name="AddQueryButton" 
-                            Width="120" Height="36"
-                            Click="AddQueryButton_Click"
-                            Background="#FF28A745" 
-                            Foreground="White"
-                            BorderThickness="0"
-                            Cursor="Hand"
-                            FontWeight="SemiBold"
-                            Margin="10,0,5,0">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="➕" FontSize="14" Margin="0,0,5,0"/>
-                            <TextBlock Text="쿼리 추가"/>
-                        </StackPanel>
-                    </Button>
-                    
-                    <Button x:Name="DuplicateQueryButton" 
-                            Width="120" Height="36"
-                            Click="DuplicateQueryButton_Click"
-                            IsEnabled="False"
-                            Background="#FF17A2B8" 
-                            Foreground="White"
-                            BorderThickness="0"
-                            Cursor="Hand"
-                            FontWeight="SemiBold"
-                            Margin="5,0">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="📋" FontSize="14" Margin="0,0,5,0"/>
-                            <TextBlock Text="쿼리 복제"/>
-                        </StackPanel>
-                    </Button>
-                    
-                    <Button x:Name="DeleteQueryButton" 
-                            Width="100" Height="36"
-                            Click="DeleteQueryButton_Click"
-                            IsEnabled="False"
-                            Background="#FFDC3545" 
-                            Foreground="White"
-                            BorderThickness="0"
-                            Cursor="Hand"
-                            FontWeight="SemiBold">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🗑️" FontSize="14" Margin="0,0,5,0"/>
-                            <TextBlock Text="삭제"/>
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
-                
-                <!-- 오른쪽: 쿼리 수 표시 -->
-                <Border Grid.Column="1" 
-                        Background="#FFF0F8FF" 
-                        BorderBrush="#FF0078D7" 
-                        BorderThickness="2" 
-                        CornerRadius="6"
-                        Padding="15,8">
+            <!-- 쿼리 실행 탭 -->
+            <TabItem>
+                <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="📊 로드된 쿼리:" 
-                                   VerticalAlignment="Center" 
-                                   FontWeight="SemiBold"
-                                   Margin="0,0,8,0"/>
-                        <TextBlock x:Name="DbQueryCountTextBlock" 
-                                   Text="0개" 
-                                   VerticalAlignment="Center" 
-                                   FontWeight="Bold" 
-                                   Foreground="#FF0078D7"
-                                   FontSize="16"/>
+                        <TextBlock Text="▶" FontSize="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="쿼리 실행"/>
                     </StackPanel>
-                </Border>
-            </Grid>
-        </Border>
+                </TabItem.Header>
+                <Grid x:Name="QueryExecutionGrid" Margin="20"/>
+            </TabItem>
 
-        <!-- 쿼리 목록 -->
-        <Border Grid.Row="1" 
-                Background="White" 
-                BorderBrush="#FFE0E0E0" 
-                BorderThickness="1" 
-                CornerRadius="8"
-                Padding="15">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                
-                <!-- 헤더 -->
-                <TextBlock Grid.Row="0" 
-                           Text="쿼리 목록" 
-                           FontSize="16" 
-                           FontWeight="Bold"
-                           Margin="0,0,0,5"/>
-                
-                <TextBlock Grid.Row="0" 
-                           Text="셀 더블클릭: 편집 | Ctrl+C: 복사" 
-                           FontSize="11" 
-                           Foreground="Gray"
-                           HorizontalAlignment="Right"
-                           VerticalAlignment="Bottom"/>
-                
-                <!-- 편집 중 안내 -->
-                <Border Grid.Row="1" 
-                        Background="#FFFFEAA7" 
-                        BorderBrush="#FFFFC107"
-                        BorderThickness="1"
-                        CornerRadius="6"
-                        Padding="12,8" 
-                        Margin="0,10,0,10"
-                        x:Name="EditModeBorder" 
-                        Visibility="Collapsed">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <TextBlock Grid.Column="0"
-                                   Text="✏️" 
-                                   FontSize="16"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,10,0"/>
-                        
-                        <TextBlock Grid.Column="1"
-                                   VerticalAlignment="Center">
-                            <Run Text="편집 중입니다. " FontWeight="Bold"/>
-                            <Run Text="필드를 수정한 후 저장하거나 취소하세요."/>
-                        </TextBlock>
-                        
-                        <StackPanel Grid.Column="2" Orientation="Horizontal">
-                            <Button x:Name="SaveEditButton" 
-                                    Width="130" Height="30"
-                                    Click="SaveEditButton_Click"
-                                    Background="#FF28A745" 
-                                    Foreground="White"
-                                    BorderThickness="0"
-                                    Cursor="Hand"
-                                    Margin="0,0,8,0">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="💾" Margin="0,0,5,0"/>
-                                    <TextBlock Text="변경사항 저장" FontWeight="SemiBold"/>
-                                </StackPanel>
-                            </Button>
-                            
-                            <Button x:Name="CancelEditButton" 
-                                    Width="80" Height="30"
-                                    Click="CancelEditButton_Click"
-                                    BorderThickness="0"
-                                    Cursor="Hand">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="❌" Margin="0,0,5,0"/>
-                                    <TextBlock Text="취소"/>
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-                
-                <!-- DataGrid -->
-                <DataGrid x:Name="QueriesDataGrid" 
-                          Grid.Row="2"
-                          AutoGenerateColumns="False"
-                          SelectionMode="Single"
-                          CanUserSortColumns="True"
-                          CanUserResizeColumns="True"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          AlternatingRowBackground="#FFF8F9FA"
-                          GridLinesVisibility="All"
-                          HeadersVisibility="All"
-                          SelectionChanged="QueriesDataGrid_SelectionChanged"
-                          BeginningEdit="QueriesDataGrid_BeginningEdit"
-                          CellEditEnding="QueriesDataGrid_CellEditEnding"
-                          FontSize="11"
-                          BorderThickness="1"
-                          BorderBrush="#FFE0E0E0"
-                          Background="White">
-                    
-                    <DataGrid.ColumnHeaderStyle>
-                        <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="Background" Value="#FF0078D7"/>
-                            <Setter Property="Foreground" Value="White"/>
-                            <Setter Property="FontWeight" Value="Bold"/>
-                            <Setter Property="Height" Value="35"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                            <Setter Property="BorderBrush" Value="#FF0056A0"/>
-                            <Setter Property="BorderThickness" Value="0,0,1,0"/>
-                        </Style>
-                    </DataGrid.ColumnHeaderStyle>
-                    
-                    <DataGrid.CellStyle>
-                        <Style TargetType="DataGridCell">
-                            <Setter Property="BorderBrush" Value="#FFE0E0E0"/>
-                            <Setter Property="BorderThickness" Value="0,0,1,0"/>
-                            <Setter Property="Padding" Value="8,5"/>
-                        </Style>
-                    </DataGrid.CellStyle>
-                    
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Binding="{Binding RowNumber}" Width="50" IsReadOnly="True">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="HorizontalAlignment" Value="Center"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="Foreground" Value="#FF6C757D"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn Header="비즈명/그룹명" Binding="{Binding BizName, UpdateSourceTrigger=PropertyChanged}" Width="150"/>
-                        <DataGridTextColumn Header="쿼리명" Binding="{Binding QueryName, UpdateSourceTrigger=PropertyChanged}" Width="200"/>
-                        <DataGridComboBoxColumn Header="구분" Width="110"
-                                                SelectedItemBinding="{Binding QueryType, UpdateSourceTrigger=PropertyChanged}">
-                            <DataGridComboBoxColumn.ElementStyle>
-                                <Style TargetType="ComboBox">
-                                    <Setter Property="ItemsSource">
-                                        <Setter.Value>
-                                            <x:Array Type="sys:String" xmlns:sys="clr-namespace:System;assembly=mscorlib">
-                                                <sys:String>쿼리 실행</sys:String>
-                                                <sys:String>정보 조회</sys:String>
-                                                <sys:String>비즈 조회</sys:String>
-                                            </x:Array>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </DataGridComboBoxColumn.ElementStyle>
-                            <DataGridComboBoxColumn.EditingElementStyle>
-                                <Style TargetType="ComboBox">
-                                    <Setter Property="ItemsSource">
-                                        <Setter.Value>
-                                            <x:Array Type="sys:String" xmlns:sys="clr-namespace:System;assembly=mscorlib">
-                                                <sys:String>쿼리 실행</sys:String>
-                                                <sys:String>정보 조회</sys:String>
-                                                <sys:String>비즈 조회</sys:String>
-                                            </x:Array>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </DataGridComboBoxColumn.EditingElementStyle>
-                        </DataGridComboBoxColumn>
-                        
-                        
-                        <DataGridTextColumn Header="설명" Binding="{Binding Description2, UpdateSourceTrigger=PropertyChanged}" Width="200"/>
-                        <DataGridTextColumn Header="순번" Binding="{Binding OrderNumber, UpdateSourceTrigger=PropertyChanged}" Width="60">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="HorizontalAlignment" Value="Center"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        
-                        <DataGridTextColumn Header="TNS" Binding="{Binding TnsName, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
-                        <DataGridTextColumn Header="Host" Binding="{Binding Host, UpdateSourceTrigger=PropertyChanged}" Width="120" Visibility="Collapsed"/>
-                        <DataGridTextColumn Header="Port" Binding="{Binding Port, UpdateSourceTrigger=PropertyChanged}" Width="60" Visibility="Collapsed"/>
-                        <DataGridTextColumn Header="Service" Binding="{Binding ServiceName, UpdateSourceTrigger=PropertyChanged}" Width="100" Visibility="Collapsed"/>
-                        <DataGridTextColumn Header="User ID" Binding="{Binding UserId, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
-                        
-                        <DataGridTextColumn Header="Password" Binding="{Binding Password, UpdateSourceTrigger=PropertyChanged}" Width="100">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Text" Value="••••••••"/>
-                                    <Setter Property="Foreground" Value="#FF6C757D"/>
-                                    <Setter Property="HorizontalAlignment" Value="Center"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        
-                        <DataGridTemplateColumn Header="SQL 쿼리" Width="120">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Button Content="📝 편집" 
-                                            Click="EditQueryButton_InGrid_Click"
-                                            Tag="{Binding}"
-                                            Background="#FF6C757D"
-                                            Foreground="White"
-                                            BorderThickness="0"
-                                            Height="24"
-                                            FontSize="10"
-                                            Cursor="Hand"
-                                            Margin="2"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        
-                        <DataGridCheckBoxColumn Header="실행" Binding="{Binding EnabledFlagBool, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
-                        <DataGridCheckBoxColumn Header="알림" Binding="{Binding NotifyFlagBool, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
-                        <DataGridTextColumn Header="≥건수" Binding="{Binding CountGreaterThan, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
-                        <DataGridTextColumn Header="=건수" Binding="{Binding CountEquals, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
-                        <DataGridTextColumn Header="≤건수" Binding="{Binding CountLessThan, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
-                        <DataGridTextColumn Header="컬럼명" Binding="{Binding ColumnNames, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
-                        <DataGridTextColumn Header="컬럼값" Binding="{Binding ColumnValues, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
-                        <DataGridCheckBoxColumn Header="포함" Binding="{Binding ExcludeFlagBool, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
-                        <DataGridCheckBoxColumn Header="디폴트" Binding="{Binding DefaultFlagBool, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </Grid>
-        </Border>
+            <!-- 정보 조회 탭 -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="📊" FontSize="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="정보 조회"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <Grid x:Name="InfoQueryGrid" Margin="20"/>
+            </TabItem>
 
-        <!-- 하단 상태바 -->
-        <Border Grid.Row="2" 
-                Background="White" 
-                BorderBrush="#FFE0E0E0" 
-                BorderThickness="1" 
-                CornerRadius="8"
-                Padding="15,10"
-                Margin="0,15,0,0">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="💡 " 
-                           FontSize="14"
-                           VerticalAlignment="Center"/>
-                
-                <TextBlock x:Name="StatusTextBlock" 
-                           Text="준비됨" 
-                           FontSize="12"
-                           Foreground="#FF6C757D"
-                           VerticalAlignment="Center"
-                           Margin="5,0,0,0"/>
-            </StackPanel>
-        </Border>
+            <!-- 비즈 조회 탭 -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🔍" FontSize="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="비즈 조회"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <Grid x:Name="BizQueryGrid" Margin="20"/>
+            </TabItem>
+        </TabControl>
     </Grid>
 </UserControl>

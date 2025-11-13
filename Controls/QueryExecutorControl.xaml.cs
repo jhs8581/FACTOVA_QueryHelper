@@ -78,7 +78,10 @@ namespace FACTOVA_QueryHelper.Controls
         {
             try
             {
-                var connectionInfoService = new ConnectionInfoService();
+                // 🔥 SharedData에서 DB 경로 가져오기
+                string? dbPath = _sharedData?.Settings.DatabasePath;
+                
+                var connectionInfoService = new ConnectionInfoService(dbPath);
                 var allConnections = connectionInfoService.GetAll();
                 
                 _connectionInfos.Clear();
@@ -91,10 +94,13 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     ConnectionComboBox.SelectedIndex = 0;
                 }
+                
+                System.Diagnostics.Debug.WriteLine($"✅ Loaded {_connectionInfos.Count} connection infos from: {dbPath ?? "default path"}");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ Failed to load connection infos: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"   Stack: {ex.StackTrace}");
             }
         }
 

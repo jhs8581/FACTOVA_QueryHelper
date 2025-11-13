@@ -30,6 +30,9 @@ namespace FACTOVA_QueryHelper
         public string Description2 { get; set; } = string.Empty; // 설명
         public int OrderNumber { get; set; } = 0; // 순번
 
+        // 🔥 신규 필드: 쿼리비즈명
+        public string QueryBizName { get; set; } = string.Empty;
+
         // 새로운 옵션 필드 추가됨
         public string EnabledFlag { get; set; } = string.Empty; // G열 'Y'이면 실행 활성
         public string NotifyFlag { get; set; } = string.Empty; // H열 'Y'이면 알림 표시

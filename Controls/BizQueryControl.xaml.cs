@@ -17,6 +17,7 @@ namespace FACTOVA_QueryHelper.Controls
         private QueryDatabase? _database;
         private List<QueryItem> _allQueries = new List<QueryItem>();
         private List<QueryItem> _filteredQueries = new List<QueryItem>();
+        private QueryItem? _selectedQuery;
 
         public BizQueryControl()
         {
@@ -44,29 +45,30 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 var allQueries = _database.GetAllQueries();
                 
-                // "비즈 조회" 구분이면서 비즈명이 있는 쿼리만 필터링
+                // 🔥 "비즈 조회" 구분 쿼리만 필터링
                 _allQueries = allQueries
-                    .Where(q => q.QueryType == "비즈 조회" && !string.IsNullOrWhiteSpace(q.BizName))
+                    .Where(q => q.QueryType == "비즈 조회")
                     .ToList();
                 
-                // 중복 제거된 비즈명 목록 생성 (알파벳순 정렬)
-                var bizNames = _allQueries
-                    .Select(q => q.BizName)
+                // 🔥 그룹명(QueryName) 목록: 중복 제거 및 알파벳순 정렬 (순번 필터링 제거)
+                var groupNames = _allQueries
+                    .Where(q => !string.IsNullOrWhiteSpace(q.QueryName))
+                    .Select(q => q.QueryName)
                     .Distinct()
                     .OrderBy(name => name)
                     .ToList();
                 
                 // 콤보박스에 설정
-                BizNameComboBox.ItemsSource = bizNames;
+                BizNameComboBox.ItemsSource = groupNames;
                 
                 // 첫 번째 항목 자동 선택
-                if (bizNames.Count > 0)
+                if (groupNames.Count > 0)
                 {
                     BizNameComboBox.SelectedIndex = 0;
                 }
                 else
                 {
-                    UpdateStatus("비즈 조회 구분에 비즈명이 설정된 쿼리가 없습니다.", Colors.Orange);
+                    UpdateStatus("비즈 조회 쿼리(그룹명)가 없습니다.", Colors.Orange);
                     QueriesDataGrid.ItemsSource = null;
                     QueryCountTextBlock.Text = "0";
                 }
@@ -80,32 +82,32 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         /// <summary>
-        /// 선택된 비즈명에 해당하는 쿼리를 필터링하고 표시합니다.
+        /// 선택된 그룹명에 해당하는 쿼리를 필터링하고 표시합니다.
         /// </summary>
-        private void FilterQueriesByBizName(string bizName)
+        private void FilterQueriesByBizName(string groupName)
         {
-            if (string.IsNullOrWhiteSpace(bizName))
+            if (string.IsNullOrWhiteSpace(groupName))
             {
                 _filteredQueries.Clear();
                 QueriesDataGrid.ItemsSource = null;
                 QueryCountTextBlock.Text = "0";
-                UpdateStatus("비즈명을 선택하세요.", Colors.Gray);
+                UpdateStatus("그룹명을 선택하세요.", Colors.Gray);
                 return;
             }
 
             try
             {
-                // 선택된 비즈명과 일치하는 쿼리를 순번 순으로 정렬
+                // 🔥 선택된 그룹명(QueryName)과 일치하는 모든 쿼리 필터링 및 정렬 (순번 필터링 제거)
                 _filteredQueries = _allQueries
-                    .Where(q => q.BizName == bizName)
+                    .Where(q => q.QueryName == groupName)
                     .OrderBy(q => q.OrderNumber)
-                    .ThenBy(q => q.QueryName)
+                    .ThenBy(q => q.BizName)
                     .ToList();
                 
                 QueriesDataGrid.ItemsSource = _filteredQueries;
                 QueryCountTextBlock.Text = _filteredQueries.Count.ToString();
                 
-                UpdateStatus($"'{bizName}' 관련 쿼리 {_filteredQueries.Count}개가 로드되었습니다.", Colors.Green);
+                UpdateStatus($"'{groupName}' 그룹의 쿼리 {_filteredQueries.Count}개가 로드되었습니다.", Colors.Green);
             }
             catch (Exception ex)
             {
@@ -127,7 +129,7 @@ namespace FACTOVA_QueryHelper.Controls
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
-            // 현재 선택된 비즈명 저장
+            // 현재 선택된 그룹명 저장
             string? currentSelection = BizNameComboBox.SelectedItem as string;
             
             // 쿼리 재로드
@@ -142,6 +144,16 @@ namespace FACTOVA_QueryHelper.Controls
             UpdateStatus("쿼리 목록이 새로고침되었습니다.", Colors.Blue);
         }
 
+        private void QueriesDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            _selectedQuery = QueriesDataGrid.SelectedItem as QueryItem;
+            
+            if (_selectedQuery != null)
+            {
+                UpdateStatus($"선택됨: {_selectedQuery.BizName}", Colors.Blue);
+            }
+        }
+
         private void ViewQueryButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is QueryItem query)
@@ -151,14 +163,14 @@ namespace FACTOVA_QueryHelper.Controls
                     // 쿼리 텍스트 편집 윈도우를 읽기 전용 모드로 표시
                     var window = new QueryTextEditWindow(query.Query, isReadOnly: true)
                     {
-                        Title = $"쿼리 보기 - {query.QueryName}",
+                        Title = $"쿼리 보기 - {query.BizName}",
                         Owner = Window.GetWindow(this),
                         WindowStartupLocation = WindowStartupLocation.CenterOwner
                     };
                     
                     window.ShowDialog();
                     
-                    UpdateStatus($"'{query.QueryName}' 쿼리를 확인했습니다.", Colors.Blue);
+                    UpdateStatus($"'{query.BizName}' 쿼리를 확인했습니다.", Colors.Blue);
                 }
                 catch (Exception ex)
                 {
@@ -178,19 +190,20 @@ namespace FACTOVA_QueryHelper.Controls
                     // QueryExecutorControl을 포함하는 팝업 윈도우 생성
                     var window = new Window
                     {
-                        Title = $"비즈 실행 - {query.QueryName}",
+                        Title = $"비즈 실행 - {query.BizName}",
                         Width = 1000,
                         Height = 700,
                         Owner = Window.GetWindow(this),
                         WindowStartupLocation = WindowStartupLocation.CenterOwner,
                         WindowStyle = WindowStyle.SingleBorderWindow,
-                        ResizeMode = ResizeMode.CanResize
+                        ResizeMode = ResizeMode.CanResize,
+                        ShowInTaskbar = true
                     };
 
                     // QueryExecutorControl 생성
                     var executorControl = new QueryExecutorControl();
                     
-                    // 🔥 SharedDataContext 설정 (TnsEntries 접근용)
+                    // SharedDataContext 설정
                     if (_sharedData != null)
                     {
                         executorControl.SetSharedDataContext(_sharedData);
@@ -199,6 +212,9 @@ namespace FACTOVA_QueryHelper.Controls
                     // OracleDbService 생성 및 설정
                     var dbService = new Services.OracleDbService();
                     executorControl.SetDbService(dbService);
+                    
+                    // ConnectionInfo 목록 새로고침
+                    executorControl.RefreshConnectionInfos();
                     
                     // 쿼리 설정
                     executorControl.SetQuery(query.Query);
@@ -209,7 +225,7 @@ namespace FACTOVA_QueryHelper.Controls
                     // 팝업으로 표시
                     window.ShowDialog();
                     
-                    UpdateStatus($"'{query.QueryName}' 비즈를 실행했습니다.", Colors.Blue);
+                    UpdateStatus($"'{query.BizName}' 비즈를 실행했습니다.", Colors.Blue);
                 }
                 catch (Exception ex)
                 {
