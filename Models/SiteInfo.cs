@@ -12,7 +12,9 @@
         public string Facility { get; set; } = string.Empty;
         public string WipLineId { get; set; } = string.Empty;
         public string EquipLineId { get; set; } = string.Empty;
-        public bool IsDefault { get; set; }
+        
+        // 🔥 IsDefault를 int로 사용 (표시순번으로 재사용)
+        public int IsDefault { get; set; }
 
         /// <summary>
         /// ComboBox 표시용 텍스트

@@ -10,11 +10,12 @@
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- 상단 필터 영역 -->
+        <!-- 상단 그룹명 선택 영역 -->
         <Border Grid.Row="0" 
                 Background="White" 
                 BorderBrush="#FFE0E0E0" 
@@ -71,8 +72,75 @@
             </Grid>
         </Border>
 
-        <!-- 쿼리 목록 -->
+        <!-- 🔥 필터 영역 (신규 추가) -->
         <Border Grid.Row="1" 
+                Background="#FFF8F9FA" 
+                BorderBrush="#FFE0E0E0" 
+                BorderThickness="1" 
+                CornerRadius="8"
+                Padding="15,10"
+                Margin="0,0,0,15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 비즈명 필터 -->
+                <TextBlock Grid.Column="0"
+                           Text="🔍 비즈명:"
+                           VerticalAlignment="Center"
+                           FontWeight="SemiBold"
+                           Margin="0,0,8,0"/>
+
+                <TextBox x:Name="BizNameFilterTextBox"
+                         Grid.Column="1"
+                         Height="30"
+                         VerticalContentAlignment="Center"
+                         BorderBrush="#FF0078D7"
+                         BorderThickness="2"
+                         Padding="8,4"
+                         TextChanged="FilterTextBox_TextChanged"/>
+
+                <!-- 쿼리비즈명 필터 -->
+                <TextBlock Grid.Column="3"
+                           Text="🔍 쿼리비즈명:"
+                           VerticalAlignment="Center"
+                           FontWeight="SemiBold"
+                           Margin="0,0,8,0"/>
+
+                <TextBox x:Name="QueryBizNameFilterTextBox"
+                         Grid.Column="4"
+                         Height="30"
+                         VerticalContentAlignment="Center"
+                         BorderBrush="#FF0078D7"
+                         BorderThickness="2"
+                         Padding="8,4"
+                         TextChanged="FilterTextBox_TextChanged"/>
+
+                <!-- 초기화 버튼 -->
+                <Button x:Name="ClearFilterButton"
+                        Grid.Column="6"
+                        Width="100"
+                        Height="30"
+                        Content="✖ 초기화"
+                        Click="ClearFilterButton_Click"
+                        Background="#FF6C757D"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        FontWeight="SemiBold"/>
+            </Grid>
+        </Border>
+
+        <!-- 쿼리 목록 -->
+        <Border Grid.Row="2" 
                 Background="White" 
                 BorderBrush="#FFE0E0E0" 
                 BorderThickness="1" 
@@ -294,7 +362,7 @@
         </Border>
 
         <!-- 하단 상태바 -->
-        <Border Grid.Row="2" 
+        <Border Grid.Row="3" 
                 Background="White" 
                 BorderBrush="#FFE0E0E0" 
                 BorderThickness="1" 

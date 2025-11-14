@@ -185,10 +185,23 @@ namespace FACTOVA_QueryHelper.Database
                     WipLineId TEXT,
                     EquipLineId TEXT,
                     IsDefault INTEGER DEFAULT 0,
+                    DisplayOrder INTEGER DEFAULT 0,
                     CreatedDate TEXT DEFAULT CURRENT_TIMESTAMP,
                     ModifiedDate TEXT DEFAULT CURRENT_TIMESTAMP
                 )";
             siteCommand.ExecuteNonQuery();
+            
+            // 🔥 DisplayOrder 컬럼 추가 (기존 테이블 호환성)
+            try
+            {
+                var alterSiteCommand = connection.CreateCommand();
+                alterSiteCommand.CommandText = "ALTER TABLE SiteInfo ADD COLUMN DisplayOrder INTEGER DEFAULT 0";
+                alterSiteCommand.ExecuteNonQuery();
+            }
+            catch
+            {
+                // 컬럼이 이미 존재하면 무시
+            }
         }
 
         /// <summary>
@@ -404,7 +417,8 @@ namespace FACTOVA_QueryHelper.Database
             connection.Open();
 
             var command = connection.CreateCommand();
-            command.CommandText = "SELECT * FROM SiteInfo ORDER BY IsDefault DESC, SiteName";
+            // 🔥 IsDefault(표시순번) 우선 정렬
+            command.CommandText = "SELECT * FROM SiteInfo ORDER BY IsDefault, SiteName";
 
             using var reader = command.ExecuteReader();
             while (reader.Read())
@@ -418,7 +432,7 @@ namespace FACTOVA_QueryHelper.Database
                     Facility = reader["Facility"]?.ToString() ?? "",
                     WipLineId = reader["WipLineId"]?.ToString() ?? "",
                     EquipLineId = reader["EquipLineId"]?.ToString() ?? "",
-                    IsDefault = Convert.ToInt32(reader["IsDefault"]) == 1
+                    IsDefault = reader["IsDefault"] != DBNull.Value ? Convert.ToInt32(reader["IsDefault"]) : 0
                 });
             }
 
@@ -432,14 +446,6 @@ namespace FACTOVA_QueryHelper.Database
         {
             using var connection = new SqliteConnection(_connectionString);
             connection.Open();
-
-            // 기본 사업장으로 설정하는 경우 기존 기본 설정 해제
-            if (site.IsDefault)
-            {
-                var clearDefaultCommand = connection.CreateCommand();
-                clearDefaultCommand.CommandText = "UPDATE SiteInfo SET IsDefault = 0";
-                clearDefaultCommand.ExecuteNonQuery();
-            }
 
             var command = connection.CreateCommand();
             command.CommandText = @"
@@ -457,7 +463,7 @@ namespace FACTOVA_QueryHelper.Database
             command.Parameters.AddWithValue("$facility", site.Facility ?? "");
             command.Parameters.AddWithValue("$wipLineId", site.WipLineId ?? "");
             command.Parameters.AddWithValue("$equipLineId", site.EquipLineId ?? "");
-            command.Parameters.AddWithValue("$isDefault", site.IsDefault ? 1 : 0);
+            command.Parameters.AddWithValue("$isDefault", site.IsDefault);
 
             command.ExecuteNonQuery();
         }
@@ -469,15 +475,6 @@ namespace FACTOVA_QueryHelper.Database
         {
             using var connection = new SqliteConnection(_connectionString);
             connection.Open();
-
-            // 기본 사업장으로 설정하는 경우 기존 기본 설정 해제
-            if (site.IsDefault)
-            {
-                var clearDefaultCommand = connection.CreateCommand();
-                clearDefaultCommand.CommandText = "UPDATE SiteInfo SET IsDefault = 0 WHERE Id != $id";
-                clearDefaultCommand.Parameters.AddWithValue("$id", site.Id);
-                clearDefaultCommand.ExecuteNonQuery();
-            }
 
             var command = connection.CreateCommand();
             command.CommandText = @"
@@ -499,7 +496,7 @@ namespace FACTOVA_QueryHelper.Database
             command.Parameters.AddWithValue("$facility", site.Facility ?? "");
             command.Parameters.AddWithValue("$wipLineId", site.WipLineId ?? "");
             command.Parameters.AddWithValue("$equipLineId", site.EquipLineId ?? "");
-            command.Parameters.AddWithValue("$isDefault", site.IsDefault ? 1 : 0);
+            command.Parameters.AddWithValue("$isDefault", site.IsDefault);
 
             command.ExecuteNonQuery();
         }
@@ -527,7 +524,8 @@ namespace FACTOVA_QueryHelper.Database
             connection.Open();
 
             var command = connection.CreateCommand();
-            command.CommandText = "SELECT * FROM SiteInfo WHERE IsDefault = 1 LIMIT 1";
+            // 🔥 IsDefault가 0이 아닌 첫 번째 사업장 (표시순번이 가장 작은 것)
+            command.CommandText = "SELECT * FROM SiteInfo WHERE IsDefault > 0 ORDER BY IsDefault LIMIT 1";
 
             using var reader = command.ExecuteReader();
             if (reader.Read())
@@ -541,7 +539,7 @@ namespace FACTOVA_QueryHelper.Database
                     Facility = reader["Facility"]?.ToString() ?? "",
                     WipLineId = reader["WipLineId"]?.ToString() ?? "",
                     EquipLineId = reader["EquipLineId"]?.ToString() ?? "",
-                    IsDefault = true
+                    IsDefault = reader["IsDefault"] != DBNull.Value ? Convert.ToInt32(reader["IsDefault"]) : 0
                 };
             }
 

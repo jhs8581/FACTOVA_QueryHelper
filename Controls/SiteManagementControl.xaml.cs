@@ -91,7 +91,7 @@ namespace FACTOVA_QueryHelper.Controls
                 Facility = "",
                 WipLineId = "",
                 EquipLineId = "",
-                IsDefault = false
+                IsDefault = 0  // 🔥 표시순번 0으로 초기화
             };
 
             // 컬렉션에 추가

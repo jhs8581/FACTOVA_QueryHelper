@@ -38,6 +38,13 @@ namespace FACTOVA_QueryHelper.Controls
             // 상위로 이벤트 전파
             ConnectionInfoChanged?.Invoke(this, EventArgs.Empty);
             
+            // 🔥 SharedDataContext의 이벤트 발생
+            if (_sharedData != null)
+            {
+                _sharedData.NotifyConnectionInfosChanged();
+                System.Diagnostics.Debug.WriteLine("🔔 NotifyConnectionInfosChanged called from SettingsControl");
+            }
+            
             // 상태바 업데이트
             UpdateStatus("접속 정보가 저장되었습니다.", Colors.Green);
         }

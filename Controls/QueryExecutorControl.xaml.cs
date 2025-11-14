@@ -59,6 +59,24 @@ namespace FACTOVA_QueryHelper.Controls
             
             // 🔥 SharedData 설정 후 ConnectionInfo 로드
             LoadConnectionInfos();
+            
+            // 🔥 접속 정보 변경 이벤트 구독
+            if (_sharedData != null)
+            {
+                _sharedData.ConnectionInfosChanged += OnConnectionInfosChanged;
+                System.Diagnostics.Debug.WriteLine("✅ QueryExecutorControl subscribed to ConnectionInfosChanged event");
+            }
+        }
+        
+        /// <summary>
+        /// 🔥 접속 정보 변경 이벤트 핸들러
+        /// </summary>
+        private void OnConnectionInfosChanged(object? sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("🔄 QueryExecutorControl: Refreshing connection infos...");
+            
+            // 접속 정보 새로고침
+            RefreshConnectionInfos();
         }
 
         /// <summary>

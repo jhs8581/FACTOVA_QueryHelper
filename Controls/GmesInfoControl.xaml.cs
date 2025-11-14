@@ -209,61 +209,8 @@ namespace FACTOVA_QueryHelper.Controls
         /// </summary>
         private void PlanInfoDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (PlanInfoDataGrid.SelectedItem is DataRowView selectedRow)
-            {
-                try
-                {
-                    var row = selectedRow.Row;
-                    var table = row.Table;
-
-                    // WORK_ORDER_ID
-                    if (table.Columns.Contains("WORK_ORDER_ID"))
-                    {
-                        var workOrderId = row["WORK_ORDER_ID"]?.ToString() ?? "-";
-                        SelectedWorkOrderIdTextBlock.Text = workOrderId;
-                    }
-                    else
-                    {
-                        SelectedWorkOrderIdTextBlock.Text = "-";
-                    }
-
-                    // WORK_ORDER_NAME
-                    if (table.Columns.Contains("WORK_ORDER_NAME"))
-                    {
-                        var workOrderName = row["WORK_ORDER_NAME"]?.ToString() ?? "-";
-                        SelectedWorkOrderNameTextBlock.Text = workOrderName;
-                    }
-                    else
-                    {
-                        SelectedWorkOrderNameTextBlock.Text = "-";
-                    }
-
-                    // PRODUCT_SPECIFICATION_ID
-                    if (table.Columns.Contains("PRODUCT_SPECIFICATION_ID"))
-                    {
-                        var productSpecId = row["PRODUCT_SPECIFICATION_ID"]?.ToString() ?? "-";
-                        SelectedProductSpecIdTextBlock.Text = productSpecId;
-                    }
-                    else
-                    {
-                        SelectedProductSpecIdTextBlock.Text = "-";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"❌ 선택된 행 정보 표시 오류: {ex.Message}");
-                    SelectedWorkOrderIdTextBlock.Text = "-";
-                    SelectedWorkOrderNameTextBlock.Text = "-";
-                    SelectedProductSpecIdTextBlock.Text = "-";
-                }
-            }
-            else
-            {
-                // 선택 해제 시 초기화
-                SelectedWorkOrderIdTextBlock.Text = "-";
-                SelectedWorkOrderNameTextBlock.Text = "-";
-                SelectedProductSpecIdTextBlock.Text = "-";
-            }
+            // 🔥 더블클릭할 때만 정보가 표시되도록 SelectionChanged 이벤트에서는 아무 작업도 하지 않음
+            // 선택 변경 시 정보 표시 제거
         }
 
         /// <summary>
@@ -334,6 +281,7 @@ namespace FACTOVA_QueryHelper.Controls
 
             try
             {
+                // 🔥 IsDefault(표시순번) 순서로 정렬된 사업장 목록 가져오기
                 var sites = _database.GetAllSites();
                 
                 // 현재 선택된 사업장 ID 저장
@@ -353,8 +301,8 @@ namespace FACTOVA_QueryHelper.Controls
                     }
                 }
 
-                // 기본 사업장 선택
-                var defaultSite = sites.FirstOrDefault(s => s.IsDefault);
+                // 🔥 IsDefault가 0보다 큰 첫 번째 사업장 선택 (표시순번이 가장 작은 것)
+                var defaultSite = sites.FirstOrDefault(s => s.IsDefault > 0);
                 if (defaultSite != null)
                 {
                     SiteComboBox.SelectedItem = defaultSite;
@@ -1208,7 +1156,6 @@ namespace FACTOVA_QueryHelper.Controls
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
-
             try
             {
                 ExecuteAllGridsButton.IsEnabled = false;

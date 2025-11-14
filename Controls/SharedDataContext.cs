@@ -27,6 +27,9 @@ namespace FACTOVA_QueryHelper.Controls
         
         // 설정 저장 콜백
         public Action? SaveSettingsCallback { get; set; }
+        
+        // 🔥 접속 정보 변경 이벤트
+        public event EventHandler? ConnectionInfosChanged;
 
         public SharedDataContext()
         {
@@ -34,6 +37,15 @@ namespace FACTOVA_QueryHelper.Controls
             TnsEntries = new List<TnsEntry>();
             LoadedQueries = new List<QueryItem>();
             QueryFilterItems = new ObservableCollection<CheckableComboBoxItem>();
+        }
+        
+        /// <summary>
+        /// 🔥 접속 정보가 변경되었음을 알립니다.
+        /// </summary>
+        public void NotifyConnectionInfosChanged()
+        {
+            ConnectionInfosChanged?.Invoke(this, EventArgs.Empty);
+            System.Diagnostics.Debug.WriteLine("🔔 ConnectionInfosChanged event raised");
         }
     }
 }

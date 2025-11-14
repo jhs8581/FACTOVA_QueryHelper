@@ -17,6 +17,7 @@ namespace FACTOVA_QueryHelper.Controls
         private QueryDatabase? _database;
         private List<QueryItem> _allQueries = new List<QueryItem>();
         private List<QueryItem> _filteredQueries = new List<QueryItem>();
+        private List<QueryItem> _displayedQueries = new List<QueryItem>(); // 🔥 필터 적용 후 표시되는 쿼리
         private QueryItem? _selectedQuery;
 
         public BizQueryControl()
@@ -89,6 +90,7 @@ namespace FACTOVA_QueryHelper.Controls
             if (string.IsNullOrWhiteSpace(groupName))
             {
                 _filteredQueries.Clear();
+                _displayedQueries.Clear();
                 QueriesDataGrid.ItemsSource = null;
                 QueryCountTextBlock.Text = "0";
                 UpdateStatus("그룹명을 선택하세요.", Colors.Gray);
@@ -97,23 +99,52 @@ namespace FACTOVA_QueryHelper.Controls
 
             try
             {
-                // 🔥 선택된 그룹명(QueryName)과 일치하는 모든 쿼리 필터링 및 정렬 (순번 필터링 제거)
+                // 🔥 선택된 그룹명(QueryName)과 일치하는 모든 쿼리 필터링 및 정렬
                 _filteredQueries = _allQueries
                     .Where(q => q.QueryName == groupName)
                     .OrderBy(q => q.OrderNumber)
                     .ThenBy(q => q.BizName)
                     .ToList();
                 
-                QueriesDataGrid.ItemsSource = _filteredQueries;
-                QueryCountTextBlock.Text = _filteredQueries.Count.ToString();
+                // 🔥 초기에는 모든 필터링된 쿼리를 표시
+                ApplyTextFilters();
                 
-                UpdateStatus($"'{groupName}' 그룹의 쿼리 {_filteredQueries.Count}개가 로드되었습니다.", Colors.Green);
+                UpdateStatus($"'{groupName}' 그룹의 쿼리 {_displayedQueries.Count}개가 로드되었습니다.", Colors.Green);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"쿼리 필터링 실패:\n{ex.Message}", "오류",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 UpdateStatus($"쿼리 필터링 실패: {ex.Message}", Colors.Red);
+            }
+        }
+
+        /// <summary>
+        /// 🔥 비즈명 및 쿼리비즈명 텍스트 필터를 적용합니다.
+        /// </summary>
+        private void ApplyTextFilters()
+        {
+            string bizNameFilter = BizNameFilterTextBox.Text?.Trim().ToLower() ?? "";
+            string queryBizNameFilter = QueryBizNameFilterTextBox.Text?.Trim().ToLower() ?? "";
+
+            _displayedQueries = _filteredQueries.Where(q =>
+            {
+                bool matchesBizName = string.IsNullOrEmpty(bizNameFilter) ||
+                                     (q.BizName?.ToLower().Contains(bizNameFilter) ?? false);
+
+                bool matchesQueryBizName = string.IsNullOrEmpty(queryBizNameFilter) ||
+                                          (q.QueryBizName?.ToLower().Contains(queryBizNameFilter) ?? false);
+
+                return matchesBizName && matchesQueryBizName;
+            }).ToList();
+
+            QueriesDataGrid.ItemsSource = null;
+            QueriesDataGrid.ItemsSource = _displayedQueries;
+            QueryCountTextBlock.Text = _displayedQueries.Count.ToString();
+
+            if (!string.IsNullOrEmpty(bizNameFilter) || !string.IsNullOrEmpty(queryBizNameFilter))
+            {
+                UpdateStatus($"필터 적용됨: {_displayedQueries.Count}개 항목 표시 중", Colors.Green);
             }
         }
 
@@ -125,6 +156,24 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 FilterQueriesByBizName(selectedBizName);
             }
+        }
+
+        /// <summary>
+        /// 🔥 필터 텍스트 변경 이벤트
+        /// </summary>
+        private void FilterTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ApplyTextFilters();
+        }
+
+        /// <summary>
+        /// 🔥 필터 초기화 버튼 클릭
+        /// </summary>
+        private void ClearFilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            BizNameFilterTextBox.Text = "";
+            QueryBizNameFilterTextBox.Text = "";
+            UpdateStatus("필터가 초기화되었습니다.", Colors.Blue);
         }
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e)

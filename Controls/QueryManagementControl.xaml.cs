@@ -81,8 +81,42 @@ namespace FACTOVA_QueryHelper.Controls
             LoadConnectionInfos();
             
             LoadQueriesFromDatabase();
+            
+            // 🔥 접속 정보 변경 이벤트 구독
+            if (_sharedData != null)
+            {
+                _sharedData.ConnectionInfosChanged += OnConnectionInfosChanged;
+                System.Diagnostics.Debug.WriteLine("✅ QueryManagementControl subscribed to ConnectionInfosChanged event");
+            }
         }
         
+        /// <summary>
+        /// 🔥 접속 정보 변경 이벤트 핸들러
+        /// </summary>
+        private void OnConnectionInfosChanged(object? sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("🔄 QueryManagementControl: Refreshing connection infos...");
+            
+            // 접속 정보 목록 다시 로드
+            LoadConnectionInfos();
+            
+            // 🔥 현재 표시 중인 모든 DataGrid의 콤보박스를 새로고침하기 위해
+            // DataGrid를 다시 생성하거나 ItemsSource를 갱신
+            foreach (var tabIndex in _dataGrids.Keys)
+            {
+                if (_dataGrids.TryGetValue(tabIndex, out var dataGrid))
+                {
+                    // ItemsSource를 다시 설정하여 UI 갱신
+                    var currentSource = dataGrid.ItemsSource;
+                    dataGrid.ItemsSource = null;
+                    dataGrid.ItemsSource = currentSource;
+                    dataGrid.Items.Refresh();
+                }
+            }
+            
+            UpdateStatus("접속 정보가 갱신되었습니다.", Colors.Green);
+        }
+
         /// <summary>
         /// 접속 정보 목록을 로드합니다.
         /// </summary>
@@ -113,7 +147,11 @@ namespace FACTOVA_QueryHelper.Controls
 
             try
             {
-                var allQueries = _database.GetAllQueries().OrderBy(q => q.RowNumber).ToList();
+                // 🔥 표시순번(OrderNumber) 우선 정렬, 그 다음 ID 순서
+                var allQueries = _database.GetAllQueries()
+                    .OrderBy(q => q.OrderNumber)
+                    .ThenBy(q => q.RowNumber)
+                    .ToList();
                 
                 // 🔥 구분별로 쿼리 분류
                 _queryExecutionQueries = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(
@@ -461,20 +499,12 @@ namespace FACTOVA_QueryHelper.Controls
             Grid.SetRow(editModeBorder, 1);
             grid.Children.Add(editModeBorder);
 
-            // 🔥 ScrollViewer로 DataGrid를 감싸기
-            var scrollViewer = new ScrollViewer
-            {
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto
-            };
-            
-            // DataGrid
+            // 🔥 DataGrid 직접 추가 (ScrollViewer 제거)
             var dataGrid = CreateDataGrid(queryType);
             _dataGrids[tabIndex] = dataGrid;  // 🔥 Dictionary에 저장
-            scrollViewer.Content = dataGrid;
             
-            Grid.SetRow(scrollViewer, 2);
-            grid.Children.Add(scrollViewer);
+            Grid.SetRow(dataGrid, 2);
+            grid.Children.Add(dataGrid);
 
             border.Child = grid;
             return border;
@@ -702,9 +732,9 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 var orderColumn = new DataGridTextColumn
                 {
-                    Header = "순번",
+                    Header = "표시순번",
                     Binding = new System.Windows.Data.Binding("OrderNumber") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged },
-                    Width = 60
+                    Width = 80
                 };
                 var orderStyle = new Style(typeof(TextBlock));
                 orderStyle.Setters.Add(new Setter(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Center));
@@ -1070,13 +1100,17 @@ namespace FACTOVA_QueryHelper.Controls
 
                 foreach (var query in modifiedQueries.ToList())
                 {
-                    // 필수 필드 검증
-                    if (string.IsNullOrWhiteSpace(query.QueryName) ||
-                        string.IsNullOrWhiteSpace(query.UserId) ||
-                        string.IsNullOrWhiteSpace(query.Password) ||
-                        (string.IsNullOrWhiteSpace(query.TnsName) && string.IsNullOrWhiteSpace(query.Host)))
+                    // 🔥 필수 필드 검증 - 그룹명과 접속 정보만 확인
+                    if (string.IsNullOrWhiteSpace(query.QueryName))
                     {
-                        MessageBox.Show($"'{query.QueryName}'의 필수 정보를 입력해주세요.", "입력 오류", 
+                        MessageBox.Show($"그룹명을 입력해주세요.", "입력 오류", 
+                            MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    if (!query.ConnectionInfoId.HasValue)
+                    {
+                        MessageBox.Show($"'{query.QueryName}'의 접속 정보를 선택해주세요.", "입력 오류", 
                             MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
@@ -1419,7 +1453,7 @@ namespace FACTOVA_QueryHelper.Controls
             // 헤더 작성
             var headers = new List<string>
             {
-                "ID", "그룹명", "비즈명", "쿼리비즈명", "설명", "순번", 
+                "ID", "그룹명", "비즈명", "쿼리비즈명", "설명", "표시순번", 
                 "접속 정보", "SQL 쿼리"
             };
 

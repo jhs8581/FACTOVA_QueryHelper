@@ -197,9 +197,9 @@
                         </DataGridTextColumn.HeaderStyle>
                     </DataGridTextColumn>
 
-                    <!-- 기본 (CheckBox) -->
-                    <DataGridCheckBoxColumn Header="기본" Binding="{Binding IsDefault, UpdateSourceTrigger=PropertyChanged}" Width="60">
-                        <DataGridCheckBoxColumn.HeaderStyle>
+                    <!-- 🔥 표시순번 (기존 IsDefault를 숫자로 재사용) -->
+                    <DataGridTextColumn Header="표시순번" Binding="{Binding IsDefault, UpdateSourceTrigger=PropertyChanged}" Width="80" IsReadOnly="False">
+                        <DataGridTextColumn.HeaderStyle>
                             <Style TargetType="DataGridColumnHeader">
                                 <Setter Property="Background" Value="#FF2196F3"/>
                                 <Setter Property="Foreground" Value="White"/>
@@ -208,13 +208,13 @@
                                 <Setter Property="Padding" Value="10,5"/>
                                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
                             </Style>
-                        </DataGridCheckBoxColumn.HeaderStyle>
-                        <DataGridCheckBoxColumn.ElementStyle>
-                            <Style TargetType="CheckBox">
+                        </DataGridTextColumn.HeaderStyle>
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
                             </Style>
-                        </DataGridCheckBoxColumn.ElementStyle>
-                    </DataGridCheckBoxColumn>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>

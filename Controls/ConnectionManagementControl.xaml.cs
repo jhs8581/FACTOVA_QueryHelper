@@ -205,7 +205,7 @@ namespace FACTOVA_QueryHelper.Controls
                 // 🔥 편집 모드 Border 숨김
                 EditModeBorder.Visibility = Visibility.Collapsed;
                 
-                // 🔥 저장 완료 이벤트 발생
+                // 🔥 저장 완료 이벤트 발생 (SettingsControl이 구독)
                 ConnectionInfosSaved?.Invoke(this, EventArgs.Empty);
                 
                 // 성공 메시지
