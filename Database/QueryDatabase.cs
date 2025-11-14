@@ -161,6 +161,18 @@ namespace FACTOVA_QueryHelper.Database
                 // 컬럼이 이미 존재하면 무시
             }
             
+            // 🔥 ConnectionInfoId 컬럼 추가 (접속 정보 참조)
+            try
+            {
+                var alterCommand = connection.CreateCommand();
+                alterCommand.CommandText = "ALTER TABLE Queries ADD COLUMN ConnectionInfoId INTEGER";
+                alterCommand.ExecuteNonQuery();
+            }
+            catch
+            {
+                // 컬럼이 이미 존재하면 무시
+            }
+            
             // 🔥 SiteInfo 테이블 생성 (사업장 정보 관리용)
             var siteCommand = connection.CreateCommand();
             siteCommand.CommandText = @"
@@ -200,6 +212,7 @@ namespace FACTOVA_QueryHelper.Database
                     RowNumber = Convert.ToInt32(reader["Id"]),
                     QueryName = reader["QueryName"]?.ToString() ?? "",
                     QueryType = reader["QueryType"]?.ToString() ?? "쿼리 실행",
+                    ConnectionInfoId = reader["ConnectionInfoId"] != DBNull.Value ? Convert.ToInt32(reader["ConnectionInfoId"]) : (int?)null,
                     TnsName = reader["TnsName"]?.ToString() ?? "",
                     Host = reader["Host"]?.ToString() ?? "",
                     Port = reader["Port"]?.ToString() ?? "",
@@ -245,12 +258,12 @@ namespace FACTOVA_QueryHelper.Database
             var command = connection.CreateCommand();
             command.CommandText = @"
                 INSERT INTO Queries (
-                    QueryName, QueryType, TnsName, Host, Port, ServiceName, UserId, Password, Query,
+                    QueryName, QueryType, ConnectionInfoId, TnsName, Host, Port, ServiceName, UserId, Password, Query,
                     BizName, Description2, OrderNumber, QueryBizName,
                     EnabledFlag, NotifyFlag, CountGreaterThan, CountEquals, CountLessThan,
                     ColumnNames, ColumnValues, ExcludeFlag, DefaultFlag
                 ) VALUES (
-                    $queryName, $queryType, $tnsName, $host, $port, $serviceName, $userId, $password, $query,
+                    $queryName, $queryType, $connectionInfoId, $tnsName, $host, $port, $serviceName, $userId, $password, $query,
                     $bizName, $description2, $orderNumber, $queryBizName,
                     $enabledFlag, $notifyFlag, $countGreaterThan, $countEquals, $countLessThan,
                     $columnNames, $columnValues, $excludeFlag, $defaultFlag
@@ -273,6 +286,7 @@ namespace FACTOVA_QueryHelper.Database
                 UPDATE Queries SET
                     QueryName = $queryName,
                     QueryType = $queryType,
+                    ConnectionInfoId = $connectionInfoId,
                     TnsName = $tnsName,
                     Host = $host,
                     Port = $port,
@@ -335,6 +349,7 @@ namespace FACTOVA_QueryHelper.Database
         {
             command.Parameters.AddWithValue("$queryName", query.QueryName);
             command.Parameters.AddWithValue("$queryType", query.QueryType ?? "쿼리 실행");
+            command.Parameters.AddWithValue("$connectionInfoId", query.ConnectionInfoId.HasValue ? (object)query.ConnectionInfoId.Value : DBNull.Value);
             command.Parameters.AddWithValue("$tnsName", query.TnsName ?? "");
             command.Parameters.AddWithValue("$host", query.Host ?? "");
             command.Parameters.AddWithValue("$port", query.Port ?? "");

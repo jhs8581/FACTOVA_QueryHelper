@@ -23,6 +23,9 @@ namespace FACTOVA_QueryHelper.Controls
         private QueryDatabase? _database;
         private QueryItem? _selectedQuery;
         
+        // 🔥 접속 정보 목록
+        private List<Models.ConnectionInfo> _connectionInfos = new List<Models.ConnectionInfo>();
+        
         // 🔥 각 탭별 쿼리 컬렉션
         private System.Collections.ObjectModel.ObservableCollection<QueryItem>? _queryExecutionQueries;
         private System.Collections.ObjectModel.ObservableCollection<QueryItem>? _infoQueries;
@@ -65,7 +68,32 @@ namespace FACTOVA_QueryHelper.Controls
         {
             _sharedData = sharedData;
             _database = new QueryDatabase(sharedData.Settings.DatabasePath);
+            
+            // 🔥 접속 정보 로드
+            LoadConnectionInfos();
+            
             LoadQueriesFromDatabase();
+        }
+        
+        /// <summary>
+        /// 접속 정보 목록을 로드합니다.
+        /// </summary>
+        private void LoadConnectionInfos()
+        {
+            if (_sharedData == null) return;
+            
+            try
+            {
+                var connectionService = new Services.ConnectionInfoService(_sharedData.Settings.DatabasePath);
+                _connectionInfos = connectionService.GetAllConnections();
+                
+                System.Diagnostics.Debug.WriteLine($"접속 정보 {_connectionInfos.Count}개 로드됨");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"접속 정보 로드 실패: {ex.Message}");
+                _connectionInfos = new List<Models.ConnectionInfo>();
+            }
         }
 
         /// <summary>
@@ -92,7 +120,7 @@ namespace FACTOVA_QueryHelper.Controls
                 // 🔥 현재 탭의 DataGrid 업데이트
                 UpdateCurrentTabDataGrid();
                 
-                // 🔥 각 탭별 변경 추적 초기화
+                // 🔥 각 탭별 변경 초track 초기화
                 _queryExecutionModified.Clear();
                 _infoQueriesModified.Clear();
                 _bizQueriesModified.Clear();
@@ -277,7 +305,23 @@ namespace FACTOVA_QueryHelper.Controls
             deleteButton.Click += DeleteQueryButton_Click;
             deleteButton.IsEnabled = false;
             _currentDeleteButton = deleteButton;
+            deleteButton.Margin = new Thickness(5, 0, 10, 0);
             buttonPanel.Children.Add(deleteButton);
+
+            // 구분선
+            buttonPanel.Children.Add(new Rectangle
+            {
+                Width = 1,
+                Height = 24,
+                Fill = new SolidColorBrush(Color.FromRgb(224, 224, 224)),
+                Margin = new Thickness(5, 0, 5, 0)
+            });
+
+            // 🔥 Excel 다운로드 버튼
+            var excelButton = CreateButton("📊", "Excel 다운로드", 150, "#FF28A745");
+            excelButton.Click += ExportToExcelButton_Click;
+            excelButton.Margin = new Thickness(10, 0, 0, 0);
+            buttonPanel.Children.Add(excelButton);
 
             Grid.SetColumn(buttonPanel, 0);
             grid.Children.Add(buttonPanel);
@@ -364,8 +408,8 @@ namespace FACTOVA_QueryHelper.Controls
             };
 
             var grid = new Grid();
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
             // 헤더
@@ -557,12 +601,15 @@ namespace FACTOVA_QueryHelper.Controls
         /// </summary>
         private void AddDataGridColumns(DataGrid dataGrid, string queryType)
         {
-            // ID 컬럼
+            // ID 형식화
             var idColumn = new DataGridTextColumn
             {
                 Header = "ID",
-                Binding = new System.Windows.Data.Binding("RowNumber"),
-                Width = 50,
+                Binding = new System.Windows.Data.Binding("RowNumber")
+                {
+                    StringFormat = "D3" // 3자리 숫자 형식
+                },
+                Width = 60,
                 IsReadOnly = true
             };
             var idStyle = new Style(typeof(TextBlock));
@@ -647,35 +694,70 @@ namespace FACTOVA_QueryHelper.Controls
                 dataGrid.Columns.Add(orderColumn);
             }
 
-            // TNS
-            dataGrid.Columns.Add(new DataGridTextColumn
+            // 🔥 접속 정보 선택 콤보박스
+            var connectionTemplate = new DataTemplate();
+            var connectionFactory = new FrameworkElementFactory(typeof(ComboBox));
+            connectionFactory.SetValue(ComboBox.ItemsSourceProperty, _connectionInfos);
+            connectionFactory.SetValue(ComboBox.DisplayMemberPathProperty, "DisplayName");
+            connectionFactory.SetValue(ComboBox.SelectedValuePathProperty, "Id");
+            connectionFactory.SetBinding(ComboBox.SelectedValueProperty, 
+                new System.Windows.Data.Binding("ConnectionInfoId") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged });
+            connectionFactory.SetValue(ComboBox.HeightProperty, 28.0);
+            connectionFactory.SetValue(ComboBox.FontSizeProperty, 11.0);
+            connectionTemplate.VisualTree = connectionFactory;
+
+            // 읽기 전용 모드 (접속 정보 이름 표시)
+            var connectionDisplayTemplate = new DataTemplate();
+            var connectionDisplayFactory = new FrameworkElementFactory(typeof(TextBlock));
+            
+            // Converter를 사용하여 ConnectionInfoId로부터 DisplayName을 가져옴
+            var connectionInfoConverter = new ConnectionInfoIdToNameConverter(_connectionInfos);
+            var connectionBinding = new System.Windows.Data.Binding("ConnectionInfoId");
+            connectionBinding.Converter = connectionInfoConverter;
+            connectionDisplayFactory.SetBinding(TextBlock.TextProperty, connectionBinding);
+            connectionDisplayFactory.SetValue(TextBlock.PaddingProperty, new Thickness(4));
+            connectionDisplayFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
+            connectionDisplayTemplate.VisualTree = connectionDisplayFactory;
+
+            dataGrid.Columns.Add(new DataGridTemplateColumn
+            {
+                Header = "🔌 접속 정보",
+                CellTemplate = connectionDisplayTemplate,
+                CellEditingTemplate = connectionTemplate,
+                Width = 200
+            });
+
+            // TNS (숨김 - 과거 버전 호환성 유지)
+            var tnsColumn = new DataGridTextColumn
             {
                 Header = "TNS",
-                Binding = new System.Windows.Data.Binding("TnsName") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged },
-                Width = 120
-            });
+                Binding = new System.Windows.Data.Binding("TnsName"),
+                Width = 0,
+                IsReadOnly = true,
+                Visibility = Visibility.Collapsed
+            };
+            dataGrid.Columns.Add(tnsColumn);
 
-            // User ID
-            dataGrid.Columns.Add(new DataGridTextColumn
+            // User ID (숨김 - 과거 버전 호환성 유지)
+            var userIdColumn = new DataGridTextColumn
             {
                 Header = "User ID",
-                Binding = new System.Windows.Data.Binding("UserId") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged },
-                Width = 100
-            });
+                Binding = new System.Windows.Data.Binding("UserId"),
+                Width = 0,
+                IsReadOnly = true,
+                Visibility = Visibility.Collapsed
+            };
+            dataGrid.Columns.Add(userIdColumn);
 
-            // Password
+            // Password (숨김 - 과거 버전 호환성 유지)
             var passwordColumn = new DataGridTextColumn
             {
                 Header = "Password",
-                Binding = new System.Windows.Data.Binding("Password") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged },
-                Width = 100
+                Binding = new System.Windows.Data.Binding("Password"),
+                Width = 0,
+                IsReadOnly = true,
+                Visibility = Visibility.Collapsed
             };
-            var passwordStyle = new Style(typeof(TextBlock));
-            passwordStyle.Setters.Add(new Setter(TextBlock.TextProperty, "••••••••"));
-            passwordStyle.Setters.Add(new Setter(TextBlock.ForegroundProperty, 
-                new SolidColorBrush(Color.FromRgb(108, 117, 125))));
-            passwordStyle.Setters.Add(new Setter(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Center));
-            passwordColumn.ElementStyle = passwordStyle;
             dataGrid.Columns.Add(passwordColumn);
 
             // SQL 쿼리
@@ -1102,12 +1184,13 @@ namespace FACTOVA_QueryHelper.Controls
                     QueryBizName = _selectedQuery.QueryBizName,
                     Description2 = _selectedQuery.Description2,
                     OrderNumber = _selectedQuery.OrderNumber,
-                    TnsName = _selectedQuery.TnsName,
-                    Host = _selectedQuery.Host,
-                    Port = _selectedQuery.Port,
-                    ServiceName = _selectedQuery.ServiceName,
-                    UserId = _selectedQuery.UserId,
-                    Password = _selectedQuery.Password,
+                    ConnectionInfoId = null, // 🔥 접속 정보는 콤보박스에서 선택
+                    TnsName = "",
+                    Host = "",
+                    Port = "",
+                    ServiceName = "",
+                    UserId = "",
+                    Password = "",
                     Query = _selectedQuery.Query,
                     EnabledFlag = _selectedQuery.EnabledFlag,
                     NotifyFlag = _selectedQuery.NotifyFlag,
@@ -1160,6 +1243,20 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         /// <summary>
+        /// 하단 상태바 업데이트
+        /// </summary>
+        private void UpdateStatus(string message, Color color)
+        {
+            if (_currentStatusTextBlock != null)
+            {
+                _currentStatusTextBlock.Text = $"[{DateTime.Now:HH:mm:ss}] {message}";
+                _currentStatusTextBlock.Foreground = new SolidColorBrush(color);
+            }
+
+            _sharedData?.UpdateStatusCallback?.Invoke(message, color);
+        }
+        
+        /// <summary>
         /// 현재 탭의 쿼리 컬렉션 반환
         /// </summary>
         private System.Collections.ObjectModel.ObservableCollection<QueryItem>? GetCurrentQueryCollection()
@@ -1194,7 +1291,210 @@ namespace FACTOVA_QueryHelper.Controls
         {
             return GetCurrentModifiedCollection().Count > 0;
         }
-        #endregion
+        
+        /// <summary>
+        /// Excel 다운로드 버튼 클릭
+        /// </summary>
+        private void ExportToExcelButton_Click(object sender, RoutedEventArgs e)
+        {
+            // 🔥 모든 탭의 쿼리를 한 번에 다운로드
+            var totalCount = (_queryExecutionQueries?.Count ?? 0) + 
+                            (_infoQueries?.Count ?? 0) + 
+                            (_bizQueries?.Count ?? 0);
+
+            if (totalCount == 0)
+            {
+                MessageBox.Show("다운로드할 쿼리가 없습니다.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                // 파일 저장 대화상자
+                var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = "Excel Files (*.xlsx)|*.xlsx",
+                    FileName = $"전체쿼리목록_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+                    DefaultExt = ".xlsx"
+                };
+
+                if (saveFileDialog.ShowDialog() != true)
+                    return;
+
+                OfficeOpenXml.ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+
+                using (var package = new OfficeOpenXml.ExcelPackage())
+                {
+                    int totalSheetCount = 0;
+
+                    // 🔥 쿼리 실행 시트 추가
+                    if (_queryExecutionQueries != null && _queryExecutionQueries.Count > 0)
+                    {
+                        AddQuerySheetToExcel(package, "쿼리 실행", _queryExecutionQueries, true);
+                        totalSheetCount++;
+                    }
+
+                    // 🔥 정보 조회 시트 추가
+                    if (_infoQueries != null && _infoQueries.Count > 0)
+                    {
+                        AddQuerySheetToExcel(package, "정보 조회", _infoQueries, false);
+                        totalSheetCount++;
+                    }
+
+                    // 🔥 비즈 조회 시트 추가
+                    if (_bizQueries != null && _bizQueries.Count > 0)
+                    {
+                        AddQuerySheetToExcel(package, "비즈 조회", _bizQueries, false);
+                        totalSheetCount++;
+                    }
+
+                    if (totalSheetCount == 0)
+                    {
+                        MessageBox.Show("다운로드할 쿼리가 없습니다.", "알림",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
+                        return;
+                    }
+
+                    // Excel 파일 저장
+                    var fileInfo = new FileInfo(saveFileDialog.FileName);
+                    package.SaveAs(fileInfo);
+
+                    MessageBox.Show($"Excel 파일이 성공적으로 저장되었습니다.\n\n파일: {fileInfo.Name}\n시트 수: {totalSheetCount}개\n총 쿼리 수: {totalCount}개",
+                        "완료", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    // 파일 열기 여부 확인
+                    var result = MessageBox.Show("저장된 Excel 파일을 여시겠습니까?", "확인",
+                        MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = fileInfo.FullName,
+                            UseShellExecute = true
+                        });
+                    }
+
+                    UpdateStatus($"{totalCount}개 쿼리가 Excel로 다운로드되었습니다. ({totalSheetCount}개 시트)", Colors.Green);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Excel 파일 생성 실패:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                UpdateStatus($"Excel 다운로드 실패: {ex.Message}", Colors.Red);
+            }
+        }
+
+        /// <summary>
+        /// Excel 패키지에 쿼리 시트를 추가합니다.
+        /// </summary>
+        private void AddQuerySheetToExcel(
+            OfficeOpenXml.ExcelPackage package, 
+            string sheetName, 
+            System.Collections.ObjectModel.ObservableCollection<QueryItem> queries,
+            bool isQueryExecutionTab)
+        {
+            var worksheet = package.Workbook.Worksheets.Add(sheetName);
+
+            // 헤더 작성
+            var headers = new List<string>
+            {
+                "ID", "그룹명", "비즈명", "쿼리비즈명", "설명", "순번", 
+                "접속 정보", "SQL 쿼리"
+            };
+
+            // 쿼리 실행 탭만 추가 컬럼
+            if (isQueryExecutionTab)
+            {
+                headers.AddRange(new[] { "실행", "알림", "≥건수", "=건수", "≤건수", "컬럼명", "컬럼값", "포함", "디폴트" });
+            }
+
+            for (int i = 0; i < headers.Count; i++)
+            {
+                worksheet.Cells[1, i + 1].Value = headers[i];
+            }
+
+            // 헤더 스타일
+            using (var range = worksheet.Cells[1, 1, 1, headers.Count])
+            {
+                range.Style.Font.Bold = true;
+                range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(0, 120, 215));
+                range.Style.Font.Color.SetColor(System.Drawing.Color.White);
+                range.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                range.Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin);
+            }
+
+            // 데이터 작성
+            int row = 2;
+            foreach (var query in queries)
+            {
+                int col = 1;
+                
+                worksheet.Cells[row, col++].Value = query.RowNumber;
+                worksheet.Cells[row, col++].Value = query.QueryName;
+                worksheet.Cells[row, col++].Value = query.BizName;
+                worksheet.Cells[row, col++].Value = query.QueryBizName;
+                worksheet.Cells[row, col++].Value = query.Description2;
+                worksheet.Cells[row, col++].Value = query.OrderNumber;
+                
+                // 접속 정보 이름
+                if (query.ConnectionInfoId.HasValue)
+                {
+                    var connInfo = _connectionInfos.FirstOrDefault(c => c.Id == query.ConnectionInfoId.Value);
+                    worksheet.Cells[row, col++].Value = connInfo?.DisplayName ?? "-";
+                }
+                else
+                {
+                    worksheet.Cells[row, col++].Value = "-";
+                }
+                
+                worksheet.Cells[row, col++].Value = query.Query;
+
+                // 쿼리 실행 탭 전용 컬럼
+                if (isQueryExecutionTab)
+                {
+                    worksheet.Cells[row, col++].Value = query.EnabledFlag;
+                    worksheet.Cells[row, col++].Value = query.NotifyFlag;
+                    worksheet.Cells[row, col++].Value = query.CountGreaterThan;
+                    worksheet.Cells[row, col++].Value = query.CountEquals;
+                    worksheet.Cells[row, col++].Value = query.CountLessThan;
+                    worksheet.Cells[row, col++].Value = query.ColumnNames;
+                    worksheet.Cells[row, col++].Value = query.ColumnValues;
+                    worksheet.Cells[row, col++].Value = query.ExcludeFlag == "N" ? "Y" : "N"; // 포함
+                    worksheet.Cells[row, col++].Value = query.DefaultFlag;
+                }
+
+                // 테두리 추가
+                using (var range = worksheet.Cells[row, 1, row, headers.Count])
+                {
+                    range.Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin);
+                }
+
+                row++;
+            }
+
+            // 열 너비 자동 조정
+            worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
+
+            // 최소/최대 열 너비 설정
+            for (int col = 1; col <= headers.Count; col++)
+            {
+                var column = worksheet.Column(col);
+                if (column.Width < 10)
+                    column.Width = 10;
+                else if (column.Width > 60)
+                    column.Width = 60;
+            }
+
+            // SQL 쿼리 컬럼은 더 넓게
+            worksheet.Column(8).Width = 80;
+
+            // 틀 고정 (헤더 행)
+            worksheet.View.FreezePanes(2, 1);
+        }
 
         private void AddQueryButton_Click(object sender, RoutedEventArgs e, string queryType)
         {
@@ -1211,6 +1511,7 @@ namespace FACTOVA_QueryHelper.Controls
                 QueryBizName = "",
                 Description2 = "",
                 OrderNumber = 0,
+                ConnectionInfoId = null, // 🔥 접속 정보는 콤보박스에서 선택
                 TnsName = "",
                 Host = "",
                 Port = "",
@@ -1255,16 +1556,39 @@ namespace FACTOVA_QueryHelper.Controls
 
             UpdateStatus("새 쿼리 항목이 추가되었습니다. 정보를 입력하고 '💾 변경사항 저장'을 클릭하세요.", Colors.Blue);
         }
+        #endregion
+    }
+    
+    /// <summary>
+    /// ConnectionInfoId를 DisplayName으로 변환하는 컨버터
+    /// </summary>
+    public class ConnectionInfoIdToNameConverter : System.Windows.Data.IValueConverter
+    {
+        private readonly List<Models.ConnectionInfo> _connectionInfos;
 
-        private void UpdateStatus(string message, Color color)
+        public ConnectionInfoIdToNameConverter(List<Models.ConnectionInfo> connectionInfos)
         {
-            if (_currentStatusTextBlock != null)
-            {
-                _currentStatusTextBlock.Text = $"[{DateTime.Now:HH:mm:ss}] {message}";
-                _currentStatusTextBlock.Foreground = new SolidColorBrush(color);
-            }
+            _connectionInfos = connectionInfos;
+        }
 
-            _sharedData?.UpdateStatusCallback?.Invoke(message, color);
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (value is int id)
+            {
+                var connInfo = _connectionInfos.FirstOrDefault(c => c.Id == id);
+                return connInfo?.DisplayName ?? "(접속 정보 없음)";
+            }
+            else if (value == null)
+            {
+                return "(접속 정보 선택 안됨)";
+            }
+            
+            return "(알 수 없음)";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
 }

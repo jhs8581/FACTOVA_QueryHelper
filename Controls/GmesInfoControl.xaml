@@ -385,6 +385,8 @@
                               BorderBrush="#FFE0E0E0"
                               Margin="0,0,0,10"
                               FontSize="10"
+                              HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto"
                               LoadingRow="DataGrid_LoadingRow"
                               ClipboardCopyMode="ExcludeHeader"
                               SelectionMode="Extended"
@@ -632,12 +634,11 @@
                 <!-- 동적 그리드 스크롤 영역 -->
                 <ScrollViewer Grid.Row="1"
                               VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
                               Padding="5"
                               x:Name="GridScrollViewer">
                     <Grid x:Name="DynamicGridsContainer">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                     </Grid>

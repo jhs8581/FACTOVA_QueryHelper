@@ -15,6 +15,7 @@ namespace FACTOVA_QueryHelper.Controls
     public partial class QueryBizTransformView : UserControl
     {
         private readonly OracleDbService _dbService;
+        private SharedDataContext? _sharedData;  // 🔥 SharedDataContext 추가
         
         public QueryBizTransformView()
         {
@@ -27,6 +28,14 @@ namespace FACTOVA_QueryHelper.Controls
             
             // 🔥 AvalonEdit Search Panel 활성화 (Ctrl+F)
             ICSharpCode.AvalonEdit.Search.SearchPanel.Install(InputQueryTextBox);
+        }
+
+        /// <summary>
+        /// SharedDataContext 초기화
+        /// </summary>
+        public void Initialize(SharedDataContext sharedData)
+        {
+            _sharedData = sharedData;
         }
 
         /// <summary>
@@ -400,6 +409,13 @@ namespace FACTOVA_QueryHelper.Controls
 
                 // 🔥 QueryExecutorControl 사용 (Connection + Query Results 포함)
                 var queryExecutor = new QueryExecutorControl();
+                
+                // 🔥 SharedDataContext 설정 (접속 정보 콤보박스 로드를 위해 필요)
+                if (_sharedData != null)
+                {
+                    queryExecutor.SetSharedDataContext(_sharedData);
+                }
+                
                 queryExecutor.SetDbService(_dbService);
                 queryExecutor.SetQuery(queryWithComment);
 

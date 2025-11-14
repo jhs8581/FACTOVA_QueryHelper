@@ -40,8 +40,8 @@ namespace FACTOVA_QueryHelper.Controls
             BindVariablesDataGrid.ItemsSource = _bindVariables;
             ConnectionComboBox.ItemsSource = _connectionInfos;
             
-            // ConnectionInfo 로드
-            LoadConnectionInfos();
+            // 🔥 ConnectionInfo 로드는 SetSharedDataContext 이후로 이동
+            // LoadConnectionInfos();
             
             // 🔥 SqlEditorControl의 TextChanged 이벤트 연결
             QueryTextBox.TextChanged += QueryTextBox_TextChanged;
@@ -56,6 +56,9 @@ namespace FACTOVA_QueryHelper.Controls
         public void SetSharedDataContext(SharedDataContext sharedData)
         {
             _sharedData = sharedData;
+            
+            // 🔥 SharedData 설정 후 ConnectionInfo 로드
+            LoadConnectionInfos();
         }
 
         /// <summary>

@@ -88,6 +88,7 @@ namespace FACTOVA_QueryHelper
             this.BizQueryControl.Initialize(_sharedData);
             this.QueryManagementControl.Initialize(_sharedData);
             this.SfcMonitoringControl.Initialize(_sharedData);
+            this.QueryBizTransformView.Initialize(_sharedData);  // 🔥 비즈 변환 탭 초기화 추가
             this.SettingsControl.Initialize(_sharedData);
             
             // 설정 탭의 이벤트 구독

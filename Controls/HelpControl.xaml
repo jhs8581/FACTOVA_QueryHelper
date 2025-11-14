@@ -54,19 +54,22 @@
                             • 쿼리 실행: 데이터베이스 기반 쿼리 관리 및 일괄 실행
                         </TextBlock>
                         <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                            • GMES 정보 조회: 생산 정보 통합 조회
+                            • GMES 정보 조회: 생산 정보 통합 조회 (사업장 기반 파라미터 관리)
                         </TextBlock>
                         <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
                             • 비즈 쿼리 조회: 비즈니스 로직별 쿼리 관리
                         </TextBlock>
                         <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                            • 쿼리 관리: 데이터베이스 기반 쿼리 등록/수정/삭제
+                            • 쿼리 관리: 데이터베이스 기반 쿼리 등록/수정/삭제 (접속 정보 통합 관리)
                         </TextBlock>
                         <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
                             • SFC 모니터링: 설비 실시간 모니터링
                         </TextBlock>
                         <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
                             • 자동 실행 및 알림: 주기적 쿼리 실행 및 조건부 알림
+                        </TextBlock>
+                        <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                            • Excel 통합: 쿼리 결과 및 쿼리 목록 Excel 다운로드
                         </TextBlock>
                     </StackPanel>
                 </StackPanel>
@@ -88,13 +91,16 @@
                     
                     <TextBlock Text="📌 기본 사용법:" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,0,0,10"/>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        1. DB에서 로드: 데이터베이스에서 저장된 쿼리 목록 불러오기
+                        1. 🔄 DB에서 로드: 데이터베이스에서 저장된 쿼리 목록 불러오기
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        2. 쿼리 필터: 실행할 쿼리 선택 (전체 또는 개별 선택)
+                        2. 🔍 쿼리 필터: 실행할 쿼리 선택 (전체 또는 개별 선택)
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        3. 실행 버튼: 선택한 쿼리 일괄 실행
+                        3. ▶ 실행 버튼: 선택한 쿼리 일괄 실행
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        4. 📊 Excel 다운로드: 실행 결과를 Excel로 내보내기
                     </TextBlock>
                     
                     <TextBlock Text="📌 자동 실행:" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,15,0,10"/>
@@ -110,19 +116,22 @@
                     
                     <TextBlock Text="📌 알림 조건 설정 (쿼리 관리 탭):" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,15,0,10"/>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • 알림 여부: 쿼리별로 알림 활성화 (체크박스)
+                        • 알림 체크박스: 쿼리별로 알림 활성화
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • 이상: 결과 건수가 지정 값 이상일 때 알림
+                        • ≥건수: 결과 건수가 지정 값 이상일 때 알림
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • 같음: 결과 건수가 지정 값과 같을 때 알림
+                        • =건수: 결과 건수가 지정 값과 같을 때 알림
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • 이하: 결과 건수가 지정 값 이하일 때 알림
+                        • ≤건수: 결과 건수가 지정 값 이하일 때 알림
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • 컬럼명, 값: 특정 컬럼 값 조건 체크
+                        • 컬럼명/컬럼값: 특정 컬럼 값 조건 체크 (쉼표로 구분)
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 포함 체크박스: 조건 일치 시 포함(Y) 또는 제외(N)
                     </TextBlock>
                 </StackPanel>
             </Border>
@@ -143,27 +152,77 @@
                     
                     <TextBlock Text="📌 사용법:" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,0,0,10"/>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        1. 조회 조건 입력: 대표공장, ORG, 일자 등 입력
+                        1. 사업장 선택: 콤보박스에서 사업장 선택 (접속 정보 자동 적용)
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        2. 계획정보 쿼리 선택 및 실행
+                        2. 조회 조건 입력: 일자, W/O, Model, 변수 등 입력
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        3. 계획정보에서 행 선택
+                        3. 기준정보 쿼리 선택 및 ▶ 조회 실행
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        4. 동적 그리드에서 상세 쿼리 선택 및 실행
+                        4. 기준정보에서 행 선택 또는 더블클릭
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        5. Excel 다운로드: 모든 결과를 Excel로 내보내기
+                        5. 우측 동적 그리드에서 상세 쿼리 선택 및 실행
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        6. 📊 Excel 다운로드: 모든 결과를 Excel로 내보내기
                     </TextBlock>
                     
-                    <TextBlock Text="💡 팁:" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,15,0,10"/>
+                    <TextBlock Text="💡 주요 기능:" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,15,0,10"/>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • 선택 행 기준 전체 조회: 계획정보에서 선택한 행의 데이터를 모든 그리드에 자동 적용
+                        • 사업장 정보: 접속 정보 + 파라미터(공장코드, ORG, Facility 등) 통합 관리
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • CHK 컬럼이 'E'인 경우 빨간색으로 표시됨
+                        • 파라미터 치환: 쿼리에서 @WORK_ORDER_ID, @PRODUCTION_YMD_START 등 자동 치환
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • ⚡ 선택 행 기준 전체 조회: 기준정보의 선택된 행 데이터를 모든 그리드에 자동 적용
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 더블클릭 자동 조회: 기준정보 행을 더블클릭하면 해당 행 기준으로 전체 조회
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • CHK='E' 강조: CHK 컬럼 값이 'E'인 행은 빨간색으로 표시
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 폰트 크기 조절: ➕/➖ 버튼으로 동적 조정
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 선택된 정보 표시: W/O, W/O명, Model을 상단에 표시하고 복사 가능
+                    </TextBlock>
+                    
+                    <TextBlock Text="📌 치환 가능한 파라미터:" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,15,0,10"/>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • @REPRESENTATIVE_FACTORY_CODE: 대표공장코드
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • @ORGANIZATION_ID: 조직 ID
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • @FACILITY_CODE: Facility 코드
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • @WIP_LINE_ID, @LINE_ID: 라인 ID
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • @PRODUCTION_YMD_START, @PRODUCTION_YMD_END: 일자 (yyyyMMdd 형식)
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • @WORK_ORDER_ID, @WORK_ORDER_NAME: W/O 정보
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • @PRODUCT_SPECIFICATION_ID: Model.Suffix
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • @LOT_ID, @EQUIPMENT_ID: LOT ID, 설비 ID
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • @PARAM1~@PARAM4: 사용자 정의 변수
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 기준정보 컬럼: @컬럼명 (예: @WORK_ORDER_ID) - 선택된 행의 값으로 치환
                     </TextBlock>
                 </StackPanel>
             </Border>
@@ -191,10 +250,21 @@
                         1. 비즈명 선택: 드롭다운에서 원하는 비즈 선택
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        2. 쿼리 보기: SQL 쿼리 내용 확인
+                        2. 📝 쿼리 보기: SQL 쿼리 내용 확인
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        3. 비즈 실행: 쿼리 실행 창 열기
+                        3. ▶ 비즈 실행: 쿼리 실행 창 열기
+                    </TextBlock>
+                    
+                    <TextBlock Text="💡 비즈 쿼리 특징:" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,15,0,10"/>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 비즈명으로 쿼리 그룹화 관리
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 순번으로 쿼리 실행 순서 관리
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 쿼리 관리 탭에서 비즈 조회 구분으로 등록
                     </TextBlock>
                 </StackPanel>
             </Border>
@@ -219,33 +289,88 @@
                     
                     <TextBlock Text="📌 기능:" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,0,0,10"/>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • 쿼리 추가: 신규 쿼리 등록 (➕ 추가 버튼)
+                        • 🔄 새로고침: 데이터베이스에서 쿼리 목록 다시 불러오기
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • 쿼리 편집: 기존 쿼리 수정 (📝 쿼리 편집 버튼)
+                        • ➕ 쿼리 추가: 신규 쿼리 등록
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • 쿼리 삭제: 불필요한 쿼리 제거 (🗑️ 삭제 버튼)
+                        • 📋 쿼리 복제: 선택한 쿼리를 복사하여 새 쿼리 생성
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • DB에서 로드: 데이터베이스에서 쿼리 목록 새로고침
+                        • 🗑️ 삭제: 선택한 쿼리 제거
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • 디폴트 폼 설정: 쿼리 실행 탭의 기본 표시 쿼리 지정
+                        • 📊 Excel 다운로드: 모든 탭의 쿼리를 Excel로 내보내기 (탭별 시트 분리)
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 📝 쿼리 편집: SQL 쿼리 편집 창 열기
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 💾 변경사항 저장: 편집한 내용을 DB에 저장
                     </TextBlock>
                     
-                    <TextBlock Text="📌 쿼리 구분:" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,15,0,10"/>
+                    <TextBlock Text="📌 쿼리 필드:" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,15,0,10"/>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • 쿼리 실행: 주기적 실행 및 모니터링용 쿼리
+                        • ID: 자동 부여되는 고유 번호 (3자리 형식)
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • 정보 조회: GMES 정보 조회 탭용 쿼리
+                        • 그룹명: 쿼리 그룹 이름 (구 쿼리명)
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • 비즈 조회: 비즈니스 로직별 그룹 쿼리
+                        • 비즈명: 비즈니스 로직 그룹명 (비즈 조회용)
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 쿼리비즈명: 쿼리의 세부 비즈니스 이름
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 설명: 쿼리 설명 (멀티라인 지원)
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 순번: 쿼리 실행 순서 (0=기준정보, 1~=상세정보)
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 🔌 접속 정보: 등록된 접속 정보 선택 (접속 정보 관리에서 등록)
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • SQL 쿼리: 실행할 SQL 문 (📝 편집 버튼으로 수정)
+                    </TextBlock>
+                    
+                    <TextBlock Text="📌 쿼리 실행 전용 필드:" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,15,0,10"/>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 실행: 자동 실행 시 포함 여부 (체크박스)
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 알림: 알림 기능 활성화 (체크박스)
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • ≥건수, =건수, ≤건수: 결과 건수 조건
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 컬럼명, 컬럼값: 조건 컬럼 및 값 (쉼표로 구분)
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 포함: 조건 일치 시 포함(Y)/제외(N) (체크박스)
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 디폴트: 쿼리 실행 탭의 기본 표시 쿼리 지정 (체크박스, 1개만 가능)
+                    </TextBlock>
+                    
+                    <TextBlock Text="📌 쿼리 구분 탭:" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,15,0,10"/>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 쿼리 실행: 주기적 실행 및 모니터링용 쿼리 (알림 기능 지원)
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 정보 조회: GMES 정보 조회 탭용 쿼리 (파라미터 치환 지원)
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 비즈 조회: 비즈니스 로직별 그룹 쿼리 (비즈명 + 순번 관리)
                     </TextBlock>
                     
                     <TextBlock Text="💡 주의사항:" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,15,0,10"/>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 접속 정보는 설정 탭 > 접속 정보 관리에서 먼저 등록 필요
+                    </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
                         • 비즈명과 순번을 설정하여 쿼리를 그룹화할 수 있습니다
                     </TextBlock>
@@ -253,7 +378,10 @@
                         • 알림 조건은 '쿼리 실행' 구분 쿼리에만 적용됩니다
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • 쿼리는 데이터베이스에 저장되므로 프로그램 재시작 후에도 유지됩니다
+                        • 편집 후 반드시 '💾 변경사항 저장'을 클릭해야 DB에 저장됩니다
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • Excel 다운로드는 모든 탭의 쿼리를 한 번에 내보냅니다 (탭별 시트 분리)
                     </TextBlock>
                 </StackPanel>
             </Border>
@@ -281,10 +409,10 @@
                         1. Excel 파일 선택: 설비 목록이 포함된 Excel 파일 선택
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        2. Excel 로드: 설비 목록 불러오기
+                        2. 📂 Excel 로드: 설비 목록 불러오기
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        3. 조회 실행: 설비 상태 조회
+                        3. ▶ 조회 실행: 설비 상태 조회
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
                         4. 상태 확인: ON/OFF 상태를 색상으로 구분 표시
@@ -292,13 +420,16 @@
                     
                     <TextBlock Text="💡 Excel 파일 형식:" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,15,0,10"/>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • A열: IP 주소
+                        • A열: IP 주소 (필수)
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
                         • B열: 설비 ID
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
                         • C열: 설비명
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 1행: 헤더 (2행부터 데이터)
                     </TextBlock>
                 </StackPanel>
             </Border>
@@ -317,7 +448,7 @@
                                Foreground="#FF0078D7"
                                Margin="0,0,0,15"/>
                     
-                    <TextBlock Text="📌 설정 항목:" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,0,0,10"/>
+                    <TextBlock Text="📌 기본 설정:" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,0,0,10"/>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
                         • TNS 파일 경로: tnsnames.ora 파일 위치 지정
                     </TextBlock>
@@ -325,10 +456,38 @@
                         • 데이터베이스 경로: 쿼리 저장 DB 파일 위치
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • 접속 정보 관리: DB 연결 정보 등록/수정/삭제
+                        • 업데이트 설정: 자동 업데이트 확인 옵션
+                    </TextBlock>
+                    
+                    <TextBlock Text="📌 접속 정보 관리:" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,15,0,10"/>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 접속 정보 등록: TNS/Host 정보 + User ID/Password 저장
                     </TextBlock>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
-                        • 업데이트 설정: 자동 업데이트 확인 옵션
+                        • 표시명 설정: 식별하기 쉬운 이름 지정
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 연결 테스트: 접속 정보 유효성 확인
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 수정/삭제: 기존 접속 정보 관리
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 쿼리 관리 탭에서 접속 정보를 선택하여 쿼리에 적용
+                    </TextBlock>
+                    
+                    <TextBlock Text="📌 사업장 정보 관리:" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,15,0,10"/>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 사업장 등록: 접속 정보 + GMES 파라미터 통합 관리
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 파라미터: 대표공장코드, ORG, Facility, WIP Line ID, Equip Line ID
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 디폴트 설정: 기본 사업장 지정 (1개만 가능)
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • GMES 정보 조회 탭에서 사업장 선택 시 파라미터 자동 적용
                     </TextBlock>
                 </StackPanel>
             </Border>
@@ -390,20 +549,28 @@
                     
                     <TextBlock Text="❌ TNS를 찾을 수 없습니다" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,0,0,5"/>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,15">
-                        → 설정 탭에서 tnsnames.ora 파일 경로를 확인하고 올바른 경로로 설정하세요.
+                        → 설정 탭에서 tnsnames.ora 파일 경로를 확인하고 올바른 경로로 설정하세요.<LineBreak/>
+                        → 또는 접속 정보 관리에서 Host:Port:ServiceName 방식으로 등록하세요.
                     </TextBlock>
                     
                     <TextBlock Text="❌ 데이터베이스 연결 실패" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,0,0,5"/>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,15">
-                        → 1. TNS 이름, User ID, Password가 올바른지 확인<LineBreak/>
+                        → 1. 접속 정보가 올바른지 확인 (설정 > 접속 정보 관리에서 테스트)<LineBreak/>
                         → 2. Oracle Client 설치 확인<LineBreak/>
-                        → 3. 네트워크 연결 상태 확인
+                        → 3. 네트워크 연결 상태 확인<LineBreak/>
+                        → 4. TNS 이름 또는 Host/Port/ServiceName 확인
                     </TextBlock>
                     
                     <TextBlock Text="❌ 쿼리를 찾을 수 없습니다" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,0,0,5"/>
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,15">
-                        → 쿼리 관리 탭에서 '📂 DB에서 로드' 버튼을 클릭하여 쿼리를 다시 불러오세요.<LineBreak/>
+                        → 쿼리 관리 탭에서 '🔄 새로고침' 버튼을 클릭하여 쿼리를 다시 불러오세요.<LineBreak/>
                         → 데이터베이스 파일이 손상된 경우 설정 탭에서 새로운 경로를 지정할 수 있습니다.
+                    </TextBlock>
+                    
+                    <TextBlock Text="❌ 접속 정보를 선택하세요" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,0,0,5"/>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,15">
+                        → 설정 탭 > 접속 정보 관리에서 접속 정보를 먼저 등록하세요.<LineBreak/>
+                        → 쿼리 관리 탭에서 쿼리에 접속 정보를 선택하세요.
                     </TextBlock>
                     
                     <TextBlock Text="❌ Excel 파일을 읽을 수 없습니다" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,0,0,5"/>
@@ -416,6 +583,12 @@
                     <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,15">
                         → 설정 탭에서 데이터베이스 파일 경로를 확인하세요.<LineBreak/>
                         → 기본 경로: {실행파일경로}\FACTOVA_DB.db
+                    </TextBlock>
+                    
+                    <TextBlock Text="❌ 사업장 정보를 찾을 수 없습니다" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,0,0,5"/>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,15">
+                        → 설정 탭 > 사업장 정보 관리에서 사업장을 먼저 등록하세요.<LineBreak/>
+                        → GMES 정보 조회 탭에서 사업장을 선택하세요.
                     </TextBlock>
                 </StackPanel>
             </Border>
@@ -436,7 +609,12 @@
                      
                     <StackPanel Orientation="Horizontal" Margin="0,5">
                         <TextBlock Text="버전: " FontSize="13" FontWeight="SemiBold" Foreground="Black"/>
-                        <TextBlock Text="2.1.0" FontSize="13" Foreground="Black"/>
+                        <TextBlock Text="2.2.0" FontSize="13" Foreground="Black"/>
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <TextBlock Text="프레임워크: " FontSize="13" FontWeight="SemiBold" Foreground="Black"/>
+                        <TextBlock Text=".NET 8 WPF" FontSize="13" Foreground="Black"/>
                     </StackPanel>
                     
                     <StackPanel Orientation="Horizontal" Margin="0,5">
@@ -452,6 +630,23 @@
                                    TextDecorations="Underline"
                                    Cursor="Hand"/>
                     </StackPanel>
+                    
+                    <TextBlock Text="📌 주요 업데이트 (v2.2.0):" FontSize="14" FontWeight="SemiBold" Foreground="Black" Margin="0,15,0,10"/>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 접속 정보 통합 관리 시스템 추가
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 사업장 정보 관리 기능 추가 (접속 정보 + GMES 파라미터)
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • 쿼리 관리 Excel 다운로드 (전체 탭 통합)
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • GMES 정보 조회 더블클릭 기능 개선
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="Black" Margin="20,0,0,5">
+                        • ID 컬럼 3자리 형식 표시 (001, 002, ...)
+                    </TextBlock>
                 </StackPanel>
             </Border>
 

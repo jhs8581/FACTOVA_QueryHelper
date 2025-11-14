@@ -47,6 +47,7 @@ namespace FACTOVA_QueryHelper.Controls
     <Color name=""Comment"" foreground=""Green"" />
     <Color name=""String"" foreground=""#A31515"" />
     <Color name=""Keyword"" foreground=""Blue"" fontWeight=""bold"" />
+    <Color name=""Parameter"" foreground=""Orange"" fontWeight=""bold"" />
     
     <RuleSet ignoreCase=""true"">
         <!-- 주석 -->
@@ -61,6 +62,11 @@ namespace FACTOVA_QueryHelper.Controls
                 <Span begin=""''"" end="""" />
             </RuleSet>
         </Span>
+        
+        <!-- 🔥 @ 치환 파라미터 (주황색) -->
+        <Rule color=""Parameter"">
+            @[A-Za-z_][A-Za-z0-9_]*
+        </Rule>
         
         <!-- SQL 키워드 -->
         <Keywords color=""Keyword"">

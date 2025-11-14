@@ -13,6 +13,11 @@ namespace FACTOVA_QueryHelper
         public string QueryName { get; set; } = string.Empty;
         public string Query { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        
+        // 🔥 접속 정보 참조 (신규)
+        public int? ConnectionInfoId { get; set; }
+        
+        // 🔥 기존 직접 입력 방식 (하위 호환성 유지)
         public string TnsName { get; set; } = string.Empty;
         public string UserId { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;

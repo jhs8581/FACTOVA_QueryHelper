@@ -206,20 +206,65 @@ namespace FACTOVA_QueryHelper.Database
         {
             var result = new SingleQueryResult();
             string connectionString;
+            string userId;
+            string password;
 
             try
             {
-                // 직접 연결 정보가 있는지 확인
-                if (!string.IsNullOrWhiteSpace(queryItem.Host) &&
+                // 🔥 1순위: ConnectionInfoId가 있으면 접속 정보에서 조회
+                if (queryItem.ConnectionInfoId.HasValue && queryItem.ConnectionInfoId.Value > 0)
+                {
+                    var connectionService = new Services.ConnectionInfoService(_settings.DatabasePath);
+                    var connectionInfo = connectionService.GetAllConnections()
+                        .FirstOrDefault(c => c.Id == queryItem.ConnectionInfoId.Value);
+
+                    if (connectionInfo == null)
+                    {
+                        throw new Exception($"접속 정보 ID {queryItem.ConnectionInfoId.Value}를 찾을 수 없습니다.\n" +
+                            $"접속 정보 관리에서 해당 정보가 삭제되었을 수 있습니다.");
+                    }
+
+                    // 접속 정보에서 연결 문자열 생성
+                    if (!string.IsNullOrWhiteSpace(connectionInfo.TNS))
+                    {
+                        var selectedTns = _tnsEntries.FirstOrDefault(t =>
+                            t.Name.Equals(connectionInfo.TNS, StringComparison.OrdinalIgnoreCase));
+
+                        if (selectedTns == null)
+                        {
+                            throw new Exception($"TNS '{connectionInfo.TNS}'를 찾을 수 없습니다.");
+                        }
+
+                        connectionString = selectedTns.GetConnectionString();
+                        logEntry.AppendLine($"  접속 정보: {connectionInfo.DisplayName} (TNS: {connectionInfo.TNS})");
+                    }
+                    else if (!string.IsNullOrWhiteSpace(connectionInfo.Host))
+                    {
+                        connectionString = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={connectionInfo.Host})(PORT={connectionInfo.Port}))(CONNECT_DATA=(SERVICE_NAME={connectionInfo.Service})));";
+                        logEntry.AppendLine($"  접속 정보: {connectionInfo.DisplayName} ({connectionInfo.Host}:{connectionInfo.Port}/{connectionInfo.Service})");
+                    }
+                    else
+                    {
+                        throw new Exception($"접속 정보 '{connectionInfo.DisplayName}'에 TNS 또는 Host 정보가 없습니다.");
+                    }
+
+                    userId = connectionInfo.UserId;
+                    password = connectionInfo.Password;
+                }
+                // 🔥 2순위: 직접 연결 정보 (Host/Port/ServiceName)
+                else if (!string.IsNullOrWhiteSpace(queryItem.Host) &&
                     !string.IsNullOrWhiteSpace(queryItem.Port) &&
                     !string.IsNullOrWhiteSpace(queryItem.ServiceName))
                 {
                     connectionString = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={queryItem.Host})(PORT={queryItem.Port}))(CONNECT_DATA=(SERVICE_NAME={queryItem.ServiceName})));";
                     logEntry.AppendLine($"  연결: {queryItem.Host}:{queryItem.Port}/{queryItem.ServiceName}");
+                    
+                    userId = queryItem.UserId;
+                    password = queryItem.Password;
                 }
+                // 🔥 3순위: TNS 이름으로 연결
                 else
                 {
-                    // TNS 정보 찾기
                     var selectedTns = _tnsEntries.FirstOrDefault(t =>
                         t.Name.Equals(queryItem.TnsName, StringComparison.OrdinalIgnoreCase));
 
@@ -228,8 +273,9 @@ namespace FACTOVA_QueryHelper.Database
                         var availableTns = string.Join(", ", _tnsEntries.Select(t => t.Name));
                         throw new Exception($"TNS '{queryItem.TnsName}'를 찾을 수 없습니다.\n\n" +
                             $"[해결 방법]\n" +
-                            $"1. Excel A열에 정확한 TNS 이름 입력\n" +
-                            $"2. 또는 Host:Port:ServiceName 형식으로 입력\n" +
+                            $"1. 쿼리 관리에서 접속 정보를 선택하세요\n" +
+                            $"2. 또는 TNS 이름을 정확히 입력하세요\n" +
+                            $"3. 또는 Host:Port:ServiceName 형식으로 입력하세요\n" +
                             $"   예) 192.168.1.10:1521:ORCL\n\n" +
                             $"사용 가능한 TNS 목록:\n{availableTns}\n\n" +
                             $"tnsnames.ora 파일 경로:\n{_settings.TnsPath}");
@@ -237,24 +283,27 @@ namespace FACTOVA_QueryHelper.Database
 
                     connectionString = selectedTns.GetConnectionString();
                     logEntry.AppendLine($"  TNS: {queryItem.TnsName}");
+                    
+                    userId = queryItem.UserId;
+                    password = queryItem.Password;
                 }
 
                 // User ID와 Password 검증
-                if (string.IsNullOrWhiteSpace(queryItem.UserId))
+                if (string.IsNullOrWhiteSpace(userId))
                     throw new Exception("User ID가 지정되지 않았습니다.");
 
-                if (string.IsNullOrWhiteSpace(queryItem.Password))
+                if (string.IsNullOrWhiteSpace(password))
                     throw new Exception("Password가 지정되지 않았습니다.");
 
-                logEntry.AppendLine($"  사용자: {queryItem.UserId}");
+                logEntry.AppendLine($"  사용자: {userId}");
 
                 var startTime = DateTime.Now;
 
                 // 쿼리 실행
                 result.Result = await OracleDatabase.ExecuteQueryAsync(
                     connectionString,
-                    queryItem.UserId,
-                    queryItem.Password,
+                    userId,
+                    password,
                     queryItem.Query);
 
                 var endTime = DateTime.Now;

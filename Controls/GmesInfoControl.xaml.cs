@@ -109,6 +109,50 @@ namespace FACTOVA_QueryHelper.Controls
                 return;
             }
 
+            // 🔥 더블클릭 시 선택된 정보 업데이트
+            try
+            {
+                var rowData = selectedRow.Row;
+                var table = rowData.Table;
+
+                // WORK_ORDER_ID
+                if (table.Columns.Contains("WORK_ORDER_ID"))
+                {
+                    var workOrderId = rowData["WORK_ORDER_ID"]?.ToString() ?? "-";
+                    SelectedWorkOrderIdTextBlock.Text = workOrderId;
+                }
+                else
+                {
+                    SelectedWorkOrderIdTextBlock.Text = "-";
+                }
+
+                // WORK_ORDER_NAME
+                if (table.Columns.Contains("WORK_ORDER_NAME"))
+                {
+                    var workOrderName = rowData["WORK_ORDER_NAME"]?.ToString() ?? "-";
+                    SelectedWorkOrderNameTextBlock.Text = workOrderName;
+                }
+                else
+                {
+                    SelectedWorkOrderNameTextBlock.Text = "-";
+                }
+
+                // PRODUCT_SPECIFICATION_ID
+                if (table.Columns.Contains("PRODUCT_SPECIFICATION_ID"))
+                {
+                    var productSpecId = rowData["PRODUCT_SPECIFICATION_ID"]?.ToString() ?? "-";
+                    SelectedProductSpecIdTextBlock.Text = productSpecId;
+                }
+                else
+                {
+                    SelectedProductSpecIdTextBlock.Text = "-";
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ 더블클릭 시 선택된 행 정보 표시 오류: {ex.Message}");
+            }
+
             // 전체 조회 버튼 클릭과 동일한 로직 실행
             try
             {
@@ -357,8 +401,8 @@ namespace FACTOVA_QueryHelper.Controls
             DynamicGridsContainer.RowDefinitions.Clear();
             _dynamicGrids.Clear();
 
-            // 필요한 행 개수 계산 (2열 레이아웃이므로 올림 나누기)
-            int rowCount = (int)Math.Ceiling(count / 2.0);
+            // 🔥 1열 레이아웃으로 변경 - 행 개수 = 그리드 개수
+            int rowCount = count;
             
             // 행 정의 추가
             for (int i = 0; i < rowCount; i++)
@@ -386,12 +430,9 @@ namespace FACTOVA_QueryHelper.Controls
                     Child = CreateGridContainer(gridInfo)
                 };
 
-                // Grid.Row와 Grid.Column 설정
-                int row = i / 2;  // 0-based row index
-                int col = i % 2;  // 0 or 1
-                
-                Grid.SetRow(border, row);
-                Grid.SetColumn(border, col);
+                // 🔥 1열 레이아웃: Grid.Row만 설정, Grid.Column은 항상 0
+                Grid.SetRow(border, i);
+                Grid.SetColumn(border, 0);
 
                 DynamicGridsContainer.Children.Add(border);
             }
@@ -570,8 +611,8 @@ namespace FACTOVA_QueryHelper.Controls
             // 최대 20개까지만 처리
             int count = Math.Min(queries.Count, 20);
 
-            // 필요한 행 개수 계산 (2열 레이아웃이므로 올림 나누기)
-            int rowCount = (int)Math.Ceiling(20 / 2.0);  // 항상 20개 그리드용 행 생성
+            // 🔥 1열 레이아웃으로 변경 - 항상 20개 그리드용 행 생성
+            int rowCount = 20;
 
             // 행 정의 추가
             for (int i = 0; i < rowCount; i++)
@@ -600,12 +641,9 @@ namespace FACTOVA_QueryHelper.Controls
                     Child = CreateGridContainer(gridInfo)
                 };
 
-                // Grid.Row와 Grid.Column 설정
-                int row = i / 2;  // 0-based row index
-                int col = i % 2;  // 0 or 1
-
-                Grid.SetRow(border, row);
-                Grid.SetColumn(border, col);
+                // 🔥 1열 레이아웃: Grid.Row만 설정, Grid.Column은 항상 0
+                Grid.SetRow(border, i);
+                Grid.SetColumn(border, 0);
 
                 DynamicGridsContainer.Children.Add(border);
             }
@@ -762,8 +800,8 @@ namespace FACTOVA_QueryHelper.Controls
             DynamicGridsContainer.RowDefinitions.Clear();
             _dynamicGrids.Clear();
 
-            // 필요한 행 개수 계산 (2열 레이아웃이므로 올림 나누기)
-            int rowCount = (int)Math.Ceiling(count / 2.0);
+            // 🔥 1열 레이아웃으로 변경 - 행 개수 = 그리드 개수
+            int rowCount = count;
             
             // 행 정의 추가
             for (int i = 0; i < rowCount; i++)
@@ -791,12 +829,9 @@ namespace FACTOVA_QueryHelper.Controls
                     Child = CreateGridContainer(gridInfo)
                 };
 
-                // Grid.Row와 Grid.Column 설정
-                int row = i / 2;  // 0-based row index
-                int col = i % 2;  // 0 or 1
-                
-                Grid.SetRow(border, row);
-                Grid.SetColumn(border, col);
+                // 🔥 1열 레이아웃: Grid.Row만 설정, Grid.Column은 항상 0
+                Grid.SetRow(border, i);
+                Grid.SetColumn(border, 0);
 
                 DynamicGridsContainer.Children.Add(border);
             }
@@ -871,6 +906,8 @@ namespace FACTOVA_QueryHelper.Controls
                 GridLinesVisibility = DataGridGridLinesVisibility.All,
                 HeadersVisibility = DataGridHeadersVisibility.All,
                 FontSize = 10,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,  // 🔥 가로 스크롤 활성화
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
                 ClipboardCopyMode = DataGridClipboardCopyMode.ExcludeHeader,  // 헤더 제외하고 복사
                 SelectionMode = DataGridSelectionMode.Extended,  // 다중 선택 가능
                 SelectionUnit = DataGridSelectionUnit.Cell  // 셀 단위 선택
@@ -1007,7 +1044,7 @@ namespace FACTOVA_QueryHelper.Controls
             
             foreach (var gridInfo in _dynamicGrids)
             {
-                // 비즈명이 있는 정보 조회 쿼리를 콤보박스에 바인딩
+                // 비즈명이 있는 정보 조회 쿼리를 콜박스에 바인딩
                 gridInfo.QueryComboBox.ItemsSource = queriesWithBizName;
                 
                 // 콤보박스 활성화 및 취소 버튼 활성화
