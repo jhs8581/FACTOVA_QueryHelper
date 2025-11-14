@@ -151,14 +151,18 @@ namespace FACTOVA_QueryHelper.Controls
                 var allQueries = _database.GetAllQueries();
                 
                 // 🔥 구분별로 쿼리 분류 및 정렬
+                // 쿼리 실행: 그룹명 → 표시순번 순서로 정렬
                 _queryExecutionQueries = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(
                     allQueries.Where(q => q.QueryType == "쿼리 실행")
-                              .OrderBy(q => q.OrderNumber)
+                              .OrderBy(q => q.QueryName)
+                              .ThenBy(q => q.OrderNumber)
                               .ThenBy(q => q.RowNumber));
                 
+                // 정보 조회: 그룹명 → 표시순번 순서로 정렬
                 _infoQueries = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(
                     allQueries.Where(q => q.QueryType == "정보 조회")
-                              .OrderBy(q => q.OrderNumber)
+                              .OrderBy(q => q.QueryName)
+                              .ThenBy(q => q.OrderNumber)
                               .ThenBy(q => q.RowNumber));
                 
                 // 🔥 비즈 조회는 그룹명 → 표시순번 순서로 정렬
