@@ -451,6 +451,24 @@ namespace FACTOVA_QueryHelper.Controls
         {
             if (_isInitializing) return;
 
+            // 🔥 기준정보 그리드 초기화 (ItemsSource와 Columns 모두 초기화)
+            PlanInfoDataGrid.ItemsSource = null;
+            PlanInfoDataGrid.Columns.Clear();
+            PlanInfoResultTextBlock.Text = "";
+            
+            // 🔥 선택된 정보 초기화
+            SelectedWorkOrderIdTextBlock.Text = "-";
+            SelectedWorkOrderNameTextBlock.Text = "-";
+            SelectedProductSpecIdTextBlock.Text = "-";
+            
+            // 🔥 모든 동적 그리드 초기화 (ItemsSource와 Columns 모두 초기화)
+            foreach (var gridInfo in _dynamicGrids)
+            {
+                gridInfo.DataGrid.ItemsSource = null;
+                gridInfo.DataGrid.Columns.Clear();
+                gridInfo.ResultInfoTextBlock.Text = "";
+            }
+
             // 선택된 계획정보 쿼리의 그룹명으로 상세 쿼리 자동 로드
             if (QuerySelectComboBox.SelectedItem is QueryItem selectedPlanQuery &&
                 !string.IsNullOrWhiteSpace(selectedPlanQuery.QueryName) &&
