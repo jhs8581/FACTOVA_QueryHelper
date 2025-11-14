@@ -1319,6 +1319,9 @@ namespace FACTOVA_QueryHelper.Controls
                     queryItem.Password,
                     processedQuery);
 
+                // 🔥 ItemsSource와 Columns를 모두 초기화 후 바인딩
+                targetGrid.ItemsSource = null;
+                targetGrid.Columns.Clear();
                 targetGrid.ItemsSource = result.DefaultView;
                 
                 // 데이터 바인딩 후 폰트 크기 적용
@@ -1369,6 +1372,9 @@ namespace FACTOVA_QueryHelper.Controls
                     queryItem.Password,
                     processedQuery);
 
+                // 🔥 ItemsSource와 Columns를 모두 초기화 후 바인딩
+                targetGrid.ItemsSource = null;
+                targetGrid.Columns.Clear();
                 targetGrid.ItemsSource = result.DefaultView;
                 
                 // 데이터 바인딩 후 폰트 크기 적용
