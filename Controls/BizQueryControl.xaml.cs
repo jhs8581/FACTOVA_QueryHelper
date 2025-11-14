@@ -51,7 +51,7 @@ namespace FACTOVA_QueryHelper.Controls
                     .Where(q => q.QueryType == "비즈 조회")
                     .ToList();
                 
-                // 🔥 그룹명(QueryName) 목록: 중복 제거 및 알파벳순 정렬 (순번 필터링 제거)
+                // 🔥 그룹명(QueryName) 목록: 중복 제거 및 알파벳순 정렬
                 var groupNames = _allQueries
                     .Where(q => !string.IsNullOrWhiteSpace(q.QueryName))
                     .Select(q => q.QueryName)
@@ -59,10 +59,13 @@ namespace FACTOVA_QueryHelper.Controls
                     .OrderBy(name => name)
                     .ToList();
                 
+                // 🔥 "전체" 옵션을 맨 앞에 추가
+                groupNames.Insert(0, "[전체]");
+                
                 // 콤보박스에 설정
                 BizNameComboBox.ItemsSource = groupNames;
                 
-                // 첫 번째 항목 자동 선택
+                // 첫 번째 항목 자동 선택 (전체)
                 if (groupNames.Count > 0)
                 {
                     BizNameComboBox.SelectedIndex = 0;
@@ -94,22 +97,51 @@ namespace FACTOVA_QueryHelper.Controls
                 QueriesDataGrid.ItemsSource = null;
                 QueryCountTextBlock.Text = "0";
                 UpdateStatus("그룹명을 선택하세요.", Colors.Gray);
+                
+                // 🔥 그룹명 컬럼 숨김 (인덱스 1번 컬럼)
+                if (QueriesDataGrid.Columns.Count > 1)
+                    QueriesDataGrid.Columns[1].Visibility = Visibility.Collapsed;
+                
                 return;
             }
 
             try
             {
-                // 🔥 선택된 그룹명(QueryName)과 일치하는 모든 쿼리 필터링 및 정렬
-                _filteredQueries = _allQueries
-                    .Where(q => q.QueryName == groupName)
-                    .OrderBy(q => q.OrderNumber)
-                    .ThenBy(q => q.BizName)
-                    .ToList();
+                // 🔥 "[전체]" 선택 시 모든 쿼리 표시
+                if (groupName == "[전체]")
+                {
+                    _filteredQueries = _allQueries
+                        .OrderBy(q => q.QueryName)
+                        .ThenBy(q => q.OrderNumber)
+                        .ThenBy(q => q.BizName)
+                        .ToList();
+                    
+                    // 🔥 그룹명 컬럼 표시 (인덱스 1번 컬럼)
+                    if (QueriesDataGrid.Columns.Count > 1)
+                        QueriesDataGrid.Columns[1].Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    // 선택된 그룹명(QueryName)과 일치하는 쿼리만 필터링
+                    _filteredQueries = _allQueries
+                        .Where(q => q.QueryName == groupName)
+                        .OrderBy(q => q.OrderNumber)
+                        .ThenBy(q => q.BizName)
+                        .ToList();
+                    
+                    // 🔥 그룹명 컬럼 숨김 (같은 그룹만 표시되므로)
+                    if (QueriesDataGrid.Columns.Count > 1)
+                        QueriesDataGrid.Columns[1].Visibility = Visibility.Collapsed;
+                }
                 
                 // 🔥 초기에는 모든 필터링된 쿼리를 표시
                 ApplyTextFilters();
                 
-                UpdateStatus($"'{groupName}' 그룹의 쿼리 {_displayedQueries.Count}개가 로드되었습니다.", Colors.Green);
+                string statusMessage = groupName == "[전체]" 
+                    ? $"전체 비즈 조회 쿼리 {_displayedQueries.Count}개가 로드되었습니다."
+                    : $"'{groupName}' 그룹의 쿼리 {_displayedQueries.Count}개가 로드되었습니다.";
+                
+                UpdateStatus(statusMessage, Colors.Green);
             }
             catch (Exception ex)
             {

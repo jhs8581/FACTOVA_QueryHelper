@@ -147,21 +147,26 @@ namespace FACTOVA_QueryHelper.Controls
 
             try
             {
-                // 🔥 표시순번(OrderNumber) 우선 정렬, 그 다음 ID 순서
-                var allQueries = _database.GetAllQueries()
-                    .OrderBy(q => q.OrderNumber)
-                    .ThenBy(q => q.RowNumber)
-                    .ToList();
+                // 🔥 모든 쿼리 가져오기
+                var allQueries = _database.GetAllQueries();
                 
-                // 🔥 구분별로 쿼리 분류
+                // 🔥 구분별로 쿼리 분류 및 정렬
                 _queryExecutionQueries = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(
-                    allQueries.Where(q => q.QueryType == "쿼리 실행"));
+                    allQueries.Where(q => q.QueryType == "쿼리 실행")
+                              .OrderBy(q => q.OrderNumber)
+                              .ThenBy(q => q.RowNumber));
                 
                 _infoQueries = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(
-                    allQueries.Where(q => q.QueryType == "정보 조회"));
+                    allQueries.Where(q => q.QueryType == "정보 조회")
+                              .OrderBy(q => q.OrderNumber)
+                              .ThenBy(q => q.RowNumber));
                 
+                // 🔥 비즈 조회는 그룹명 → 표시순번 순서로 정렬
                 _bizQueries = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(
-                    allQueries.Where(q => q.QueryType == "비즈 조회"));
+                    allQueries.Where(q => q.QueryType == "비즈 조회")
+                              .OrderBy(q => q.QueryName)
+                              .ThenBy(q => q.OrderNumber)
+                              .ThenBy(q => q.RowNumber));
                 
                 // 🔥 현재 탭의 DataGrid 업데이트
                 UpdateCurrentTabDataGrid();
@@ -215,7 +220,43 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 _currentDataGrid.ItemsSource = queries;
                 _currentQueryCountTextBlock.Text = $"{queries.Count}개";
+                
+                // 🔥 DataGrid의 가로 스크롤을 맨 왼쪽으로 초기화
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (_currentDataGrid != null)
+                    {
+                        // ScrollViewer를 찾아서 HorizontalOffset을 0으로 설정
+                        var scrollViewer = FindVisualChild<ScrollViewer>(_currentDataGrid);
+                        if (scrollViewer != null)
+                        {
+                            scrollViewer.ScrollToLeftEnd();
+                        }
+                    }
+                }), System.Windows.Threading.DispatcherPriority.Loaded);
             }
+        }
+        
+        /// <summary>
+        /// Visual Tree에서 특정 타입의 자식 요소 찾기
+        /// </summary>
+        private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        {
+            if (parent == null) return null;
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                
+                if (child is T typedChild)
+                    return typedChild;
+                
+                var result = FindVisualChild<T>(child);
+                if (result != null)
+                    return result;
+            }
+
+            return null;
         }
 
         /// <summary>
