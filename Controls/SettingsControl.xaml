@@ -429,8 +429,8 @@
                 </Grid>
             </TabItem>
             
-            <!-- 🔥 DB 계정 일괄 변경 탭 -->
-            <TabItem>
+            <!-- 🔥 DB 계정 일괄 변경 탭 (숨김 처리) -->
+            <TabItem Visibility="Collapsed">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="🔑" FontSize="16" Margin="0,0,8,0"/>

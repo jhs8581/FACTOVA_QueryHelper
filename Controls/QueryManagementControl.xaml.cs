@@ -36,13 +36,21 @@ namespace FACTOVA_QueryHelper.Controls
         private HashSet<QueryItem> _infoQueriesModified = new HashSet<QueryItem>();
         private HashSet<QueryItem> _bizQueriesModified = new HashSet<QueryItem>();
 
-        // 🔥 각 탭별 UI 요소 (동적 생성)
-        private DataGrid? _currentDataGrid;
-        private TextBlock? _currentQueryCountTextBlock;
-        private Border? _currentEditModeBorder;
-        private TextBlock? _currentStatusTextBlock;
-        private Button? _currentDeleteButton;
-        private Button? _currentDuplicateButton;
+        // 🔥 각 탭별 UI 요소 (동적 생성) - 탭별로 독립적으로 관리
+        private Dictionary<int, DataGrid> _dataGrids = new Dictionary<int, DataGrid>();
+        private Dictionary<int, TextBlock> _queryCountTextBlocks = new Dictionary<int, TextBlock>();
+        private Dictionary<int, Border> _editModeBorders = new Dictionary<int, Border>();
+        private Dictionary<int, TextBlock> _statusTextBlocks = new Dictionary<int, TextBlock>();
+        private Dictionary<int, Button> _deleteButtons = new Dictionary<int, Button>();
+        private Dictionary<int, Button> _duplicateButtons = new Dictionary<int, Button>();
+        
+        // 🔥 현재 탭의 UI 요소에 대한 프로퍼티 (편의성)
+        private DataGrid? _currentDataGrid => _dataGrids.ContainsKey(QueryTypeTabControl.SelectedIndex) ? _dataGrids[QueryTypeTabControl.SelectedIndex] : null;
+        private TextBlock? _currentQueryCountTextBlock => _queryCountTextBlocks.ContainsKey(QueryTypeTabControl.SelectedIndex) ? _queryCountTextBlocks[QueryTypeTabControl.SelectedIndex] : null;
+        private Border? _currentEditModeBorder => _editModeBorders.ContainsKey(QueryTypeTabControl.SelectedIndex) ? _editModeBorders[QueryTypeTabControl.SelectedIndex] : null;
+        private TextBlock? _currentStatusTextBlock => _statusTextBlocks.ContainsKey(QueryTypeTabControl.SelectedIndex) ? _statusTextBlocks[QueryTypeTabControl.SelectedIndex] : null;
+        private Button? _currentDeleteButton => _deleteButtons.ContainsKey(QueryTypeTabControl.SelectedIndex) ? _deleteButtons[QueryTypeTabControl.SelectedIndex] : null;
+        private Button? _currentDuplicateButton => _duplicateButtons.ContainsKey(QueryTypeTabControl.SelectedIndex) ? _duplicateButtons[QueryTypeTabControl.SelectedIndex] : null;
 
         public QueryManagementControl()
         {
@@ -120,14 +128,16 @@ namespace FACTOVA_QueryHelper.Controls
                 // 🔥 현재 탭의 DataGrid 업데이트
                 UpdateCurrentTabDataGrid();
                 
-                // 🔥 각 탭별 변경 초track 초기화
+                // 🔥 각 탭별 변경 추적 초기화
                 _queryExecutionModified.Clear();
                 _infoQueriesModified.Clear();
                 _bizQueriesModified.Clear();
                 
+                // 🔥 편집 모드 Border는 현재 탭의 수정 상태에 따라 표시
                 if (_currentEditModeBorder != null)
                 {
-                    _currentEditModeBorder.Visibility = Visibility.Collapsed;
+                    var currentModified = GetCurrentModifiedCollection();
+                    _currentEditModeBorder.Visibility = currentModified.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
                 }
                 
                 UpdateStatus($"{allQueries.Count}개의 쿼리가 로드되었습니다.", Colors.Green);
@@ -186,6 +196,13 @@ namespace FACTOVA_QueryHelper.Controls
             var headerText = (headerPanel.Children[1] as TextBlock)?.Text ?? "";
 
             CreateTabContent(headerText);
+            
+            // 🔥 탭 전환 시 현재 탭의 수정 상태에 따라 편집 모드 Border 표시
+            if (_currentEditModeBorder != null)
+            {
+                var currentModified = GetCurrentModifiedCollection();
+                _currentEditModeBorder.Visibility = currentModified.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
 
         /// <summary>
@@ -194,8 +211,9 @@ namespace FACTOVA_QueryHelper.Controls
         private void CreateTabContent(string tabType)
         {
             Grid? targetGrid = null;
+            int tabIndex = QueryTypeTabControl.SelectedIndex;
             
-            switch (QueryTypeTabControl.SelectedIndex)
+            switch (tabIndex)
             {
                 case 0:
                     targetGrid = QueryExecutionGrid;
@@ -211,13 +229,13 @@ namespace FACTOVA_QueryHelper.Controls
             if (targetGrid == null || targetGrid.Children.Count > 0) return;
 
             // UI 생성
-            CreateQueryManagementUI(targetGrid, tabType);
+            CreateQueryManagementUI(targetGrid, tabType, tabIndex);
         }
 
         /// <summary>
         /// 쿼리 관리 UI 생성
         /// </summary>
-        private void CreateQueryManagementUI(Grid parentGrid, string queryType)
+        private void CreateQueryManagementUI(Grid parentGrid, string queryType, int tabIndex)
         {
             parentGrid.Children.Clear();
             parentGrid.RowDefinitions.Clear();
@@ -227,17 +245,17 @@ namespace FACTOVA_QueryHelper.Controls
             parentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
             // 🔥 상단 툴바
-            var toolbar = CreateToolbar(queryType);
+            var toolbar = CreateToolbar(queryType, tabIndex);
             Grid.SetRow(toolbar, 0);
             parentGrid.Children.Add(toolbar);
 
             // 🔥 쿼리 목록 영역
-            var queryListBorder = CreateQueryListArea(queryType);
+            var queryListBorder = CreateQueryListArea(queryType, tabIndex);
             Grid.SetRow(queryListBorder, 1);
             parentGrid.Children.Add(queryListBorder);
 
             // 🔥 하단 상태바
-            var statusBar = CreateStatusBar();
+            var statusBar = CreateStatusBar(tabIndex);
             Grid.SetRow(statusBar, 2);
             parentGrid.Children.Add(statusBar);
 
@@ -248,7 +266,7 @@ namespace FACTOVA_QueryHelper.Controls
         /// <summary>
         /// 상단 툴바 생성
         /// </summary>
-        private Border CreateToolbar(string queryType)
+        private Border CreateToolbar(string queryType, int tabIndex)
         {
             var border = new Border
             {
@@ -297,15 +315,15 @@ namespace FACTOVA_QueryHelper.Controls
             duplicateButton.Click += DuplicateQueryButton_Click;
             duplicateButton.IsEnabled = false;
             duplicateButton.Margin = new Thickness(5, 0, 5, 0);
-            _currentDuplicateButton = duplicateButton;
+            _duplicateButtons[tabIndex] = duplicateButton;  // 🔥 Dictionary에 저장
             buttonPanel.Children.Add(duplicateButton);
 
             // 삭제 버튼
             var deleteButton = CreateButton("🗑️", "삭제", 100, "#FFDC3545");
             deleteButton.Click += DeleteQueryButton_Click;
             deleteButton.IsEnabled = false;
-            _currentDeleteButton = deleteButton;
             deleteButton.Margin = new Thickness(5, 0, 10, 0);
+            _deleteButtons[tabIndex] = deleteButton;  // 🔥 Dictionary에 저장
             buttonPanel.Children.Add(deleteButton);
 
             // 구분선
@@ -353,7 +371,7 @@ namespace FACTOVA_QueryHelper.Controls
                 Foreground = new SolidColorBrush(Color.FromRgb(0, 120, 215)),
                 FontSize = 16
             };
-            _currentQueryCountTextBlock = countText;
+            _queryCountTextBlocks[tabIndex] = countText;  // 🔥 Dictionary에 저장
             countPanel.Children.Add(countText);
 
             countBorder.Child = countPanel;
@@ -396,7 +414,7 @@ namespace FACTOVA_QueryHelper.Controls
         /// <summary>
         /// 쿼리 목록 영역 생성
         /// </summary>
-        private Border CreateQueryListArea(string queryType)
+        private Border CreateQueryListArea(string queryType, int tabIndex)
         {
             var border = new Border
             {
@@ -439,7 +457,7 @@ namespace FACTOVA_QueryHelper.Controls
 
             // 편집 모드 Border
             var editModeBorder = CreateEditModeBorder();
-            _currentEditModeBorder = editModeBorder;
+            _editModeBorders[tabIndex] = editModeBorder;  // 🔥 Dictionary에 저장
             Grid.SetRow(editModeBorder, 1);
             grid.Children.Add(editModeBorder);
 
@@ -452,7 +470,7 @@ namespace FACTOVA_QueryHelper.Controls
             
             // DataGrid
             var dataGrid = CreateDataGrid(queryType);
-            _currentDataGrid = dataGrid;
+            _dataGrids[tabIndex] = dataGrid;  // 🔥 Dictionary에 저장
             scrollViewer.Content = dataGrid;
             
             Grid.SetRow(scrollViewer, 2);
@@ -853,7 +871,7 @@ namespace FACTOVA_QueryHelper.Controls
         /// <summary>
         /// 하단 상태바 생성
         /// </summary>
-        private Border CreateStatusBar()
+        private Border CreateStatusBar(int tabIndex)
         {
             var border = new Border
             {
@@ -881,7 +899,7 @@ namespace FACTOVA_QueryHelper.Controls
                 VerticalAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(5, 0, 0, 0)
             };
-            _currentStatusTextBlock = statusText;
+            _statusTextBlocks[tabIndex] = statusText;  // 🔥 Dictionary에 저장
             panel.Children.Add(statusText);
 
             border.Child = panel;
