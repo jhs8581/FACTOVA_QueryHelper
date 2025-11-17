@@ -57,6 +57,9 @@ namespace FACTOVA_QueryHelper.Controls
             PlanInfoDataGrid.AutoGeneratingColumn += DataGrid_AutoGeneratingColumn;
             PlanInfoDataGrid.LoadingRow += DataGrid_LoadingRow; // CHK 컬럼 체크
             PlanInfoDataGrid.SelectionChanged += PlanInfoDataGrid_SelectionChanged; // 선택 변경 이벤트
+            
+            // 🔥 조회 버튼 클릭 이벤트 연결
+            ExecuteQueryButton.Click += ExecuteQueryButton_Click;
         }
 
         /// <summary>
@@ -712,7 +715,7 @@ namespace FACTOVA_QueryHelper.Controls
                     OrderNumber = -1
                 };
 
-                // 계획정보 쿼리 콤보박스: 플레이스홀더 + 순번 0인 쿼리
+                // 계획정보 쿼리 콜박스: 플레이스홀더 + 순번 0인 쿼리
                 var planQueryList = new List<QueryItem> { placeholderItem };
                 planQueryList.AddRange(planQueries);
                 

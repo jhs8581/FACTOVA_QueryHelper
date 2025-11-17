@@ -18,6 +18,9 @@ namespace FACTOVA_QueryHelper.Controls
         // 🔥 변경된 항목 추적 (신규 + 수정)
         private HashSet<SiteInfo> _modifiedSites = new HashSet<SiteInfo>();
 
+        // 🔥 TNS 목록 (ComboBox용)
+        private SharedDataContext? _sharedData;
+
         // 저장 완료 시 발생하는 이벤트
         public event EventHandler? SiteInfosSaved;
 
@@ -32,6 +35,33 @@ namespace FACTOVA_QueryHelper.Controls
         {
             _database = database;
             LoadSites();
+        }
+
+        /// <summary>
+        /// SharedDataContext를 설정하여 TNS 목록을 ComboBox에 바인딩합니다.
+        /// </summary>
+        public void SetSharedDataContext(SharedDataContext sharedData)
+        {
+            _sharedData = sharedData;
+            
+            // 🔥 TNS ComboBox에 ItemsSource 설정
+            if (SiteDataGrid.Columns.Count >= 9) // TNS (1.0) 컬럼
+            {
+                if (SiteDataGrid.Columns[8] is DataGridComboBoxColumn tns10Column)
+                {
+                    tns10Column.ItemsSource = _sharedData.TnsEntries;
+                }
+            }
+            
+            if (SiteDataGrid.Columns.Count >= 10) // TNS (2.0) 컬럼
+            {
+                if (SiteDataGrid.Columns[9] is DataGridComboBoxColumn tns20Column)
+                {
+                    tns20Column.ItemsSource = _sharedData.TnsEntries;
+                }
+            }
+            
+            System.Diagnostics.Debug.WriteLine($"✅ TNS ComboBox ItemsSource 설정 완료 ({_sharedData.TnsEntries.Count}개 TNS)");
         }
 
         private void LoadSites()

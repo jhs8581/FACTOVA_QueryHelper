@@ -71,7 +71,6 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="40"/>
                             <RowDefinition Height="40"/>
-                            <RowDefinition Height="40"/>
                         </Grid.RowDefinitions>
 
                         <!-- Row 1: 사업장 | 계획일자(시작) | 계획일자(종료) | W/O | W/O 명 | Model.Suffix -->
@@ -350,7 +349,6 @@
                         <!-- 조회 버튼 -->
                         <Button x:Name="ExecuteQueryButton" 
                                 Height="40"
-                                Click="ExecuteQueryButton_Click"
                                 Background="#FF0078D7" 
                                 Foreground="White"
                                 BorderThickness="0"
@@ -408,7 +406,6 @@
                     <Button x:Name="ExecuteAllGridsButton" 
                             Grid.Row="4"
                             Height="40"
-                            Click="ExecuteAllGridsButton_Click"
                             Background="#FFDC3545" 
                             Foreground="White"
                             BorderThickness="0"

@@ -64,6 +64,9 @@ namespace FACTOVA_QueryHelper.Controls
             var database = new QueryDatabase(sharedData.Settings.DatabasePath);
             SiteManagement.Initialize(database);
             
+            // 🔥 SiteManagementControl에 SharedDataContext 전달 (TNS 목록 바인딩용)
+            SiteManagement.SetSharedDataContext(sharedData);
+            
             // 🔥 SiteManagementControl의 저장 이벤트 구독
             SiteManagement.SiteInfosSaved += OnSiteInfosSaved;
         }

@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" 
-             d:DesignHeight="800" d:DesignWidth="1400">
+             d:DesignHeight="800" d:DesignWidth="1600">
     <Grid Margin="0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -120,7 +120,7 @@
                     </DataGridTextColumn>
 
                     <!-- 사업장명 (편집 가능) -->
-                    <DataGridTextColumn Header="사업장명" Binding="{Binding SiteName, UpdateSourceTrigger=PropertyChanged}" Width="150" IsReadOnly="False">
+                    <DataGridTextColumn Header="사업장명" Binding="{Binding SiteName, UpdateSourceTrigger=PropertyChanged}" Width="120" IsReadOnly="False">
                         <DataGridTextColumn.HeaderStyle>
                             <Style TargetType="DataGridColumnHeader">
                                 <Setter Property="Background" Value="#FF2196F3"/>
@@ -196,6 +196,62 @@
                             </Style>
                         </DataGridTextColumn.HeaderStyle>
                     </DataGridTextColumn>
+
+                    <!-- 🔥 TNS (1.0) 신규 컬럼 - ComboBox로 변경 -->
+                    <DataGridComboBoxColumn Header="TNS (1.0)" 
+                                            SelectedValueBinding="{Binding Tns10, UpdateSourceTrigger=PropertyChanged}" 
+                                            SelectedValuePath="Name"
+                                            DisplayMemberPath="Name"
+                                            Width="130">
+                        <DataGridComboBoxColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#FFFF9800"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="11"/>
+                                <Setter Property="Padding" Value="10,5"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridComboBoxColumn.HeaderStyle>
+                        <DataGridComboBoxColumn.ElementStyle>
+                            <Style TargetType="ComboBox">
+                                <Setter Property="IsEditable" Value="True"/>
+                            </Style>
+                        </DataGridComboBoxColumn.ElementStyle>
+                        <DataGridComboBoxColumn.EditingElementStyle>
+                            <Style TargetType="ComboBox">
+                                <Setter Property="IsEditable" Value="True"/>
+                            </Style>
+                        </DataGridComboBoxColumn.EditingElementStyle>
+                    </DataGridComboBoxColumn>
+
+                    <!-- 🔥 TNS (2.0) 신규 컬럼 - ComboBox로 변경 -->
+                    <DataGridComboBoxColumn Header="TNS (2.0)" 
+                                            SelectedValueBinding="{Binding Tns20, UpdateSourceTrigger=PropertyChanged}" 
+                                            SelectedValuePath="Name"
+                                            DisplayMemberPath="Name"
+                                            Width="130">
+                        <DataGridComboBoxColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#FF4CAF50"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="11"/>
+                                <Setter Property="Padding" Value="10,5"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridComboBoxColumn.HeaderStyle>
+                        <DataGridComboBoxColumn.ElementStyle>
+                            <Style TargetType="ComboBox">
+                                <Setter Property="IsEditable" Value="True"/>
+                            </Style>
+                        </DataGridComboBoxColumn.ElementStyle>
+                        <DataGridComboBoxColumn.EditingElementStyle>
+                            <Style TargetType="ComboBox">
+                                <Setter Property="IsEditable" Value="True"/>
+                            </Style>
+                        </DataGridComboBoxColumn.EditingElementStyle>
+                    </DataGridComboBoxColumn>
 
                     <!-- 🔥 표시순번 (기존 IsDefault를 숫자로 재사용) -->
                     <DataGridTextColumn Header="표시순번" Binding="{Binding IsDefault, UpdateSourceTrigger=PropertyChanged}" Width="80" IsReadOnly="False">
