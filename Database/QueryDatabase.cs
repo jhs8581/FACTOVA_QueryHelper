@@ -417,8 +417,13 @@ namespace FACTOVA_QueryHelper.Database
             connection.Open();
 
             var command = connection.CreateCommand();
-            // 🔥 IsDefault(표시순번) 우선 정렬
-            command.CommandText = "SELECT * FROM SiteInfo ORDER BY IsDefault, SiteName";
+            // 🔥 IsDefault > 0인 항목을 우선 정렬하고, 그 다음 IsDefault = 0인 항목 정렬
+            // CASE 문을 사용하여 IsDefault = 0이면 999999로 취급하여 맨 뒤로 보냄
+            command.CommandText = @"
+                SELECT * FROM SiteInfo 
+                ORDER BY 
+                    CASE WHEN IsDefault = 0 THEN 999999 ELSE IsDefault END,
+                    SiteName";
 
             using var reader = command.ExecuteReader();
             while (reader.Read())

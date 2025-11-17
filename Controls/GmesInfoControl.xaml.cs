@@ -270,6 +270,26 @@ namespace FACTOVA_QueryHelper.Controls
             UpdateFontSizeDisplay();
             
             _isInitializing = false;
+            
+            // 🔥 초기화 완료 후 사업장 정보를 다시 한번 명시적으로 적용
+            if (SiteComboBox.SelectedItem is SiteInfo selectedSite)
+            {
+                _sharedData.Settings.GmesFactory = selectedSite.RepresentativeFactory;
+                _sharedData.Settings.GmesOrg = selectedSite.Organization;
+                _sharedData.Settings.GmesFacility = selectedSite.Facility;
+                _sharedData.Settings.GmesWipLineId = selectedSite.WipLineId;
+                _sharedData.Settings.GmesEquipLineId = selectedSite.EquipLineId;
+                _sharedData.SaveSettingsCallback?.Invoke();
+                
+                System.Diagnostics.Debug.WriteLine("=== Initialize 완료 후 사업장 정보 재확인 ===");
+                System.Diagnostics.Debug.WriteLine($"선택된 사업장: {selectedSite.SiteName}");
+                System.Diagnostics.Debug.WriteLine($"Factory: {_sharedData.Settings.GmesFactory}");
+                System.Diagnostics.Debug.WriteLine($"Org: {_sharedData.Settings.GmesOrg}");
+                System.Diagnostics.Debug.WriteLine($"Facility: {_sharedData.Settings.GmesFacility}");
+                System.Diagnostics.Debug.WriteLine($"WipLineId: {_sharedData.Settings.GmesWipLineId}");
+                System.Diagnostics.Debug.WriteLine($"EquipLineId: {_sharedData.Settings.GmesEquipLineId}");
+                System.Diagnostics.Debug.WriteLine("============================================");
+            }
         }
 
         /// <summary>
@@ -284,32 +304,22 @@ namespace FACTOVA_QueryHelper.Controls
                 // 🔥 IsDefault(표시순번) 순서로 정렬된 사업장 목록 가져오기
                 var sites = _database.GetAllSites();
                 
-                // 현재 선택된 사업장 ID 저장
-                var currentSelectedSite = SiteComboBox.SelectedItem as SiteInfo;
-                int? currentSelectedId = currentSelectedSite?.Id;
-                
                 SiteComboBox.ItemsSource = sites;
 
-                // 이전에 선택된 사업장이 있으면 다시 선택
-                if (currentSelectedId.HasValue)
+                // 🔥 폼 로드 시 첫 번째 항목을 객체로 직접 선택 (인덱스가 아닌 실제 객체)
+                if (sites.Count > 0)
                 {
-                    var siteToSelect = sites.FirstOrDefault(s => s.Id == currentSelectedId.Value);
-                    if (siteToSelect != null)
-                    {
-                        SiteComboBox.SelectedItem = siteToSelect;
-                        return;
-                    }
-                }
-
-                // 🔥 IsDefault가 0보다 큰 첫 번째 사업장 선택 (표시순번이 가장 작은 것)
-                var defaultSite = sites.FirstOrDefault(s => s.IsDefault > 0);
-                if (defaultSite != null)
-                {
-                    SiteComboBox.SelectedItem = defaultSite;
-                }
-                else if (sites.Count > 0)
-                {
-                    SiteComboBox.SelectedIndex = 0;
+                    SiteComboBox.SelectedItem = sites[0]; // 🔥 SelectedIndex 대신 SelectedItem 사용
+                    
+                    System.Diagnostics.Debug.WriteLine($"=== 사업장 로드 완료 ===");
+                    System.Diagnostics.Debug.WriteLine($"총 {sites.Count}개 사업장");
+                    System.Diagnostics.Debug.WriteLine($"선택된 사업장: {sites[0].SiteName}");
+                    System.Diagnostics.Debug.WriteLine($"  - Factory: {sites[0].RepresentativeFactory}");
+                    System.Diagnostics.Debug.WriteLine($"  - Org: {sites[0].Organization}");
+                    System.Diagnostics.Debug.WriteLine($"  - Facility: {sites[0].Facility}");
+                    System.Diagnostics.Debug.WriteLine($"  - WipLineId: {sites[0].WipLineId}");
+                    System.Diagnostics.Debug.WriteLine($"  - EquipLineId: {sites[0].EquipLineId}");
+                    System.Diagnostics.Debug.WriteLine("========================");
                 }
             }
             catch (Exception ex)
@@ -329,12 +339,30 @@ namespace FACTOVA_QueryHelper.Controls
             // 선택된 사업장 정보를 숨겨진 필드에 적용
             if (_sharedData != null)
             {
+                // 🔥 디버깅: 변경 전 값 로깅
+                System.Diagnostics.Debug.WriteLine("=== 사업장 선택 변경 (변경 전) ===");
+                System.Diagnostics.Debug.WriteLine($"이전 Factory: {_sharedData.Settings.GmesFactory}");
+                System.Diagnostics.Debug.WriteLine($"이전 Org: {_sharedData.Settings.GmesOrg}");
+                System.Diagnostics.Debug.WriteLine($"이전 Facility: {_sharedData.Settings.GmesFacility}");
+                System.Diagnostics.Debug.WriteLine($"이전 WipLineId: {_sharedData.Settings.GmesWipLineId}");
+                System.Diagnostics.Debug.WriteLine($"이전 EquipLineId: {_sharedData.Settings.GmesEquipLineId}");
+                
                 _sharedData.Settings.GmesFactory = selectedSite.RepresentativeFactory;
                 _sharedData.Settings.GmesOrg = selectedSite.Organization;
                 _sharedData.Settings.GmesFacility = selectedSite.Facility;
                 _sharedData.Settings.GmesWipLineId = selectedSite.WipLineId;
                 _sharedData.Settings.GmesEquipLineId = selectedSite.EquipLineId;
                 _sharedData.SaveSettingsCallback?.Invoke();
+                
+                // 🔥 디버깅: 변경 후 선택된 사업장 정보 로깅
+                System.Diagnostics.Debug.WriteLine("=== 사업장 선택 변경 (변경 후) ===");
+                System.Diagnostics.Debug.WriteLine($"사업장명: {selectedSite.SiteName}");
+                System.Diagnostics.Debug.WriteLine($"신규 Factory: {_sharedData.Settings.GmesFactory}");
+                System.Diagnostics.Debug.WriteLine($"신규 Org: {_sharedData.Settings.GmesOrg}");
+                System.Diagnostics.Debug.WriteLine($"신규 Facility: {_sharedData.Settings.GmesFacility}");
+                System.Diagnostics.Debug.WriteLine($"신규 WipLineId: {_sharedData.Settings.GmesWipLineId}");
+                System.Diagnostics.Debug.WriteLine($"신규 EquipLineId: {_sharedData.Settings.GmesEquipLineId}");
+                System.Diagnostics.Debug.WriteLine("===================================");
             }
         }
 
@@ -395,8 +423,6 @@ namespace FACTOVA_QueryHelper.Controls
         {
             if (_sharedData == null) return;
 
-            // 🔥 사업장 정보는 LoadSiteInfos에서 처리
-            
             // 일자는 항상 오늘 날짜로 설정 (저장하지 않음)
             DateFromPicker.SelectedDate = DateTime.Today;
             DateToPicker.SelectedDate = DateTime.Today;
@@ -507,14 +533,14 @@ namespace FACTOVA_QueryHelper.Controls
                     // 동적 그리드 생성 및 쿼리 자동 바인딩 (최대 20개)
                     GenerateDynamicGridsWithQueries(detailQueries);
                     
-                    System.Diagnostics.Debug.WriteLine($"✅ 그룹명 '{queryName}'에 대한 {detailQueries.Count}개의 상세 쿼리가 자동 바인딩되었습니다.");
+                    System.Diagnostics.Debug.WriteLine($"✅ 그룹명 '~{queryName}~'에 대한 {detailQueries.Count}개의 상세 쿼리가 자동 바인딩되었습니다.");
                 }
                 else
                 {
                     // 상세 쿼리가 없으면 동적 그리드를 20개 빈 상태로 재생성
                     GenerateDynamicGridsWithoutBinding(20);
                     
-                    System.Diagnostics.Debug.WriteLine($"⚠️ 그룹명 '{queryName}'에 대한 상세 쿼리(순번 1 이상)가 없습니다. 빈 그리드 20개를 생성했습니다.");
+                    System.Diagnostics.Debug.WriteLine($"⚠️ 그룹명 '~{queryName}~'에 대한 상세 쿼리(순번 1 이상)가 없습니다. 빈 그리드 20개를 생성했습니다.");
                 }
             }
             catch (Exception ex)
@@ -553,7 +579,7 @@ namespace FACTOVA_QueryHelper.Controls
                     // 상세 쿼리가 없으면 동적 그리드를 20개 빈 상태로 재생성
                     GenerateDynamicGridsWithoutBinding(20);
                     
-                    System.Diagnostics.Debug.WriteLine($"비즈명 '{bizName}'에 대한 상세 쿼리(순번 1 이상)가 없습니다. 빈 그리드 20개를 생성했습니다.");
+                    System.Diagnostics.Debug.WriteLine($"비즈명 '~{bizName}~'에 대한 상세 쿼리(순번 1 이상)가 없습니다. 빈 그리드 20개를 생성했습니다.");
                 }
             }
             catch (Exception ex)
@@ -614,7 +640,7 @@ namespace FACTOVA_QueryHelper.Controls
                 DynamicGridsContainer.Children.Add(border);
             }
 
-            // 모든 정보 조회 쿼리를 콤보박스에 바인딩 (항상 활성화 - 사용자가 변경 가능)
+            // 모든 정보 조회 쿼리를 콜박스에 바인딩 (항상 활성화 - 사용자가 변경 가능)
             // 🔥 비즈명이 있는 쿼리만 필터링
             var queriesWithBizName = _infoQueries.Where(q => !string.IsNullOrWhiteSpace(q.BizName)).ToList();
             
@@ -1308,25 +1334,76 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 string connectionString;
 
-                if (!string.IsNullOrWhiteSpace(queryItem.Host) &&
+                // 🔥 1순위: ConnectionInfoId가 있는 경우 - 접속 정보 사용
+                if (queryItem.ConnectionInfoId.HasValue)
+                {
+                    System.Diagnostics.Debug.WriteLine($"=== ConnectionInfo 사용 ===");
+                    System.Diagnostics.Debug.WriteLine($"ConnectionInfoId: {queryItem.ConnectionInfoId.Value}");
+                    
+                    // ConnectionInfo 조회
+                    var connectionInfoService = new Services.ConnectionInfoService(_sharedData.Settings.DatabasePath);
+                    var allConnections = connectionInfoService.GetAll();
+                    var connectionInfo = allConnections.FirstOrDefault(c => c.Id == queryItem.ConnectionInfoId.Value);
+                    
+                    if (connectionInfo == null)
+                    {
+                        MessageBox.Show($"접속 정보 ID {queryItem.ConnectionInfoId.Value}를 찾을 수 없습니다.", "오류",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                    
+                    // TNS Entry 찾기
+                    var selectedTns = _sharedData.TnsEntries.FirstOrDefault(t =>
+                        t.Name.Equals(connectionInfo.TNS, StringComparison.OrdinalIgnoreCase));
+                    
+                    if (selectedTns == null)
+                    {
+                        MessageBox.Show($"TNS '{connectionInfo.TNS}'를 찾을 수 없습니다.", "오류",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                    
+                    connectionString = selectedTns.GetConnectionString();
+                    
+                    // ConnectionInfo의 UserId, Password 사용
+                    queryItem.UserId = connectionInfo.UserId;
+                    queryItem.Password = connectionInfo.Password;
+                    
+                    System.Diagnostics.Debug.WriteLine($"✅ ConnectionInfo 사용: {connectionInfo.Name} (TNS: {connectionInfo.TNS})");
+                }
+                // 🔥 2순위: Host/Port/ServiceName이 직접 입력된 경우
+                else if (!string.IsNullOrWhiteSpace(queryItem.Host) &&
                     !string.IsNullOrWhiteSpace(queryItem.Port) &&
                     !string.IsNullOrWhiteSpace(queryItem.ServiceName))
                 {
                     connectionString = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={queryItem.Host})(PORT={queryItem.Port}))(CONNECT_DATA=(SERVICE_NAME={queryItem.ServiceName})));";
+                    System.Diagnostics.Debug.WriteLine($"✅ 직접 입력 정보 사용: {queryItem.Host}:{queryItem.Port}/{queryItem.ServiceName}");
                 }
-                else
+                // 🔥 3순위: TNS 이름으로 검색
+                else if (!string.IsNullOrWhiteSpace(queryItem.TnsName))
                 {
+                    System.Diagnostics.Debug.WriteLine("=== TNS 연결 시도 ===");
+                    System.Diagnostics.Debug.WriteLine($"쿼리의 TNS 이름: '{queryItem.TnsName}'");
+                    
                     var selectedTns = _sharedData.TnsEntries.FirstOrDefault(t =>
                         t.Name.Equals(queryItem.TnsName, StringComparison.OrdinalIgnoreCase));
 
                     if (selectedTns == null)
                     {
+                        System.Diagnostics.Debug.WriteLine($"❌ TNS '{queryItem.TnsName}'를 찾을 수 없습니다!");
                         MessageBox.Show($"TNS '{queryItem.TnsName}'를 찾을 수 없습니다.", "오류",
                             MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
-
+                    
+                    System.Diagnostics.Debug.WriteLine($"✅ TNS '{selectedTns.Name}' 찾음");
                     connectionString = selectedTns.GetConnectionString();
+                }
+                else
+                {
+                    MessageBox.Show("연결 정보가 없습니다.\n쿼리에 TNS 또는 접속 정보를 설정해주세요.", "오류",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
                 }
 
                 string processedQuery = ReplaceQueryParameters(queryItem.Query);
@@ -1363,13 +1440,43 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 string connectionString;
 
-                if (!string.IsNullOrWhiteSpace(queryItem.Host) &&
+                // 🔥 1순위: ConnectionInfoId가 있는 경우 - 접속 정보 사용
+                if (queryItem.ConnectionInfoId.HasValue)
+                {
+                    // ConnectionInfo 조회
+                    var connectionInfoService = new Services.ConnectionInfoService(_sharedData.Settings.DatabasePath);
+                    var allConnections = connectionInfoService.GetAll();
+                    var connectionInfo = allConnections.FirstOrDefault(c => c.Id == queryItem.ConnectionInfoId.Value);
+                    
+                    if (connectionInfo == null)
+                    {
+                        throw new Exception($"접속 정보 ID {queryItem.ConnectionInfoId.Value}를 찾을 수 없습니다.");
+                    }
+                    
+                    // TNS Entry 찾기
+                    var selectedTns = _sharedData.TnsEntries.FirstOrDefault(t =>
+                        t.Name.Equals(connectionInfo.TNS, StringComparison.OrdinalIgnoreCase));
+                    
+                    if (selectedTns == null)
+                    {
+                        throw new Exception($"TNS '{connectionInfo.TNS}'를 찾을 수 없습니다.");
+                    }
+                    
+                    connectionString = selectedTns.GetConnectionString();
+                    
+                    // ConnectionInfo의 UserId, Password 사용
+                    queryItem.UserId = connectionInfo.UserId;
+                    queryItem.Password = connectionInfo.Password;
+                }
+                // 🔥 2순위: Host/Port/ServiceName이 직접 입력된 경우
+                else if (!string.IsNullOrWhiteSpace(queryItem.Host) &&
                     !string.IsNullOrWhiteSpace(queryItem.Port) &&
                     !string.IsNullOrWhiteSpace(queryItem.ServiceName))
                 {
                     connectionString = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={queryItem.Host})(PORT={queryItem.Port}))(CONNECT_DATA=(SERVICE_NAME={queryItem.ServiceName})));";
                 }
-                else
+                // 🔥 3순위: TNS 이름으로 검색
+                else if (!string.IsNullOrWhiteSpace(queryItem.TnsName))
                 {
                     var selectedTns = _sharedData.TnsEntries.FirstOrDefault(t =>
                         t.Name.Equals(queryItem.TnsName, StringComparison.OrdinalIgnoreCase));
@@ -1380,6 +1487,10 @@ namespace FACTOVA_QueryHelper.Controls
                     }
 
                     connectionString = selectedTns.GetConnectionString();
+                }
+                else
+                {
+                    throw new Exception("연결 정보가 없습니다. 쿼리에 TNS 또는 접속 정보를 설정해주세요.");
                 }
 
                 string processedQuery = ReplaceQueryParametersWithRowData(queryItem.Query, selectedRow);
@@ -1445,6 +1556,15 @@ namespace FACTOVA_QueryHelper.Controls
             string facility = _sharedData?.Settings.GmesFacility ?? "";
             string wipLineId = _sharedData?.Settings.GmesWipLineId ?? "";
             string equipLineId = _sharedData?.Settings.GmesEquipLineId ?? "";
+
+            // 🔥 디버깅: 쿼리 파라미터 치환 전 값 확인
+            System.Diagnostics.Debug.WriteLine("=== ReplaceQueryParameters 실행 ===");
+            System.Diagnostics.Debug.WriteLine($"Factory: '{factory}'");
+            System.Diagnostics.Debug.WriteLine($"Org: '{org}'");
+            System.Diagnostics.Debug.WriteLine($"Facility: '{facility}'");
+            System.Diagnostics.Debug.WriteLine($"WipLineId: '{wipLineId}'");
+            System.Diagnostics.Debug.WriteLine($"EquipLineId: '{equipLineId}'");
+            System.Diagnostics.Debug.WriteLine("=====================================");
 
             result = result.Replace("@REPRESENTATIVE_FACTORY_CODE", $"'{factory}'");
             result = result.Replace("@ORGANIZATION_ID", $"'{org}'");
