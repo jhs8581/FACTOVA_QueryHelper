@@ -173,6 +173,18 @@ namespace FACTOVA_QueryHelper.Database
                 // 컬럼이 이미 존재하면 무시
             }
             
+            // 🔥 Version 컬럼 추가 (버전 정보)
+            try
+            {
+                var alterCommand = connection.CreateCommand();
+                alterCommand.CommandText = "ALTER TABLE Queries ADD COLUMN Version TEXT";
+                alterCommand.ExecuteNonQuery();
+            }
+            catch
+            {
+                // 컬럼이 이미 존재하면 무시
+            }
+            
             // 🔥 SiteInfo 테이블 생성 (사업장 정보 관리용)
             var siteCommand = connection.CreateCommand();
             siteCommand.CommandText = @"
@@ -250,6 +262,7 @@ namespace FACTOVA_QueryHelper.Database
                     Description2 = reader["Description2"]?.ToString() ?? "",
                     OrderNumber = reader["OrderNumber"] != DBNull.Value ? Convert.ToInt32(reader["OrderNumber"]) : 0,
                     QueryBizName = reader["QueryBizName"]?.ToString() ?? "",
+                    Version = reader["Version"]?.ToString() ?? "",
                     EnabledFlag = reader["EnabledFlag"]?.ToString() ?? "Y",
                     NotifyFlag = reader["NotifyFlag"]?.ToString() ?? "N",
                     CountGreaterThan = reader["CountGreaterThan"]?.ToString() ?? "",
@@ -285,12 +298,12 @@ namespace FACTOVA_QueryHelper.Database
             command.CommandText = @"
                 INSERT INTO Queries (
                     QueryName, QueryType, ConnectionInfoId, TnsName, Host, Port, ServiceName, UserId, Password, Query,
-                    BizName, Description2, OrderNumber, QueryBizName,
+                    BizName, Description2, OrderNumber, QueryBizName, Version,
                     EnabledFlag, NotifyFlag, CountGreaterThan, CountEquals, CountLessThan,
                     ColumnNames, ColumnValues, ExcludeFlag, DefaultFlag
                 ) VALUES (
                     $queryName, $queryType, $connectionInfoId, $tnsName, $host, $port, $serviceName, $userId, $password, $query,
-                    $bizName, $description2, $orderNumber, $queryBizName,
+                    $bizName, $description2, $orderNumber, $queryBizName, $version,
                     $enabledFlag, $notifyFlag, $countGreaterThan, $countEquals, $countLessThan,
                     $columnNames, $columnValues, $excludeFlag, $defaultFlag
                 )";
@@ -324,6 +337,7 @@ namespace FACTOVA_QueryHelper.Database
                     Description2 = $description2,
                     OrderNumber = $orderNumber,
                     QueryBizName = $queryBizName,
+                    Version = $version,
                     EnabledFlag = $enabledFlag,
                     NotifyFlag = $notifyFlag,
                     CountGreaterThan = $countGreaterThan,
@@ -387,6 +401,7 @@ namespace FACTOVA_QueryHelper.Database
             command.Parameters.AddWithValue("$description2", query.Description2 ?? "");
             command.Parameters.AddWithValue("$orderNumber", query.OrderNumber);
             command.Parameters.AddWithValue("$queryBizName", query.QueryBizName ?? "");
+            command.Parameters.AddWithValue("$version", query.Version ?? "");
             command.Parameters.AddWithValue("$enabledFlag", query.EnabledFlag ?? "Y");
             command.Parameters.AddWithValue("$notifyFlag", query.NotifyFlag ?? "N");
             command.Parameters.AddWithValue("$countGreaterThan", query.CountGreaterThan ?? "");

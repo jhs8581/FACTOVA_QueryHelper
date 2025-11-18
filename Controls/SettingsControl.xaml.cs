@@ -45,6 +45,9 @@ namespace FACTOVA_QueryHelper.Controls
                 System.Diagnostics.Debug.WriteLine("🔔 NotifyConnectionInfosChanged called from SettingsControl");
             }
             
+            // 🔥 SiteManagement의 ComboBox도 새로고침
+            SiteManagement.RefreshConnectionInfos();
+            
             // 상태바 업데이트
             UpdateStatus("접속 정보가 저장되었습니다.", Colors.Green);
         }
@@ -63,9 +66,6 @@ namespace FACTOVA_QueryHelper.Controls
             // 🔥 SiteManagementControl 초기화 (동일한 DB 경로 사용)
             var database = new QueryDatabase(sharedData.Settings.DatabasePath);
             SiteManagement.Initialize(database);
-            
-            // 🔥 SiteManagementControl에 SharedDataContext 전달 (TNS 목록 바인딩용)
-            SiteManagement.SetSharedDataContext(sharedData);
             
             // 🔥 SiteManagementControl의 저장 이벤트 구독
             SiteManagement.SiteInfosSaved += OnSiteInfosSaved;

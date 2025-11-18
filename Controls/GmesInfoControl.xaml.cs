@@ -58,6 +58,38 @@ namespace FACTOVA_QueryHelper.Controls
             PlanInfoDataGrid.LoadingRow += DataGrid_LoadingRow; // CHK 컬럼 체크
             PlanInfoDataGrid.SelectionChanged += PlanInfoDataGrid_SelectionChanged; // 선택 변경 이벤트
             
+            // 🔥 Ctrl+C 키보드 이벤트 핸들러 추가
+            PlanInfoDataGrid.PreviewKeyDown += (s, e) =>
+            {
+                if (e.Key == Key.C && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                {
+                    try
+                    {
+                        if (PlanInfoDataGrid.SelectedItem is DataRowView selectedRow)
+                        {
+                            // 선택된 행의 모든 데이터를 탭으로 구분하여 복사
+                            var row = selectedRow.Row;
+                            var values = new List<string>();
+                            
+                            foreach (DataColumn column in row.Table.Columns)
+                            {
+                                values.Add(row[column]?.ToString() ?? "");
+                            }
+                            
+                            var textToCopy = string.Join("\t", values);
+                            Clipboard.SetText(textToCopy);
+                            e.Handled = true;
+                            
+                            System.Diagnostics.Debug.WriteLine($"✅ 복사 완료: {textToCopy.Length}자");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"복사 오류: {ex.Message}");
+                    }
+                }
+            };
+            
             // 🔥 조회 버튼 클릭 이벤트 연결
             ExecuteQueryButton.Click += ExecuteQueryButton_Click;
         }
@@ -536,7 +568,7 @@ namespace FACTOVA_QueryHelper.Controls
                     // 동적 그리드 생성 및 쿼리 자동 바인딩 (최대 20개)
                     GenerateDynamicGridsWithQueries(detailQueries);
                     
-                    System.Diagnostics.Debug.WriteLine($"✅ 그룹명 '~{queryName}~'에 대한 {detailQueries.Count}개의 상세 쿼리가 자동 바인딩되었습니다.");
+                    System.Diagnostics.Debug.WriteLine($"✅ 그룹명 '~{queryName}'에 대한 {detailQueries.Count}개의 상세 쿼리가 자동 바인딩되었습니다.");
                 }
                 else
                 {
@@ -895,28 +927,76 @@ namespace FACTOVA_QueryHelper.Controls
             var dataGrid = new DataGrid
             {
                 AutoGenerateColumns = true,
-                IsReadOnly = false,  // 셀 복사를 위해 편집 가능하도록 변경
-                CanUserAddRows = false,  // 빈 행 생성 방지
+                IsReadOnly = true,  // 🔥 읽기 전용으로 설정 (편집 차단)
+                CanUserAddRows = false,
                 AlternatingRowBackground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
                 GridLinesVisibility = DataGridGridLinesVisibility.All,
                 HeadersVisibility = DataGridHeadersVisibility.All,
                 FontSize = 10,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,  // 🔥 가로 스크롤 활성화
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                ClipboardCopyMode = DataGridClipboardCopyMode.ExcludeHeader,  // 헤더 제외하고 복사
-                SelectionMode = DataGridSelectionMode.Extended,  // 다중 선택 가능
-                SelectionUnit = DataGridSelectionUnit.Cell  // 셀 단위 선택
+                ClipboardCopyMode = DataGridClipboardCopyMode.ExcludeHeader,
+                SelectionMode = DataGridSelectionMode.Extended,
+                SelectionUnit = DataGridSelectionUnit.CellOrRowHeader,  // 🔥 셀 또는 행 헤더 선택 가능
+                CanUserResizeColumns = true,
+                CanUserReorderColumns = false,
+                CanUserSortColumns = true
             };
-            dataGrid.AutoGeneratingColumn += DataGrid_AutoGeneratingColumn;
-            dataGrid.LoadingRow += DataGrid_LoadingRow; // CHK 컬럼 체크를 위한 이벤트
             
-            // BeginningEdit 이벤트 추가 - 실제 편집은 막고 복사만 허용
-            dataGrid.BeginningEdit += (s, e) => e.Cancel = true;
+            dataGrid.AutoGeneratingColumn += DataGrid_AutoGeneratingColumn;
+            dataGrid.LoadingRow += DataGrid_LoadingRow;
+            
+            // 🔥 복사 이벤트 핸들러 추가
+            dataGrid.PreviewKeyDown += (s, e) =>
+            {
+                if (e.Key == Key.C && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                {
+                    try
+                    {
+                        var dg = s as DataGrid;
+                        if (dg != null && dg.ItemsSource is DataView dataView && dataView.Count > 0)
+                        {
+                            var selectedCells = dg.SelectedCells;
+                            if (selectedCells.Count == 0) return;
+
+                            // 선택된 셀들을 정렬하여 행/열 순서대로 정리
+                            var cellInfos = selectedCells
+                                .Select(cellInfo => new
+                                {
+                                    RowIndex = dg.Items.IndexOf(cellInfo.Item),
+                                    ColumnIndex = cellInfo.Column.DisplayIndex,
+                                    Value = GetCellValue(cellInfo)
+                                })
+                                .OrderBy(x => x.RowIndex)
+                                .ThenBy(x => x.ColumnIndex)
+                                .ToList();
+
+                            if (cellInfos.Count == 0) return;
+
+                            // 행과 열로 그룹화
+                            var rows = cellInfos.GroupBy(x => x.RowIndex)
+                                .OrderBy(g => g.Key)
+                                .Select(g => string.Join("\t", g.OrderBy(x => x.ColumnIndex).Select(x => x.Value)))
+                                .ToList();
+
+                            var textToCopy = string.Join(Environment.NewLine, rows);
+                            Clipboard.SetText(textToCopy);
+                            e.Handled = true;
+                            
+                            System.Diagnostics.Debug.WriteLine($"✅ 동적 그리드 복사 완료: {rows.Count}행, {textToCopy.Length}자");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"복사 오류: {ex.Message}");
+                    }
+                }
+            };
 
             // 헤더 스타일을 명시적으로 생성 (파란색 계열로 통일)
             var headerStyle = new Style(typeof(System.Windows.Controls.Primitives.DataGridColumnHeader));
             headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BackgroundProperty, 
-                new SolidColorBrush(Color.FromRgb(0, 120, 215)))); // #FF0078D7
+                new SolidColorBrush(Color.FromRgb(0, 120, 215))));
             headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.ForegroundProperty, 
                 Brushes.White));
             headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontWeightProperty, 
@@ -1337,41 +1417,87 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 string connectionString;
 
-                // 🔥 1순위: ConnectionInfoId가 있는 경우 - 접속 정보 사용
-                if (queryItem.ConnectionInfoId.HasValue)
+                // 🔥 1순위: Version 정보가 있으면 사업장 정보의 TNS 사용
+                if (!string.IsNullOrWhiteSpace(queryItem.Version) && SiteComboBox.SelectedItem is SiteInfo selectedSite)
                 {
-                    System.Diagnostics.Debug.WriteLine($"=== ConnectionInfo 사용 ===");
-                    System.Diagnostics.Debug.WriteLine($"ConnectionInfoId: {queryItem.ConnectionInfoId.Value}");
-                    
-                    // ConnectionInfo 조회
-                    var connectionInfoService = new Services.ConnectionInfoService(_sharedData.Settings.DatabasePath);
-                    var allConnections = connectionInfoService.GetAll();
-                    var connectionInfo = allConnections.FirstOrDefault(c => c.Id == queryItem.ConnectionInfoId.Value);
-                    
-                    if (connectionInfo == null)
+                    System.Diagnostics.Debug.WriteLine($"=== 버전 기반 연결 ===");
+                    System.Diagnostics.Debug.WriteLine($"쿼리 Version: {queryItem.Version}");
+                    System.Diagnostics.Debug.WriteLine($"사업장: {selectedSite.SiteName}");
+
+                    // 사업장의 버전별 TNS 이름 가져오기
+                    var tnsName = selectedSite.GetTnsForVersion(queryItem.Version);
+
+                    if (string.IsNullOrEmpty(tnsName))
                     {
-                        MessageBox.Show($"접속 정보 ID {queryItem.ConnectionInfoId.Value}를 찾을 수 없습니다.", "오류",
+                        MessageBox.Show($"사업장 '{selectedSite.SiteName}'에 버전 {queryItem.Version}에 대한 TNS 설정이 없습니다.", "오류",
                             MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
-                    
+
+                    // TNS 이름으로 ConnectionInfo 찾기
+                    var connectionInfoService = new Services.ConnectionInfoService(_sharedData.Settings.DatabasePath);
+                    var allConnections = connectionInfoService.GetAll();
+                    var connectionInfo = allConnections.FirstOrDefault(c => c.Name == tnsName);
+
+                    if (connectionInfo == null)
+                    {
+                        MessageBox.Show($"접속 정보 '{tnsName}'를 찾을 수 없습니다.", "오류",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
                     // TNS Entry 찾기
                     var selectedTns = _sharedData.TnsEntries.FirstOrDefault(t =>
                         t.Name.Equals(connectionInfo.TNS, StringComparison.OrdinalIgnoreCase));
-                    
+
                     if (selectedTns == null)
                     {
                         MessageBox.Show($"TNS '{connectionInfo.TNS}'를 찾을 수 없습니다.", "오류",
                             MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
-                    
+
                     connectionString = selectedTns.GetConnectionString();
-                    
+                    queryItem.UserId = connectionInfo.UserId;
+                    queryItem.Password = connectionInfo.Password;
+
+                    System.Diagnostics.Debug.WriteLine($"✅ 버전 기반 연결: {connectionInfo.Name} (TNS: {connectionInfo.TNS})");
+                }
+                // 🔥 2순위: ConnectionInfoId가 있는 경우 - 접속 정보 사용
+                else if (queryItem.ConnectionInfoId.HasValue)
+                {
+                    System.Diagnostics.Debug.WriteLine($"=== ConnectionInfo 사용 ===");
+                    System.Diagnostics.Debug.WriteLine($"ConnectionInfoId: {queryItem.ConnectionInfoId.Value}");
+
+                    // ConnectionInfo 조회
+                    var connectionInfoService = new Services.ConnectionInfoService(_sharedData.Settings.DatabasePath);
+                    var allConnections = connectionInfoService.GetAll();
+                    var connectionInfo = allConnections.FirstOrDefault(c => c.Id == queryItem.ConnectionInfoId.Value);
+
+                    if (connectionInfo == null)
+                    {
+                        MessageBox.Show($"접속 정보 ID {queryItem.ConnectionInfoId.Value}를 찾을 수 없습니다.", "오류",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    // TNS Entry 찾기
+                    var selectedTns = _sharedData.TnsEntries.FirstOrDefault(t =>
+                        t.Name.Equals(connectionInfo.TNS, StringComparison.OrdinalIgnoreCase));
+
+                    if (selectedTns == null)
+                    {
+                        MessageBox.Show($"TNS '{connectionInfo.TNS}'를 찾을 수 없습니다.", "오류",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    connectionString = selectedTns.GetConnectionString();
+
                     // ConnectionInfo의 UserId, Password 사용
                     queryItem.UserId = connectionInfo.UserId;
                     queryItem.Password = connectionInfo.Password;
-                    
+
                     System.Diagnostics.Debug.WriteLine($"✅ ConnectionInfo 사용: {connectionInfo.Name} (TNS: {connectionInfo.TNS})");
                 }
                 // 🔥 2순위: Host/Port/ServiceName이 직접 입력된 경우
@@ -1387,7 +1513,7 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     System.Diagnostics.Debug.WriteLine("=== TNS 연결 시도 ===");
                     System.Diagnostics.Debug.WriteLine($"쿼리의 TNS 이름: '{queryItem.TnsName}'");
-                    
+
                     var selectedTns = _sharedData.TnsEntries.FirstOrDefault(t =>
                         t.Name.Equals(queryItem.TnsName, StringComparison.OrdinalIgnoreCase));
 
@@ -1398,7 +1524,7 @@ namespace FACTOVA_QueryHelper.Controls
                             MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
-                    
+
                     System.Diagnostics.Debug.WriteLine($"✅ TNS '{selectedTns.Name}' 찾음");
                     connectionString = selectedTns.GetConnectionString();
                 }
@@ -1443,8 +1569,54 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 string connectionString;
 
-                // 🔥 1순위: ConnectionInfoId가 있는 경우 - 접속 정보 사용
-                if (queryItem.ConnectionInfoId.HasValue)
+                // 🔥 1순위: Version 정보가 있으면 사업장 정보의 TNS 사용
+                if (!string.IsNullOrWhiteSpace(queryItem.Version) && SiteComboBox.SelectedItem is SiteInfo selectedSite)
+                {
+                    System.Diagnostics.Debug.WriteLine($"=== 버전 기반 연결 ===");
+                    System.Diagnostics.Debug.WriteLine($"쿼리 Version: {queryItem.Version}");
+                    System.Diagnostics.Debug.WriteLine($"사업장: {selectedSite.SiteName}");
+
+                    // 사업장의 버전별 TNS 이름 가져오기
+                    var tnsName = selectedSite.GetTnsForVersion(queryItem.Version);
+
+                    if (string.IsNullOrEmpty(tnsName))
+                    {
+                        MessageBox.Show($"사업장 '{selectedSite.SiteName}'에 버전 {queryItem.Version}에 대한 TNS 설정이 없습니다.", "오류",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    // TNS 이름으로 ConnectionInfo 찾기
+                    var connectionInfoService = new Services.ConnectionInfoService(_sharedData.Settings.DatabasePath);
+                    var allConnections = connectionInfoService.GetAll();
+                    var connectionInfo = allConnections.FirstOrDefault(c => c.Name == tnsName);
+
+                    if (connectionInfo == null)
+                    {
+                        MessageBox.Show($"접속 정보 '{tnsName}'를 찾을 수 없습니다.", "오류",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    // TNS Entry 찾기
+                    var selectedTns = _sharedData.TnsEntries.FirstOrDefault(t =>
+                        t.Name.Equals(connectionInfo.TNS, StringComparison.OrdinalIgnoreCase));
+
+                    if (selectedTns == null)
+                    {
+                        MessageBox.Show($"TNS '{connectionInfo.TNS}'를 찾을 수 없습니다.", "오류",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    connectionString = selectedTns.GetConnectionString();
+                    queryItem.UserId = connectionInfo.UserId;
+                    queryItem.Password = connectionInfo.Password;
+
+                    System.Diagnostics.Debug.WriteLine($"✅ 버전 기반 연결: {connectionInfo.Name} (TNS: {connectionInfo.TNS})");
+                }
+                // 🔥 2순위: ConnectionInfoId가 있는 경우 - 접속 정보 사용
+                else if (queryItem.ConnectionInfoId.HasValue)
                 {
                     // ConnectionInfo 조회
                     var connectionInfoService = new Services.ConnectionInfoService(_sharedData.Settings.DatabasePath);
@@ -2000,6 +2172,44 @@ namespace FACTOVA_QueryHelper.Controls
             LoadSiteInfos();
             MessageBox.Show("사업장 정보가 새로고침되었습니다.", "완료",
                 MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        /// <summary>
+        /// DataGrid 셀의 값을 가져옵니다.
+        /// </summary>
+        private static string GetCellValue(DataGridCellInfo cellInfo)
+        {
+            try
+            {
+                if (cellInfo.Item is DataRowView rowView && cellInfo.Column is DataGridBoundColumn boundColumn)
+                {
+                    var binding = (boundColumn as DataGridTextColumn)?.Binding as System.Windows.Data.Binding;
+                    if (binding != null && !string.IsNullOrEmpty(binding.Path.Path))
+                    {
+                        var columnName = binding.Path.Path;
+                        if (rowView.Row.Table.Columns.Contains(columnName))
+                        {
+                            return rowView.Row[columnName]?.ToString() ?? "";
+                        }
+                    }
+                }
+                
+                // Fallback: DataGridTemplateColumn이나 다른 타입의 컬럼
+                if (cellInfo.Item is DataRowView rv && cellInfo.Column != null)
+                {
+                    var colIndex = cellInfo.Column.DisplayIndex;
+                    if (colIndex >= 0 && colIndex < rv.Row.Table.Columns.Count)
+                    {
+                        return rv.Row[colIndex]?.ToString() ?? "";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"GetCellValue 오류: {ex.Message}");
+            }
+            
+            return "";
         }
     }
 }

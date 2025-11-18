@@ -197,12 +197,11 @@
                         </DataGridTextColumn.HeaderStyle>
                     </DataGridTextColumn>
 
-                    <!-- 🔥 TNS (1.0) 신규 컬럼 - ComboBox로 변경 -->
+                    <!-- 🔥 TNS (1.0) - 접속 정보 ComboBox -->
                     <DataGridComboBoxColumn Header="TNS (1.0)" 
-                                            SelectedValueBinding="{Binding Tns10, UpdateSourceTrigger=PropertyChanged}" 
-                                            SelectedValuePath="Name"
-                                            DisplayMemberPath="Name"
-                                            Width="130">
+                                            SelectedItemBinding="{Binding Tns10ConnectionInfo, UpdateSourceTrigger=PropertyChanged}" 
+                                            DisplayMemberPath="DisplayName"
+                                            Width="250">
                         <DataGridComboBoxColumn.HeaderStyle>
                             <Style TargetType="DataGridColumnHeader">
                                 <Setter Property="Background" Value="#FFFF9800"/>
@@ -215,22 +214,21 @@
                         </DataGridComboBoxColumn.HeaderStyle>
                         <DataGridComboBoxColumn.ElementStyle>
                             <Style TargetType="ComboBox">
-                                <Setter Property="IsEditable" Value="True"/>
+                                <Setter Property="IsEditable" Value="False"/>
                             </Style>
                         </DataGridComboBoxColumn.ElementStyle>
                         <DataGridComboBoxColumn.EditingElementStyle>
                             <Style TargetType="ComboBox">
-                                <Setter Property="IsEditable" Value="True"/>
+                                <Setter Property="IsEditable" Value="False"/>
                             </Style>
                         </DataGridComboBoxColumn.EditingElementStyle>
                     </DataGridComboBoxColumn>
 
-                    <!-- 🔥 TNS (2.0) 신규 컬럼 - ComboBox로 변경 -->
+                    <!-- 🔥 TNS (2.0) - 접속 정보 ComboBox -->
                     <DataGridComboBoxColumn Header="TNS (2.0)" 
-                                            SelectedValueBinding="{Binding Tns20, UpdateSourceTrigger=PropertyChanged}" 
-                                            SelectedValuePath="Name"
-                                            DisplayMemberPath="Name"
-                                            Width="130">
+                                            SelectedItemBinding="{Binding Tns20ConnectionInfo, UpdateSourceTrigger=PropertyChanged}" 
+                                            DisplayMemberPath="DisplayName"
+                                            Width="250">
                         <DataGridComboBoxColumn.HeaderStyle>
                             <Style TargetType="DataGridColumnHeader">
                                 <Setter Property="Background" Value="#FF4CAF50"/>
@@ -243,12 +241,12 @@
                         </DataGridComboBoxColumn.HeaderStyle>
                         <DataGridComboBoxColumn.ElementStyle>
                             <Style TargetType="ComboBox">
-                                <Setter Property="IsEditable" Value="True"/>
+                                <Setter Property="IsEditable" Value="False"/>
                             </Style>
                         </DataGridComboBoxColumn.ElementStyle>
                         <DataGridComboBoxColumn.EditingElementStyle>
                             <Style TargetType="ComboBox">
-                                <Setter Property="IsEditable" Value="True"/>
+                                <Setter Property="IsEditable" Value="False"/>
                             </Style>
                         </DataGridComboBoxColumn.EditingElementStyle>
                     </DataGridComboBoxColumn>

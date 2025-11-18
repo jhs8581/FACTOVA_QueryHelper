@@ -374,7 +374,7 @@
                     <DataGrid x:Name="PlanInfoDataGrid" 
                               Grid.Row="2"
                               AutoGenerateColumns="True"
-                              IsReadOnly="False"
+                              IsReadOnly="True"
                               CanUserAddRows="False"
                               AlternatingRowBackground="#FFF8F9FA"
                               GridLinesVisibility="All"
@@ -387,9 +387,11 @@
                               VerticalScrollBarVisibility="Auto"
                               LoadingRow="DataGrid_LoadingRow"
                               ClipboardCopyMode="ExcludeHeader"
-                              SelectionMode="Extended"
+                              SelectionMode="Single"
                               SelectionUnit="FullRow"
-                              BeginningEdit="PlanInfoDataGrid_BeginningEdit"
+                              CanUserResizeColumns="True"
+                              CanUserReorderColumns="False"
+                              CanUserSortColumns="True"
                               MouseDoubleClick="PlanInfoDataGrid_MouseDoubleClick">
                         <DataGrid.ColumnHeaderStyle>
                             <Style TargetType="DataGridColumnHeader">

@@ -18,8 +18,8 @@ namespace FACTOVA_QueryHelper.Controls
         // 🔥 변경된 항목 추적 (신규 + 수정)
         private HashSet<SiteInfo> _modifiedSites = new HashSet<SiteInfo>();
 
-        // 🔥 TNS 목록 (ComboBox용)
-        private SharedDataContext? _sharedData;
+        // 🔥 SharedDataContext 대신 접속 정보 목록 직접 관리
+        private List<Models.ConnectionInfo> _connectionInfos = new List<Models.ConnectionInfo>();
 
         // 저장 완료 시 발생하는 이벤트
         public event EventHandler? SiteInfosSaved;
@@ -38,30 +38,71 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         /// <summary>
-        /// SharedDataContext를 설정하여 TNS 목록을 ComboBox에 바인딩합니다.
+        /// 🔥 접속 정보가 변경되었을 때 ComboBox를 새로고침합니다.
         /// </summary>
-        public void SetSharedDataContext(SharedDataContext sharedData)
+        public void RefreshConnectionInfos()
         {
-            _sharedData = sharedData;
+            LoadConnectionInfos();
             
-            // 🔥 TNS ComboBox에 ItemsSource 설정
-            if (SiteDataGrid.Columns.Count >= 9) // TNS (1.0) 컬럼
+            // DataGrid 새로고침
+            SiteDataGrid.Items.Refresh();
+            
+            System.Diagnostics.Debug.WriteLine("✅ 사업장 관리: 접속 정보 ComboBox 새로고침 완료");
+        }
+
+        /// <summary>
+        /// 🔥 접속 정보 목록을 로드하고 ComboBox에 바인딩합니다.
+        /// </summary>
+        public void LoadConnectionInfos()
+        {
+            try
             {
-                if (SiteDataGrid.Columns[8] is DataGridComboBoxColumn tns10Column)
+                var connectionService = new Services.ConnectionInfoService(_database?.GetDatabasePath());
+                _connectionInfos = connectionService.GetAllConnections();
+                
+                System.Diagnostics.Debug.WriteLine($"===== LoadConnectionInfos 실행 =====");
+                System.Diagnostics.Debug.WriteLine($"로드된 접속 정보 개수: {_connectionInfos.Count}");
+                
+                if (_connectionInfos.Count > 0)
                 {
-                    tns10Column.ItemsSource = _sharedData.TnsEntries;
+                    System.Diagnostics.Debug.WriteLine("접속 정보 목록:");
+                    foreach (var conn in _connectionInfos)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"  - {conn.DisplayName}");
+                    }
                 }
+                
+                System.Diagnostics.Debug.WriteLine($"SiteDataGrid.Columns.Count: {SiteDataGrid.Columns.Count}");
+                
+                // 🔥 모든 컬럼을 순회하면서 ComboBox 찾기
+                for (int i = 0; i < SiteDataGrid.Columns.Count; i++)
+                {
+                    if (SiteDataGrid.Columns[i] is DataGridComboBoxColumn comboColumn)
+                    {
+                        var header = comboColumn.Header?.ToString() ?? "";
+                        System.Diagnostics.Debug.WriteLine($"컬럼 [{i}]: {header}");
+                        
+                        if (header == "TNS (1.0)")
+                        {
+                            comboColumn.ItemsSource = _connectionInfos;
+                            System.Diagnostics.Debug.WriteLine($"✅ TNS (1.0) ComboBox ItemsSource 설정 완료 (컬럼 인덱스: {i})");
+                        }
+                        else if (header == "TNS (2.0)")
+                        {
+                            comboColumn.ItemsSource = _connectionInfos;
+                            System.Diagnostics.Debug.WriteLine($"✅ TNS (2.0) ComboBox ItemsSource 설정 완료 (컬럼 인덱스: {i})");
+                        }
+                    }
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"====================================");
             }
-            
-            if (SiteDataGrid.Columns.Count >= 10) // TNS (2.0) 컬럼
+            catch (Exception ex)
             {
-                if (SiteDataGrid.Columns[9] is DataGridComboBoxColumn tns20Column)
-                {
-                    tns20Column.ItemsSource = _sharedData.TnsEntries;
-                }
+                System.Diagnostics.Debug.WriteLine($"❌ 접속 정보 로드 오류: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"   StackTrace: {ex.StackTrace}");
+                _connectionInfos = new List<Models.ConnectionInfo>();
             }
-            
-            System.Diagnostics.Debug.WriteLine($"✅ TNS ComboBox ItemsSource 설정 완료 ({_sharedData.TnsEntries.Count}개 TNS)");
         }
 
         private void LoadSites()
@@ -73,9 +114,23 @@ namespace FACTOVA_QueryHelper.Controls
             
             try
             {
+                // 🔥 접속 정보 먼저 로드
+                LoadConnectionInfos();
+                
                 var sites = _database.GetAllSites();
                 foreach (var site in sites)
                 {
+                    // 🔥 Tns10, Tns20 문자열 값으로 ConnectionInfo 객체 찾아서 설정
+                    if (!string.IsNullOrEmpty(site.Tns10))
+                    {
+                        site.Tns10ConnectionInfo = _connectionInfos.FirstOrDefault(c => c.Name == site.Tns10);
+                    }
+                    
+                    if (!string.IsNullOrEmpty(site.Tns20))
+                    {
+                        site.Tns20ConnectionInfo = _connectionInfos.FirstOrDefault(c => c.Name == site.Tns20);
+                    }
+                    
                     _sites.Add(site);
                 }
 
@@ -165,7 +220,7 @@ namespace FACTOVA_QueryHelper.Controls
                             // 🔥 삭제 시에도 이벤트 발생
                             SiteInfosSaved?.Invoke(this, EventArgs.Empty);
                             
-                            System.Diagnostics.Debug.WriteLine($"🗑️ DB에서 삭제: {selectedSite.SiteName} (ID: {selectedSite.Id})");
+                            System.Diagnostics.Debug.WriteLine($"🗑️ DB에서 삭제: {selectedSite.SiteName} (ID: {selectedSite.SiteName})");
                         }
                         else
                         {

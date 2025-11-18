@@ -24,6 +24,40 @@
         private string _tns10 = string.Empty;
         private string _tns20 = string.Empty;
         
+        // 🔥 ConnectionInfo 객체 바인딩용 속성 추가
+        private ConnectionInfo? _tns10ConnectionInfo;
+        private ConnectionInfo? _tns20ConnectionInfo;
+        
+        /// <summary>
+        /// TNS (1.0) 접속 정보 객체
+        /// </summary>
+        public ConnectionInfo? Tns10ConnectionInfo
+        {
+            get => _tns10ConnectionInfo;
+            set
+            {
+                _tns10ConnectionInfo = value;
+                // 선택된 접속 정보의 Name을 Tns10에 저장
+                _tns10 = value?.Name ?? string.Empty;
+                UpdateTnsMapping("1.0", _tns10);
+            }
+        }
+        
+        /// <summary>
+        /// TNS (2.0) 접속 정보 객체
+        /// </summary>
+        public ConnectionInfo? Tns20ConnectionInfo
+        {
+            get => _tns20ConnectionInfo;
+            set
+            {
+                _tns20ConnectionInfo = value;
+                // 선택된 접속 정보의 Name을 Tns20에 저장
+                _tns20 = value?.Name ?? string.Empty;
+                UpdateTnsMapping("2.0", _tns20);
+            }
+        }
+        
         public string Tns10
         {
             get

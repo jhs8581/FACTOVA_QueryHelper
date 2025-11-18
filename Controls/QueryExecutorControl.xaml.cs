@@ -111,10 +111,11 @@ namespace FACTOVA_QueryHelper.Controls
                     _connectionInfos.Add(conn);
                 }
                 
-                if (_connectionInfos.Count > 0)
-                {
-                    ConnectionComboBox.SelectedIndex = 0;
-                }
+                // 🔥 자동 선택 제거 - 미선택 상태로 유지
+                // if (_connectionInfos.Count > 0)
+                // {
+                //     ConnectionComboBox.SelectedIndex = 0;
+                // }
                 
                 System.Diagnostics.Debug.WriteLine($"✅ Loaded {_connectionInfos.Count} connection infos from: {dbPath ?? "default path"}");
             }

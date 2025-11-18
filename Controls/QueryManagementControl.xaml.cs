@@ -127,9 +127,25 @@ namespace FACTOVA_QueryHelper.Controls
             try
             {
                 var connectionService = new Services.ConnectionInfoService(_sharedData.Settings.DatabasePath);
-                _connectionInfos = connectionService.GetAllConnections();
+                var allConnections = connectionService.GetAllConnections();
                 
-                System.Diagnostics.Debug.WriteLine($"접속 정보 {_connectionInfos.Count}개 로드됨");
+                // 🔥 플레이스홀더 추가 (빈 항목)
+                var placeholder = new Models.ConnectionInfo
+                {
+                    Id = 0,
+                    Name = "-- 접속 정보 선택 --",
+                    TNS = "",
+                    Host = "",
+                    Port = "",
+                    Service = "",
+                    UserId = "",
+                    Password = ""
+                };
+                
+                _connectionInfos = new List<Models.ConnectionInfo> { placeholder };
+                _connectionInfos.AddRange(allConnections);
+                
+                System.Diagnostics.Debug.WriteLine($"접속 정보 {allConnections.Count}개 로드됨 (플레이스홀더 포함: {_connectionInfos.Count}개)");
             }
             catch (Exception ex)
             {
@@ -165,7 +181,7 @@ namespace FACTOVA_QueryHelper.Controls
                               .ThenBy(q => q.OrderNumber)
                               .ThenBy(q => q.RowNumber));
                 
-                // 🔥 비즈 조회는 그룹명 → 표시순번 순서로 정렬
+                // 🔥 비즈 조회는 그룹명 → 표시순서로 정렬
                 _bizQueries = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(
                     allQueries.Where(q => q.QueryType == "비즈 조회")
                               .OrderBy(q => q.QueryName)
@@ -389,7 +405,7 @@ namespace FACTOVA_QueryHelper.Controls
 
             // 쿼리 추가 버튼
             var addButton = CreateButton("➕", "쿼리 추가", 120, "#FF28A745");
-            addButton.Click += (s, e) => AddQueryButton_Click(s, e, queryType);
+            addButton.Click += AddQueryButton_Click;
             addButton.Margin = new Thickness(10, 0, 5, 0);
             buttonPanel.Children.Add(addButton);
 
@@ -785,6 +801,36 @@ namespace FACTOVA_QueryHelper.Controls
                 orderStyle.Setters.Add(new Setter(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Center));
                 orderColumn.ElementStyle = orderStyle;
                 dataGrid.Columns.Add(orderColumn);
+                
+                // 🔥 Version 컬럼을 ComboBox로 변경 (정보 조회, 비즈 조회에만 표시)
+                var versionList = new List<string> { "", "1.0", "2.0" }; // 빈 값, 1.0, 2.0
+                
+                var versionTemplate = new DataTemplate();
+                var versionFactory = new FrameworkElementFactory(typeof(ComboBox));
+                versionFactory.SetValue(ComboBox.ItemsSourceProperty, versionList);
+                versionFactory.SetBinding(ComboBox.SelectedItemProperty, 
+                    new System.Windows.Data.Binding("Version") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged });
+                versionFactory.SetValue(ComboBox.HeightProperty, 28.0);
+                versionFactory.SetValue(ComboBox.FontSizeProperty, 11.0);
+                versionTemplate.VisualTree = versionFactory;
+
+                // 읽기 전용 모드 (버전 텍스트 표시)
+                var versionDisplayTemplate = new DataTemplate();
+                var versionDisplayFactory = new FrameworkElementFactory(typeof(TextBlock));
+                versionDisplayFactory.SetBinding(TextBlock.TextProperty, 
+                    new System.Windows.Data.Binding("Version"));
+                versionDisplayFactory.SetValue(TextBlock.PaddingProperty, new Thickness(4));
+                versionDisplayFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
+                versionDisplayFactory.SetValue(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+                versionDisplayTemplate.VisualTree = versionDisplayFactory;
+
+                dataGrid.Columns.Add(new DataGridTemplateColumn
+                {
+                    Header = "버전",
+                    CellTemplate = versionDisplayTemplate,
+                    CellEditingTemplate = versionTemplate,
+                    Width = 80
+                });
             }
 
             // 🔥 접속 정보 선택 콤보박스
@@ -1119,6 +1165,7 @@ namespace FACTOVA_QueryHelper.Controls
                                 }
                             }
                             
+
                             _currentDataGrid?.Items.Refresh();
                             UpdateStatus($"'{changedQuery.QueryName}'이(가) 디폴트 폼으로 설정됩니다. '💾 변경사항 저장'을 클릭하세요.", Colors.Orange);
                         }
@@ -1145,7 +1192,7 @@ namespace FACTOVA_QueryHelper.Controls
 
                 foreach (var query in modifiedQueries.ToList())
                 {
-                    // 🔥 필수 필드 검증 - 그룹명과 접속 정보만 확인
+                    // 🔥 필수 필드 검증 - 그룹명만 확인 (접속 정보는 선택 사항)
                     if (string.IsNullOrWhiteSpace(query.QueryName))
                     {
                         MessageBox.Show($"그룹명을 입력해주세요.", "입력 오류", 
@@ -1153,12 +1200,7 @@ namespace FACTOVA_QueryHelper.Controls
                         return;
                     }
 
-                    if (!query.ConnectionInfoId.HasValue)
-                    {
-                        MessageBox.Show($"'{query.QueryName}'의 접속 정보를 선택해주세요.", "입력 오류", 
-                            MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
-                    }
+                    // 🔥 접속 정보 검증 제거 - 빈 상태로도 저장 가능
 
                     if (query.RowNumber == 0)
                     {
@@ -1498,15 +1540,16 @@ namespace FACTOVA_QueryHelper.Controls
             // 헤더 작성
             var headers = new List<string>
             {
-                "ID", "그룹명", "비즈명", "쿼리비즈명", "설명", "표시순번", 
-                "접속 정보", "SQL 쿼리"
+                "ID", "그룹명", "비즈명", "쿼리비즈명", "설명", "표시순번"
             };
-
-            // 쿼리 실행 탭만 추가 컬럼
-            if (isQueryExecutionTab)
+            
+            // 🔥 정보 조회, 비즈 조회 팝은 Version 컬럼 추가
+            if (!isQueryExecutionTab)
             {
-                headers.AddRange(new[] { "실행", "알림", "≥건수", "=건수", "≤건수", "컬럼명", "컬럼값", "포함", "디폴트" });
+                headers.Add("버전");
             }
+            
+            headers.AddRange(new[] { "접속 정보", "SQL 쿼리" });
 
             for (int i = 0; i < headers.Count; i++)
             {
@@ -1536,6 +1579,12 @@ namespace FACTOVA_QueryHelper.Controls
                 worksheet.Cells[row, col++].Value = query.QueryBizName;
                 worksheet.Cells[row, col++].Value = query.Description2;
                 worksheet.Cells[row, col++].Value = query.OrderNumber;
+                
+                // 🔥 정보 조회, 비즈 조회 탭은 Version 컬럼 추가
+                if (!isQueryExecutionTab)
+                {
+                    worksheet.Cells[row, col++].Value = query.Version;
+                }
                 
                 // 접속 정보 이름
                 if (query.ConnectionInfoId.HasValue)
@@ -1593,8 +1642,17 @@ namespace FACTOVA_QueryHelper.Controls
             worksheet.View.FreezePanes(2, 1);
         }
 
-        private void AddQueryButton_Click(object sender, RoutedEventArgs e, string queryType)
+        private void AddQueryButton_Click(object sender, RoutedEventArgs e)
         {
+            // 🔥 현재 탭의 쿼리 타입 결정
+            string queryType = QueryTypeTabControl.SelectedIndex switch
+            {
+                0 => "쿼리 실행",
+                1 => "정보 조회",
+                2 => "비즈 조회",
+                _ => "쿼리 실행"
+            };
+
             var currentQueries = GetCurrentQueryCollection();
             if (currentQueries == null) return;
 
