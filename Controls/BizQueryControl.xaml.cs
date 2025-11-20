@@ -107,10 +107,11 @@ namespace FACTOVA_QueryHelper.Controls
 
             try
             {
-                // 🔥 "[전체]" 선택 시 모든 쿼리 표시
+                // 🔥 "[전체]" 선택 시 모든 쿼리 표시 (단, 사용여부 체크된 것만)
                 if (groupName == "[전체]")
                 {
                     _filteredQueries = _allQueries
+                        .Where(q => !string.Equals(q.ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase)) // 🔥 사용여부 필터
                         .OrderBy(q => q.QueryName)
                         .ThenBy(q => q.OrderNumber)
                         .ThenBy(q => q.BizName)
@@ -122,9 +123,10 @@ namespace FACTOVA_QueryHelper.Controls
                 }
                 else
                 {
-                    // 선택된 그룹명(QueryName)과 일치하는 쿼리만 필터링
+                    // 선택된 그룹명(QueryName)과 일치하는 쿼리만 필터링 (단, 사용여부 체크된 것만)
                     _filteredQueries = _allQueries
-                        .Where(q => q.QueryName == groupName)
+                        .Where(q => q.QueryName == groupName && 
+                                   !string.Equals(q.ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase)) // 🔥 사용여부 필터
                         .OrderBy(q => q.OrderNumber)
                         .ThenBy(q => q.BizName)
                         .ToList();

@@ -38,9 +38,6 @@ namespace FACTOVA_QueryHelper.Controls
         {
             InitializeComponent();
             
-            // 🔥 사업장 정보 관련 필드 제거 (Factory, Org, Facility, WipLineId, EquipLineId)
-            DateFromPicker.SelectedDateChanged += DatePicker_SelectedDateChanged;
-            DateToPicker.SelectedDateChanged += DatePicker_SelectedDateChanged;
             WorkOrderTextBox.LostFocus += InputField_LostFocus;
             WorkOrderNameTextBox.LostFocus += InputField_LostFocus;
             ModelSuffixTextBox.LostFocus += InputField_LostFocus;
@@ -298,7 +295,7 @@ namespace FACTOVA_QueryHelper.Controls
             LoadInfoQueries();
             
             // 그리드를 항상 20개로 고정 생성
-            GenerateDynamicGridsWithoutBinding(20);
+            CreateDynamicGrids(20);
             
             // 폰트 크기 적용
             ApplyFontSize();
@@ -401,59 +398,6 @@ namespace FACTOVA_QueryHelper.Controls
             }
         }
 
-        /// <summary>
-        /// 동적 그리드를 생성하되 쿼리 바인딩은 하지 않음 (최초 로드용)
-        /// </summary>
-        private void GenerateDynamicGridsWithoutBinding(int count)
-        {
-            _isInitializing = true;
-            
-            DynamicGridsContainer.Children.Clear();
-            DynamicGridsContainer.RowDefinitions.Clear();
-            _dynamicGrids.Clear();
-
-            // 🔥 1열 레이아웃으로 변경 - 행 개수 = 그리드 개수
-            int rowCount = count;
-            
-            // 행 정의 추가
-            for (int i = 0; i < rowCount; i++)
-            {
-                DynamicGridsContainer.RowDefinitions.Add(new RowDefinition 
-                { 
-                    Height = new GridLength(350, GridUnitType.Pixel) 
-                });
-            }
-
-            for (int i = 0; i < count; i++)
-            {
-                int gridIndex = i + 1;
-                var gridInfo = CreateDynamicGrid(gridIndex);
-                _dynamicGrids.Add(gridInfo);
-
-                var border = new Border
-                {
-                    Background = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224)),
-                    BorderThickness = new Thickness(1),
-                    CornerRadius = new CornerRadius(8),
-                    Padding = new Thickness(10),
-                    Margin = new Thickness(5),
-                    Child = CreateGridContainer(gridInfo)
-                };
-
-                // 🔥 1열 레이아웃: Grid.Row만 설정, Grid.Column은 항상 0
-                Grid.SetRow(border, i);
-                Grid.SetColumn(border, 0);
-
-                DynamicGridsContainer.Children.Add(border);
-            }
-
-            // 모든 "정보 조회" 쿼리를 콤보박스에 바인딩
-            UpdateAllGridComboBoxes();
-            
-            _isInitializing = false;
-        }
-
         private void LoadInputValues()
         {
             if (_sharedData == null) return;
@@ -499,11 +443,6 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         private void InputField_LostFocus(object sender, RoutedEventArgs e)
-        {
-            SaveInputValues();
-        }
-
-        private void DatePicker_SelectedDateChanged(object? sender, SelectionChangedEventArgs e)
         {
             SaveInputValues();
         }
@@ -568,14 +507,14 @@ namespace FACTOVA_QueryHelper.Controls
                     // 동적 그리드 생성 및 쿼리 자동 바인딩 (최대 20개)
                     GenerateDynamicGridsWithQueries(detailQueries);
                     
-                    System.Diagnostics.Debug.WriteLine($"✅ 그룹명 '~{queryName}'에 대한 {detailQueries.Count}개의 상세 쿼리가 자동 바인딩되었습니다.");
+                    System.Diagnostics.Debug.WriteLine($"✅ 그룹명 '{queryName}'에 대한 {detailQueries.Count}개의 상세 쿼리가 자동 바인딩되었습니다.");
                 }
                 else
                 {
                     // 상세 쿼리가 없으면 동적 그리드를 20개 빈 상태로 재생성
-                    GenerateDynamicGridsWithoutBinding(20);
+                    CreateDynamicGrids(20);
                     
-                    System.Diagnostics.Debug.WriteLine($"⚠️ 그룹명 '~{queryName}~'에 대한 상세 쿼리(순번 1 이상)가 없습니다. 빈 그리드 20개를 생성했습니다.");
+                    System.Diagnostics.Debug.WriteLine($"⚠️ 그룹명 '{queryName}'에 대한 상세 쿼리(순번 1 이상)가 없습니다. 빈 그리드 20개를 생성했습니다.");
                 }
             }
             catch (Exception ex)
@@ -586,42 +525,11 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         /// <summary>
-        /// 비즈명으로 상세 쿼리(순번 1 이상)를 로드하여 동적 그리드에 자동 바인딩
+        /// 동적 그리드를 생성하고 쿼리 콤보박스를 바인딩합니다.
         /// </summary>
-        private void LoadDetailQueriesByBizName(string bizName)
+        private void CreateDynamicGrids(int count)
         {
-            if (_database == null) return;
-
-            try
-            {
-                var allQueries = _database.GetAllQueries();
-
-                // 선택된 비즈명과 일치하고 순번이 1 이상인 쿼리만 필터링
-                var detailQueries = allQueries
-                    .Where(q => q.QueryType == "정보 조회" && 
-                                q.BizName == bizName && 
-                                q.OrderNumber >= 1)
-                    .OrderBy(q => q.OrderNumber)
-                    .ToList();
-
-                if (detailQueries.Count > 0)
-                {
-                    // 동적 그리드 생성 및 쿼리 자동 바인딩 (최대 20개)
-                    GenerateDynamicGridsWithQueries(detailQueries);
-                }
-                else
-                {
-                    // 상세 쿼리가 없으면 동적 그리드를 20개 빈 상태로 재생성
-                    GenerateDynamicGridsWithoutBinding(20);
-                    
-                    System.Diagnostics.Debug.WriteLine($"비즈명 '~{bizName}~'에 대한 상세 쿼리(순번 1 이상)가 없습니다. 빈 그리드 20개를 생성했습니다.");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"상세 쿼리 로드 실패:\n{ex.Message}", "오류",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            CreateDynamicGridsCore(count, null);
         }
 
         /// <summary>
@@ -629,20 +537,25 @@ namespace FACTOVA_QueryHelper.Controls
         /// </summary>
         private void GenerateDynamicGridsWithQueries(List<QueryItem> queries)
         {
+            CreateDynamicGridsCore(20, queries);
+        }
+
+        /// <summary>
+        /// 동적 그리드 생성의 핵심 로직
+        /// </summary>
+        private void CreateDynamicGridsCore(int count, List<QueryItem>? queriesToBind)
+        {
             _isInitializing = true;
 
             DynamicGridsContainer.Children.Clear();
             DynamicGridsContainer.RowDefinitions.Clear();
             _dynamicGrids.Clear();
 
-            // 최대 20개까지만 처리
-            int count = Math.Min(queries.Count, 20);
-
-            // 🔥 1열 레이아웃으로 변경 - 항상 20개 그리드용 행 생성
-            int rowCount = 20;
+            // 항상 20개 그리드 생성
+            const int gridCount = 20;
 
             // 행 정의 추가
-            for (int i = 0; i < rowCount; i++)
+            for (int i = 0; i < gridCount; i++)
             {
                 DynamicGridsContainer.RowDefinitions.Add(new RowDefinition
                 {
@@ -650,8 +563,8 @@ namespace FACTOVA_QueryHelper.Controls
                 });
             }
 
-            // 20개 그리드 모두 생성
-            for (int i = 0; i < 20; i++)
+            // 그리드 생성
+            for (int i = 0; i < gridCount; i++)
             {
                 int gridIndex = i + 1;
                 var gridInfo = CreateDynamicGrid(gridIndex);
@@ -668,50 +581,64 @@ namespace FACTOVA_QueryHelper.Controls
                     Child = CreateGridContainer(gridInfo)
                 };
 
-                // 🔥 1열 레이아웃: Grid.Row만 설정, Grid.Column은 항상 0
                 Grid.SetRow(border, i);
                 Grid.SetColumn(border, 0);
 
                 DynamicGridsContainer.Children.Add(border);
             }
 
-            // 모든 정보 조회 쿼리를 콜박스에 바인딩 (항상 활성화 - 사용자가 변경 가능)
-            // 🔥 비즈명이 있는 쿼리만 필터링
-            var queriesWithBizName = _infoQueries.Where(q => !string.IsNullOrWhiteSpace(q.BizName)).ToList();
+            // 콤보박스 바인딩
+            BindGridComboBoxes(queriesToBind);
+            
+            _isInitializing = false;
+        }
+
+        /// <summary>
+        /// 동적 그리드의 콤보박스에 쿼리 목록을 바인딩합니다.
+        /// </summary>
+        private void BindGridComboBoxes(List<QueryItem>? queriesToBind)
+        {
+            // 🔥 비즈명이 있고 사용여부가 체크된 쿼리만 필터링
+            // ExcludeFlag가 'Y'이면 콤보박스에 바인딩하지 않음
+            var queriesWithBizName = _infoQueries
+                .Where(q => !string.IsNullOrWhiteSpace(q.BizName) && 
+                           !string.Equals(q.ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase))
+                .ToList();
             
             foreach (var gridInfo in _dynamicGrids)
             {
                 gridInfo.QueryComboBox.ItemsSource = queriesWithBizName;
-                gridInfo.QueryComboBox.IsEnabled = true;  // 항상 활성화
-                gridInfo.ClearButton.IsEnabled = true;     // 항상 활성화
+                gridInfo.QueryComboBox.IsEnabled = true;
+                gridInfo.ClearButton.IsEnabled = true;
             }
 
-            // 매칭되는 쿼리를 순서대로 자동 선택 (최대 20개까지)
-            // 사용자는 언제든지 변경 가능
-            for (int i = 0; i < count && i < _dynamicGrids.Count; i++)
+            // 자동 바인딩할 쿼리가 있으면 선택
+            if (queriesToBind != null && queriesToBind.Count > 0)
             {
-                var gridInfo = _dynamicGrids[i];
-                var query = queries[i];
-
-                // 🔥 queriesWithBizName에서 같은 쿼리를 찾아서 선택
-                // QueryName과 BizName, OrderNumber로 매칭
-                var matchingQuery = queriesWithBizName.FirstOrDefault(q => 
-                    q.QueryName == query.QueryName && 
-                    q.BizName == query.BizName && 
-                    q.OrderNumber == query.OrderNumber);
-
-                if (matchingQuery != null)
+                int count = Math.Min(queriesToBind.Count, _dynamicGrids.Count);
+                
+                for (int i = 0; i < count; i++)
                 {
-                    gridInfo.QueryComboBox.SelectedItem = matchingQuery;
-                    System.Diagnostics.Debug.WriteLine($"✅ 그리드 {gridInfo.Index}: '{query.QueryBizName}' (순번 {query.OrderNumber}) 자동 선택됨");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"❌ 그리드 {gridInfo.Index}: '{query.QueryName}' (비즈명: {query.BizName}, 순번: {query.OrderNumber}) 쿼리를 찾을 수 없습니다.");
+                    var gridInfo = _dynamicGrids[i];
+                    var query = queriesToBind[i];
+
+                    // QueryName과 BizName, OrderNumber로 매칭
+                    var matchingQuery = queriesWithBizName.FirstOrDefault(q => 
+                        q.QueryName == query.QueryName && 
+                        q.BizName == query.BizName && 
+                        q.OrderNumber == query.OrderNumber);
+
+                    if (matchingQuery != null)
+                    {
+                        gridInfo.QueryComboBox.SelectedItem = matchingQuery;
+                        System.Diagnostics.Debug.WriteLine($"✅ 그리드 {gridInfo.Index}: '{query.QueryBizName}' (순번 {query.OrderNumber}) 자동 선택됨");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"❌ 그리드 {gridInfo.Index}: '{query.QueryName}' (비즈명: {query.BizName}, 순번: {query.OrderNumber}) 쿼리를 찾을 수 없습니다.");
+                    }
                 }
             }
-            
-            _isInitializing = false;
         }
 
         private void LoadInfoQueries()
@@ -768,22 +695,12 @@ namespace FACTOVA_QueryHelper.Controls
             }
         }
 
-        private void SaveSelectedQueries()
-        {
-            if (_sharedData == null || _isInitializing) return;
-
-            _sharedData.Settings.GmesPlanQueryName = (QuerySelectComboBox.SelectedItem as QueryItem)?.QueryName ?? "";
-            SaveDynamicGridQueries();
-        }
-
         private void LoadSelectedQueries()
         {
             if (_sharedData == null || _infoQueries.Count == 0) return;
 
             // 항상 플레이스홀더(인덱스 0)로 시작
             QuerySelectComboBox.SelectedIndex = 0;
-
-            // 동적 그리드 쿼리 복원 제거 - 사용자가 직접 선택
         }
 
         private void LoadQueriesButton_Click(object sender, RoutedEventArgs e)
@@ -819,75 +736,9 @@ namespace FACTOVA_QueryHelper.Controls
             }
         }
 
-        private void GenerateDynamicGrids(int count)
-        {
-            _isInitializing = true;
-            
-            DynamicGridsContainer.Children.Clear();
-            DynamicGridsContainer.RowDefinitions.Clear();
-            _dynamicGrids.Clear();
-
-            // 🔥 1열 레이아웃으로 변경 - 행 개수 = 그리드 개수
-            int rowCount = count;
-            
-            // 행 정의 추가
-            for (int i = 0; i < rowCount; i++)
-            {
-                DynamicGridsContainer.RowDefinitions.Add(new RowDefinition 
-                { 
-                    Height = new GridLength(350, GridUnitType.Pixel) 
-                });
-            }
-
-            for (int i = 0; i < count; i++)
-            {
-                int gridIndex = i + 1;
-                var gridInfo = CreateDynamicGrid(gridIndex);
-                _dynamicGrids.Add(gridInfo);
-
-                var border = new Border
-                {
-                    Background = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224)),
-                    BorderThickness = new Thickness(1),
-                    CornerRadius = new CornerRadius(8),
-                    Padding = new Thickness(10),
-                    Margin = new Thickness(5),
-                    Child = CreateGridContainer(gridInfo)
-                };
-
-                // 🔥 1열 레이아웃: Grid.Row만 설정, Grid.Column은 항상 0
-                Grid.SetRow(border, i);
-                Grid.SetColumn(border, 0);
-
-                DynamicGridsContainer.Children.Add(border);
-            }
-
-            UpdateAllGridComboBoxes();
-            
-            _isInitializing = false;
-        }
-
-        private ScrollViewer? FindParentScrollViewer(DependencyObject child)
-        {
-            DependencyObject parent = VisualTreeHelper.GetParent(child);
-            
-            while (parent != null)
-            {
-                if (parent is ScrollViewer scrollViewer)
-                    return scrollViewer;
-                
-                parent = VisualTreeHelper.GetParent(parent);
-            }
-            
-            return null;
-        }
-
-        private ScrollViewer? FindScrollViewer(DependencyObject child)
-        {
-            return FindParentScrollViewer(child);
-        }
-
+        /// <summary>
+        /// 동적 그리드 생성 (그리드 인덱스 기준으로)
+        /// </summary>
         private DynamicGridInfo CreateDynamicGrid(int index)
         {
             var queryComboBox = new ComboBox
@@ -983,6 +834,8 @@ namespace FACTOVA_QueryHelper.Controls
                             Clipboard.SetText(textToCopy);
                             e.Handled = true;
                             
+
+
                             System.Diagnostics.Debug.WriteLine($"✅ 동적 그리드 복사 완료: {rows.Count}행, {textToCopy.Length}자");
                         }
                     }
@@ -1114,20 +967,7 @@ namespace FACTOVA_QueryHelper.Controls
 
         private void UpdateAllGridComboBoxes()
         {
-            // 🔥 비즈명이 있는 쿼리만 필터링
-            var queriesWithBizName = _infoQueries.Where(q => !string.IsNullOrWhiteSpace(q.BizName)).ToList();
-            
-            foreach (var gridInfo in _dynamicGrids)
-            {
-                // 비즈명이 있는 정보 조회 쿼리를 콜박스에 바인딩
-                gridInfo.QueryComboBox.ItemsSource = queriesWithBizName;
-                
-                // 콤보박스 활성화 및 취소 버튼 활성화
-                gridInfo.QueryComboBox.IsEnabled = true;
-                gridInfo.ClearButton.IsEnabled = true;
-            }
-
-            // 복원 기능 제거 - 사용자가 직접 선택
+            BindGridComboBoxes(null);
         }
 
         private async System.Threading.Tasks.Task ExecuteDynamicGridQuery(DynamicGridInfo gridInfo)
@@ -1181,164 +1021,6 @@ namespace FACTOVA_QueryHelper.Controls
             }
         }
 
-        private void SaveDynamicGridQueries()
-        {
-            if (_sharedData == null || _isInitializing) return;
-
-            var selectedQueries = new List<string>();
-            foreach (var gridInfo in _dynamicGrids)
-            {
-                var queryName = (gridInfo.QueryComboBox.SelectedItem as QueryItem)?.QueryName ?? "";
-                selectedQueries.Add(queryName);
-            }
-
-            // 최대 20개까지 저장
-            for (int i = 0; i < selectedQueries.Count && i < 20; i++)
-            {
-                switch (i)
-                {
-                    case 0: _sharedData.Settings.GmesGrid1QueryName = selectedQueries[i]; break;
-                    case 1: _sharedData.Settings.GmesGrid2QueryName = selectedQueries[i]; break;
-                    case 2: _sharedData.Settings.GmesGrid3QueryName = selectedQueries[i]; break;
-                    case 3: _sharedData.Settings.GmesGrid4QueryName = selectedQueries[i]; break;
-                    case 4: _sharedData.Settings.GmesGrid5QueryName = selectedQueries[i]; break;
-                    case 5: _sharedData.Settings.GmesGrid6QueryName = selectedQueries[i]; break;
-                    case 6: _sharedData.Settings.GmesGrid7QueryName = selectedQueries[i]; break;
-                    case 7: _sharedData.Settings.GmesGrid8QueryName = selectedQueries[i]; break;
-                    case 8: _sharedData.Settings.GmesGrid9QueryName = selectedQueries[i]; break;
-                    case 9: _sharedData.Settings.GmesGrid10QueryName = selectedQueries[i]; break;
-                    case 10: _sharedData.Settings.GmesGrid11QueryName = selectedQueries[i]; break;
-                    case 11: _sharedData.Settings.GmesGrid12QueryName = selectedQueries[i]; break;
-                    case 12: _sharedData.Settings.GmesGrid13QueryName = selectedQueries[i]; break;
-                    case 13: _sharedData.Settings.GmesGrid14QueryName = selectedQueries[i]; break;
-                    case 14: _sharedData.Settings.GmesGrid15QueryName = selectedQueries[i]; break;
-                    case 15: _sharedData.Settings.GmesGrid16QueryName = selectedQueries[i]; break;
-                    case 16: _sharedData.Settings.GmesGrid17QueryName = selectedQueries[i]; break;
-                    case 17: _sharedData.Settings.GmesGrid18QueryName = selectedQueries[i]; break;
-                    case 18: _sharedData.Settings.GmesGrid19QueryName = selectedQueries[i]; break;
-                    case 19: _sharedData.Settings.GmesGrid20QueryName = selectedQueries[i]; break;
-                }
-            }
-
-            _sharedData.SaveSettingsCallback?.Invoke();
-        }
-
-        private void LoadDynamicGridQueries()
-        {
-            if (_sharedData == null || _infoQueries.Count == 0) return;
-
-            var savedQueries = new List<string>
-            {
-                _sharedData.Settings.GmesGrid1QueryName,
-                _sharedData.Settings.GmesGrid2QueryName,
-                _sharedData.Settings.GmesGrid3QueryName,
-                _sharedData.Settings.GmesGrid4QueryName,
-                _sharedData.Settings.GmesGrid5QueryName,
-                _sharedData.Settings.GmesGrid6QueryName,
-                _sharedData.Settings.GmesGrid7QueryName,
-                _sharedData.Settings.GmesGrid8QueryName,
-                _sharedData.Settings.GmesGrid9QueryName,
-                _sharedData.Settings.GmesGrid10QueryName,
-                _sharedData.Settings.GmesGrid11QueryName,
-                _sharedData.Settings.GmesGrid12QueryName,
-                _sharedData.Settings.GmesGrid13QueryName,
-                _sharedData.Settings.GmesGrid14QueryName,
-                _sharedData.Settings.GmesGrid15QueryName,
-                _sharedData.Settings.GmesGrid16QueryName,
-                _sharedData.Settings.GmesGrid17QueryName,
-                _sharedData.Settings.GmesGrid18QueryName,
-                _sharedData.Settings.GmesGrid19QueryName,
-                _sharedData.Settings.GmesGrid20QueryName
-            };
-
-            for (int i = 0; i < _dynamicGrids.Count && i < savedQueries.Count; i++)
-            {
-                if (!string.IsNullOrEmpty(savedQueries[i]))
-                {
-                    var query = _infoQueries.FirstOrDefault(q => q.QueryName == savedQueries[i]);
-                    if (query != null)
-                    {
-                        _dynamicGrids[i].QueryComboBox.SelectedItem = query;
-                    }
-                }
-            }
-        }
-
-        private async void ExecuteAllGridsButton_Click(object sender, RoutedEventArgs e)
-        {
-            // 계획정보 DataGrid에서 선택된 항목 확인
-            if (PlanInfoDataGrid.ItemsSource == null)
-            {
-                MessageBox.Show("계획정보를 먼저 조회하세요.", "알림",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            // SelectedItem으로 선택된 행 가져오기
-            DataRowView? selectedRow = PlanInfoDataGrid.SelectedItem as DataRowView;
-            
-            if (selectedRow == null)
-            {
-                MessageBox.Show("계획정보에서 행을 선택하세요.", "알림",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-            try
-            {
-                ExecuteAllGridsButton.IsEnabled = false;
-                ExecuteAllGridsButton.Content = "조회 중...";
-
-                // 각 그리드별로 시간 측정과 함께 실행
-                var tasks = new List<System.Threading.Tasks.Task>();
-                var stopwatches = new Dictionary<int, System.Diagnostics.Stopwatch>();
-
-                foreach (var gridInfo in _dynamicGrids)
-                {
-                    if (gridInfo.QueryComboBox.SelectedItem is QueryItem query)
-                    {
-                        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-                        stopwatches[gridInfo.Index] = stopwatch;
-
-                        tasks.Add(ExecuteQueryToGridWithRowDataAndMeasure(query, gridInfo, selectedRow, stopwatch));
-                    }
-                }
-
-                if (tasks.Count == 0)
-                {
-                    MessageBox.Show("조회할 쿼리가 선택되지 않았습니다.", "알림",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
-                    return;
-                }
-
-                await System.Threading.Tasks.Task.WhenAll(tasks);
-
-                //MessageBox.Show($"전체 조회 완료: {tasks.Count}개 그리드", "완료",
-                //    MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"전체 조회 실패:\n{ex.Message}", "오류",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                ExecuteAllGridsButton.IsEnabled = true;
-                ExecuteAllGridsButton.Content = new StackPanel
-                {
-                    Orientation = Orientation.Horizontal,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    Children =
-                    {
-                        new TextBlock { Text = "⚡", FontSize = 16, Margin = new Thickness(0, 0, 5, 0) },
-                        new TextBlock { Text = "선택 행 기준 전체 조회" }
-                    }
-                };
-            }
-        }
-
-        /// <summary>
-        /// 전체 조회 시 시간 측정과 함께 쿼리를 실행합니다.
-        /// </summary>
         private async System.Threading.Tasks.Task ExecuteQueryToGridWithRowDataAndMeasure(
             QueryItem queryItem,
             DynamicGridInfo gridInfo,
@@ -1543,7 +1225,7 @@ namespace FACTOVA_QueryHelper.Controls
                     queryItem.Password,
                     processedQuery);
 
-                // 🔥 ItemsSource와 Columns를 모두 초기화 후 바인딩
+                // 🔥 ItemsSource와 Columns을 모두 초기화 후 바인딩
                 targetGrid.ItemsSource = null;
                 targetGrid.Columns.Clear();
                 targetGrid.ItemsSource = result.DefaultView;
@@ -1676,7 +1358,7 @@ namespace FACTOVA_QueryHelper.Controls
                     queryItem.Password,
                     processedQuery);
 
-                // 🔥 ItemsSource와 Columns를 모두 초기화 후 바인딩
+                // 🔥 ItemsSource와 Columns을 모두 초기화 후 바인딩
                 targetGrid.ItemsSource = null;
                 targetGrid.Columns.Clear();
                 targetGrid.ItemsSource = result.DefaultView;

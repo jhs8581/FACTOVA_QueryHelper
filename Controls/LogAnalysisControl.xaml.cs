@@ -180,14 +180,18 @@ namespace FACTOVA_QueryHelper.Controls
             
             foreach (var query in sortedQueries)
             {
-                // ExcludeFlag가 'N'이거나 빈 값이면 기본 체크 (포함)
-                // ExcludeFlag가 'Y'이면 체크 해제 (제외)
-                bool isChecked = !string.Equals(query.ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase);
+                // 🔥 "사용여부" 체크박스에 따라 화면 표시 여부 결정
+                // ExcludeFlag가 'Y'이면 화면에 표시하지 않음 (제외)
+                if (string.Equals(query.ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue; // 화면에 표시하지 않음
+                }
                 
+                // ExcludeFlag가 'N'이거나 빈 값이면 화면에 표시하고 체크 (사용 = 실행 대상)
                 _sharedData.QueryFilterItems.Add(new CheckableComboBoxItem
                 {
                     Text = query.QueryName,
-                    IsChecked = isChecked
+                    IsChecked = true // 화면에 표시되는 쿼리는 기본적으로 체크
                 });
             }
 
@@ -211,9 +215,18 @@ namespace FACTOVA_QueryHelper.Controls
             // ID 순으로 정렬하여 각 쿼리를 항목으로 추가 (단일 선택용)
             var sortedQueries = _sharedData.LoadedQueries.OrderBy(q => q.RowNumber).ToList();
             
+            int displayIndex = 0; // 실제 표시되는 인덱스
             for (int i = 0; i < sortedQueries.Count; i++)
             {
                 var query = sortedQueries[i];
+                
+                // 🔥 "사용여부" 체크박스에 따라 디폴트폼에도 표시 여부 결정
+                // ExcludeFlag가 'Y'이면 디폴트폼에 표시하지 않음 (제외)
+                if (string.Equals(query.ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue; // 디폴트폼에 표시하지 않음
+                }
+                
                 defaultFormItems.Add(new CheckableComboBoxItem
                 {
                     Text = query.QueryName,
@@ -223,8 +236,10 @@ namespace FACTOVA_QueryHelper.Controls
                 // 디폴트로 설정된 쿼리 찾기
                 if (query.DefaultFlagBool && defaultIndex == -1)
                 {
-                    defaultIndex = i;
+                    defaultIndex = displayIndex;
                 }
+                
+                displayIndex++;
             }
 
             DefaultFormComboBox.ItemsSource = defaultFormItems;

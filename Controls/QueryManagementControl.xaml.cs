@@ -856,6 +856,7 @@ namespace FACTOVA_QueryHelper.Controls
             connectionDisplayFactory.SetBinding(TextBlock.TextProperty, connectionBinding);
             connectionDisplayFactory.SetValue(TextBlock.PaddingProperty, new Thickness(4));
             connectionDisplayFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
+            connectionDisplayFactory.SetValue(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Center);
             connectionDisplayTemplate.VisualTree = connectionDisplayFactory;
 
             dataGrid.Columns.Add(new DataGridTemplateColumn
@@ -975,9 +976,9 @@ namespace FACTOVA_QueryHelper.Controls
 
                 dataGrid.Columns.Add(new DataGridCheckBoxColumn
                 {
-                    Header = "포함",
+                    Header = "사용여부",
                     Binding = new System.Windows.Data.Binding("ExcludeFlagBool") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged },
-                    Width = 50
+                    Width = 70
                 });
 
                 dataGrid.Columns.Add(new DataGridCheckBoxColumn
@@ -985,6 +986,17 @@ namespace FACTOVA_QueryHelper.Controls
                     Header = "디폴트",
                     Binding = new System.Windows.Data.Binding("DefaultFlagBool") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged },
                     Width = 60
+                });
+            }
+            
+            // 🔥 정보 조회, 비즈 조회 탭도 사용여부 컬럼 추가
+            if (queryType == "정보 조회" || queryType == "비즈 조회")
+            {
+                dataGrid.Columns.Add(new DataGridCheckBoxColumn
+                {
+                    Header = "사용여부",
+                    Binding = new System.Windows.Data.Binding("ExcludeFlagBool") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged },
+                    Width = 70
                 });
             }
         }
@@ -1436,7 +1448,7 @@ namespace FACTOVA_QueryHelper.Controls
         /// </summary>
         private void ExportToExcelButton_Click(object sender, RoutedEventArgs e)
         {
-            // 🔥 모든 탭의 쿼리를 한 번에 다운로드
+            // 🔥 모든 탭의 쿼지를 한 번에 다운로드
             var totalCount = (_queryExecutionQueries?.Count ?? 0) + 
                             (_infoQueries?.Count ?? 0) + 
                             (_bizQueries?.Count ?? 0);
@@ -1609,7 +1621,7 @@ namespace FACTOVA_QueryHelper.Controls
                     worksheet.Cells[row, col++].Value = query.CountLessThan;
                     worksheet.Cells[row, col++].Value = query.ColumnNames;
                     worksheet.Cells[row, col++].Value = query.ColumnValues;
-                    worksheet.Cells[row, col++].Value = query.ExcludeFlag == "N" ? "Y" : "N"; // 포함
+                    worksheet.Cells[row, col++].Value = query.ExcludeFlag == "N" ? "Y" : "N"; // 사용여부
                     worksheet.Cells[row, col++].Value = query.DefaultFlag;
                 }
 

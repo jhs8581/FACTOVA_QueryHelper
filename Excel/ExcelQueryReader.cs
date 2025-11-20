@@ -65,9 +65,9 @@ namespace FACTOVA_QueryHelper
             set => NotifyFlag = value ? "Y" : "N";
         }
 
-        // "포함" 체크박스 (ExcludeFlag와 반대 로직)
-        // 체크 = 포함 (ExcludeFlag = "N")
-        // 체크 해제 = 제외 (ExcludeFlag = "Y")
+        // "사용여부" 체크박스 (ExcludeFlag와 반대 로직)
+        // 체크 = 사용 (ExcludeFlag = "N") → 화면 표시 및 실행 대상
+        // 체크 해제 = 미사용 (ExcludeFlag = "Y") → 화면 미표시 및 실행 제외
         public bool ExcludeFlagBool
         {
             get => !string.Equals(ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase);
