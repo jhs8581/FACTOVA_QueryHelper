@@ -113,43 +113,52 @@ namespace FACTOVA_QueryHelper.Database
             }
 
             // 🔥 행 제한이 없으면 2000건 제한 추가
-            // WHERE 절이 있는지 확인하여 적절한 위치에 ROWNUM 조건 추가
             string trimmedQuery = query.Trim();
             
             // ORDER BY 절이 있는지 확인
-            Match orderByMatch = Regex.Match(trimmedQuery, @"\bORDER\s+BY\b", RegexOptions.IgnoreCase);
+            Match orderByMatch = Regex.Match(trimmedQuery, @"\bORDER\s+BY\b", RegexOptions.IgnoreCase | RegexOptions.Singleline);
             
             if (orderByMatch.Success)
             {
-                // ORDER BY가 있으면 그 앞에 WHERE ROWNUM <= 2000 추가
-                int orderByIndex = orderByMatch.Index;
-                string beforeOrderBy = trimmedQuery.Substring(0, orderByIndex).TrimEnd();
-                string orderByPart = trimmedQuery.Substring(orderByIndex);
-                
-                // WHERE 절이 이미 있는지 확인
-                bool hasWhere = Regex.IsMatch(beforeOrderBy, @"\bWHERE\b", RegexOptions.IgnoreCase);
-                
-                if (hasWhere)
-                {
-                    return $"{beforeOrderBy}\n  AND ROWNUM <= 2000\n{orderByPart}";
-                }
-                else
-                {
-                    return $"{beforeOrderBy}\nWHERE ROWNUM <= 2000\n{orderByPart}";
-                }
+                // 🔥 ORDER BY가 있으면 전체 쿼리를 서브쿼리로 감싸서 ROWNUM 적용
+                // SELECT * FROM (원본쿼리) WHERE ROWNUM <= 2000
+                return $"SELECT * FROM (\n{trimmedQuery}\n) WHERE ROWNUM <= 2000";
             }
             else
             {
-                // ORDER BY가 없으면 마지막에 WHERE ROWNUM <= 2000 추가
+                // 🔥 ORDER BY가 없으면 WHERE 절에 ROWNUM 조건 추가
                 bool hasWhere = Regex.IsMatch(trimmedQuery, @"\bWHERE\b", RegexOptions.IgnoreCase);
                 
-                if (hasWhere)
+                // GROUP BY나 HAVING 절이 있는지 확인 (WHERE는 GROUP BY 전에 와야 함)
+                Match groupByMatch = Regex.Match(trimmedQuery, @"\b(GROUP\s+BY|HAVING)\b", RegexOptions.IgnoreCase);
+                
+                if (groupByMatch.Success)
                 {
-                    return $"{trimmedQuery}\n  AND ROWNUM <= 2000";
+                    // GROUP BY나 HAVING이 있으면 그 앞에 ROWNUM 조건 추가
+                    int groupByIndex = groupByMatch.Index;
+                    string beforeGroupBy = trimmedQuery.Substring(0, groupByIndex).TrimEnd();
+                    string groupByPart = trimmedQuery.Substring(groupByIndex);
+                    
+                    if (hasWhere)
+                    {
+                        return $"{beforeGroupBy}\n  AND ROWNUM <= 2000\n{groupByPart}";
+                    }
+                    else
+                    {
+                        return $"{beforeGroupBy}\nWHERE ROWNUM <= 2000\n{groupByPart}";
+                    }
                 }
                 else
                 {
-                    return $"{trimmedQuery}\nWHERE ROWNUM <= 2000";
+                    // GROUP BY도 없으면 마지막에 WHERE ROWNUM <= 2000 추가
+                    if (hasWhere)
+                    {
+                        return $"{trimmedQuery}\n  AND ROWNUM <= 2000";
+                    }
+                    else
+                    {
+                        return $"{trimmedQuery}\nWHERE ROWNUM <= 2000";
+                    }
                 }
             }
         }
