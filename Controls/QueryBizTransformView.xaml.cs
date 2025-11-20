@@ -102,19 +102,22 @@ namespace FACTOVA_QueryHelper.Controls
                 // 🔥 기존 탭 제거 (첫 번째 탭 제외)
                 RemoveAllTabsExceptFirst();
 
-                // 🔥 각 쿼리별로 탭 생성
+                // 🔥 1. 통합 탭 먼저 생성 (모든 변환된 쿼리 포함)
+                CreateUnifiedQueryTab(queries);
+
+                // 🔥 2. 각 쿼리별로 개별 탭도 생성
                 for (int i = 0; i < queries.Count; i++)
                 {
                     CreateQueryTab(queries[i].Name, queries[i].TransformedQuery, queries[i].Name);
                 }
 
-                // 🔥 두 번째 탭으로 이동 (첫 번째 생성된 쿼리 탭)
+                // 🔥 두 번째 탭으로 이동 (통합 탭)
                 if (QueryTabControl.Items.Count > 1)
                 {
                     QueryTabControl.SelectedIndex = 1;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"✅ {queries.Count} queries transformed successfully");
+                System.Diagnostics.Debug.WriteLine($"✅ {queries.Count} queries transformed: 1 unified tab + {queries.Count} individual tabs");
             }
             catch (Exception ex)
             {
@@ -392,7 +395,80 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         /// <summary>
-        /// 쿼리 탭 생성 - QueryExecutorControl 사용
+        /// 🔥 통합 쿼리 탭 생성 - 모든 변환된 쿼리를 하나의 QueryExecutorControl에 표시
+        /// </summary>
+        private void CreateUnifiedQueryTab(List<BizQueryInfo> queries)
+        {
+            try
+            {
+                // 🔥 새 TabItem 생성
+                var tabItem = new TabItem
+                {
+                    Header = $"📋 변환된 쿼리 ({queries.Count}개)"
+                };
+
+                // 🔥 모든 쿼리를 하나의 텍스트로 합치기
+                var unifiedQuery = new System.Text.StringBuilder();
+                
+                for (int i = 0; i < queries.Count; i++)
+                {
+                    var query = queries[i];
+                    
+                    // 구분선과 쿼리명 추가
+                    unifiedQuery.AppendLine($"/* ========================================");
+                    unifiedQuery.AppendLine($"   {query.Name}");
+                    unifiedQuery.AppendLine($"   ======================================== */");
+                    unifiedQuery.AppendLine();
+                    
+                    // 🔥 쿼리 추가 (끝에 세미콜론이 없으면 추가)
+                    var trimmedQuery = query.TransformedQuery.TrimEnd();
+                    if (!trimmedQuery.EndsWith(";"))
+                    {
+                        unifiedQuery.AppendLine(trimmedQuery + ";");
+                    }
+                    else
+                    {
+                        unifiedQuery.AppendLine(trimmedQuery);
+                    }
+                    
+                    unifiedQuery.AppendLine();
+                    
+                    // 마지막 쿼리가 아니면 구분선 추가
+                    if (i < queries.Count - 1)
+                    {
+                        unifiedQuery.AppendLine();
+                        unifiedQuery.AppendLine("-- ------------------------------------------------");
+                        unifiedQuery.AppendLine();
+                    }
+                }
+
+                // 🔥 QueryExecutorControl 사용
+                var queryExecutor = new QueryExecutorControl();
+                
+                // 🔥 SharedDataContext 설정
+                if (_sharedData != null)
+                {
+                    queryExecutor.SetSharedDataContext(_sharedData);
+                }
+                
+                queryExecutor.SetDbService(_dbService);
+                queryExecutor.SetQuery(unifiedQuery.ToString());
+
+                tabItem.Content = queryExecutor;
+
+                // 🔥 TabControl에 추가
+                QueryTabControl.Items.Add(tabItem);
+
+                System.Diagnostics.Debug.WriteLine($"✅ Created unified tab with {queries.Count} queries");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Error creating unified tab: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 쿼리 탭 생성 - QueryExecutorControl 사용 (더 이상 사용 안 함)
         /// </summary>
         private void CreateQueryTab(string tabName, string query, string bizName)
         {
