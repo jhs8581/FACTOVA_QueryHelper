@@ -41,6 +41,9 @@ namespace FACTOVA_QueryHelper
         // 🔥 신규 필드: 버전 정보 (1.0, 2.0 등)
         public string Version { get; set; } = string.Empty;
 
+        // 🔥 신규 필드: 행 색상
+        public string RowColor { get; set; } = string.Empty;
+
         // 새로운 옵션 필드 추가됨
         public string EnabledFlag { get; set; } = string.Empty; // G열 'Y'이면 실행 활성
         public string NotifyFlag { get; set; } = string.Empty; // H열 'Y'이면 알림 표시

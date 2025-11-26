@@ -10,8 +10,8 @@
         WindowStartupLocation="CenterScreen">
     <Grid>
         <TabControl x:Name="MainTabControl" Margin="10">
-            <!-- 쿼리 실행 탭 -->
-            <TabItem Header="쿼리 실행">
+            <!-- 실시간 모니터링 탭 (구 쿼리 실행) -->
+            <TabItem Header="실시간 모니터링">
                 <controls:LogAnalysisControl x:Name="LogAnalysisControl"/>
             </TabItem>
 
@@ -30,8 +30,8 @@
                 <controls:QueryManagementControl x:Name="QueryManagementControl"/>
             </TabItem>
 
-            <!-- SQL Window 탭 -->
-            <TabItem Header="SQL Window">
+            <!-- 쿼리 실행 탭 (구 SQL Window) -->
+            <TabItem Header="쿼리 실행">
                 <controls:QueryEditorView x:Name="QueryEditorView"/>
             </TabItem>
 

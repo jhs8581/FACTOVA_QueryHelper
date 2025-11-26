@@ -11,6 +11,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using FACTOVA_QueryHelper.Database;
+using FACTOVA_QueryHelper.Converters;
+using FACTOVA_QueryHelper.Models;
 
 namespace FACTOVA_QueryHelper.Controls
 {
@@ -43,7 +45,12 @@ namespace FACTOVA_QueryHelper.Controls
         private Dictionary<int, TextBlock> _statusTextBlocks = new Dictionary<int, TextBlock>();
         private Dictionary<int, Button> _deleteButtons = new Dictionary<int, Button>();
         private Dictionary<int, Button> _duplicateButtons = new Dictionary<int, Button>();
+        private Dictionary<int, TextBox> _filterTextBoxes = new Dictionary<int, TextBox>();
         
+        // 🔥 필터링을 위한 원본 데이터 저장
+        private System.Collections.ObjectModel.ObservableCollection<QueryItem>? _infoQueriesOriginal;
+        private System.Collections.ObjectModel.ObservableCollection<QueryItem>? _bizQueriesOriginal;
+
         // 🔥 현재 탭의 UI 요소에 대한 프로퍼티 (편의성)
         private DataGrid? _currentDataGrid => _dataGrids.ContainsKey(QueryTypeTabControl.SelectedIndex) ? _dataGrids[QueryTypeTabControl.SelectedIndex] : null;
         private TextBlock? _currentQueryCountTextBlock => _queryCountTextBlocks.ContainsKey(QueryTypeTabControl.SelectedIndex) ? _queryCountTextBlocks[QueryTypeTabControl.SelectedIndex] : null;
@@ -62,10 +69,10 @@ namespace FACTOVA_QueryHelper.Controls
 
         private void QueryManagementControl_Loaded(object sender, RoutedEventArgs e)
         {
-            // 첫 번째 탭(쿼리 실행)의 UI 생성
+            // 첫 번째 탭(실시간 모니터링)의 UI 생성
             if (QueryTypeTabControl.SelectedIndex == 0)
             {
-                CreateTabContent("쿼리 실행");
+                CreateTabContent("실시간 모니터링");
             }
         }
 
@@ -167,7 +174,7 @@ namespace FACTOVA_QueryHelper.Controls
                 var allQueries = _database.GetAllQueries();
                 
                 // 🔥 구분별로 쿼리 분류 및 정렬
-                // 쿼리 실행: 그룹명 → 표시순번 순서로 정렬
+                // 실시간 모니터링: 그룹명 → 표시순번 순서로 정렬
                 _queryExecutionQueries = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(
                     allQueries.Where(q => q.QueryType == "쿼리 실행")
                               .OrderBy(q => q.QueryName)
@@ -175,18 +182,24 @@ namespace FACTOVA_QueryHelper.Controls
                               .ThenBy(q => q.RowNumber));
                 
                 // 정보 조회: 그룹명 → 표시순번 순서로 정렬
-                _infoQueries = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(
-                    allQueries.Where(q => q.QueryType == "정보 조회")
+                var infoQueriesList = allQueries.Where(q => q.QueryType == "정보 조회")
                               .OrderBy(q => q.QueryName)
                               .ThenBy(q => q.OrderNumber)
-                              .ThenBy(q => q.RowNumber));
+                              .ThenBy(q => q.RowNumber)
+                              .ToList();
+                
+                _infoQueriesOriginal = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(infoQueriesList);
+                _infoQueries = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(infoQueriesList);
                 
                 // 🔥 비즈 조회는 그룹명 → 표시순서로 정렬
-                _bizQueries = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(
-                    allQueries.Where(q => q.QueryType == "비즈 조회")
+                var bizQueriesList = allQueries.Where(q => q.QueryType == "비즈 조회")
                               .OrderBy(q => q.QueryName)
                               .ThenBy(q => q.OrderNumber)
-                              .ThenBy(q => q.RowNumber));
+                              .ThenBy(q => q.RowNumber)
+                              .ToList();
+                
+                _bizQueriesOriginal = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(bizQueriesList);
+                _bizQueries = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(bizQueriesList);
                 
                 // 🔥 현재 탭의 DataGrid 업데이트
                 UpdateCurrentTabDataGrid();
@@ -225,7 +238,7 @@ namespace FACTOVA_QueryHelper.Controls
 
             switch (selectedIndex)
             {
-                case 0: // 쿼리 실행
+                case 0: // 실시간 모니터링
                     queries = _queryExecutionQueries;
                     break;
                 case 1: // 정보 조회
@@ -484,7 +497,7 @@ namespace FACTOVA_QueryHelper.Controls
         /// <summary>
         /// 버튼 생성 헬퍼 메서드
         /// </summary>
-        private Button CreateButton(string icon, string text, double width, string colorHex)
+        private Button CreateButton(String icon, String text, Double width, String colorHex)
         {
             var button = new Button
             {
@@ -527,6 +540,7 @@ namespace FACTOVA_QueryHelper.Controls
             var grid = new Grid();
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
             // 헤더
@@ -554,17 +568,67 @@ namespace FACTOVA_QueryHelper.Controls
             Grid.SetRow(headerGrid, 0);
             grid.Children.Add(headerGrid);
 
+            // 🔥 그룹명 필터 (정보 조회, 비즈 조회만)
+            if (queryType == "정보 조회" || queryType == "비즈 조회")
+            {
+                var filterBorder = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromRgb(240, 248, 255)),
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(0, 120, 215)),
+                    BorderThickness = new Thickness(1),
+                    CornerRadius = new CornerRadius(6),
+                    Padding = new Thickness(10, 8, 10, 8),
+                    Margin = new Thickness(0, 10, 0, 10)
+                };
+
+                var filterPanel = new StackPanel { Orientation = Orientation.Horizontal };
+                
+                filterPanel.Children.Add(new TextBlock
+                {
+                    Text = "🔍 필터:",
+                    VerticalAlignment = VerticalAlignment.Center,
+                    FontWeight = FontWeights.SemiBold,
+                    Margin = new Thickness(0, 0, 10, 0)
+                });
+
+                var filterTextBox = new TextBox
+                {
+                    Width = 300,
+                    Height = 28,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    FontSize = 12,
+                    Padding = new Thickness(8, 4, 8, 4)
+                };
+                
+                filterTextBox.TextChanged += FilterTextBox_TextChanged;
+                _filterTextBoxes[tabIndex] = filterTextBox;
+                filterPanel.Children.Add(filterTextBox);
+                
+                filterPanel.Children.Add(new TextBlock
+                {
+                    Text = "입력하면 실시간 필터링됩니다",
+                    FontSize = 11,
+                    Foreground = Brushes.Gray,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(10, 0, 0, 0)
+                });
+
+                filterBorder.Child = filterPanel;
+                Grid.SetRow(filterBorder, 1);
+                grid.Children.Add(filterBorder);
+            }
+
             // 편집 모드 Border
             var editModeBorder = CreateEditModeBorder();
-            _editModeBorders[tabIndex] = editModeBorder;  // 🔥 Dictionary에 저장
-            Grid.SetRow(editModeBorder, 1);
+            _editModeBorders[tabIndex] = editModeBorder;
+            Grid.SetRow(editModeBorder, 2);
             grid.Children.Add(editModeBorder);
 
             // 🔥 DataGrid 직접 추가 (ScrollViewer 제거)
             var dataGrid = CreateDataGrid(queryType);
-            _dataGrids[tabIndex] = dataGrid;  // 🔥 Dictionary에 저장
+            _dataGrids[tabIndex] = dataGrid;
             
-            Grid.SetRow(dataGrid, 2);
+            Grid.SetRow(dataGrid, 3);
             grid.Children.Add(dataGrid);
 
             border.Child = grid;
@@ -668,13 +732,14 @@ namespace FACTOVA_QueryHelper.Controls
                 BorderThickness = new Thickness(1),
                 BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224)),
                 Background = Brushes.White,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,  // 🔥 가로 스크롤바 추가
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto
             };
 
             dataGrid.SelectionChanged += QueriesDataGrid_SelectionChanged;
             dataGrid.BeginningEdit += QueriesDataGrid_BeginningEdit;
             dataGrid.CellEditEnding += QueriesDataGrid_CellEditEnding;
+            dataGrid.LoadingRow += QueriesDataGrid_LoadingRow; // 🔥 행 색상 적용
 
             // 헤더 스타일
             var headerStyle = new Style(typeof(DataGridColumnHeader));
@@ -737,6 +802,37 @@ namespace FACTOVA_QueryHelper.Controls
                 Binding = new System.Windows.Data.Binding("QueryName") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged },
                 Width = 150
             });
+            
+            // 🔥 색상 선택 콤보박스
+            var colorList = RowColorProvider.GetColorList();
+            
+            var colorTemplate = new DataTemplate();
+            var colorFactory = new FrameworkElementFactory(typeof(ComboBox));
+            colorFactory.SetValue(ComboBox.ItemsSourceProperty, colorList);
+            colorFactory.SetValue(ComboBox.DisplayMemberPathProperty, "Name");
+            colorFactory.SetValue(ComboBox.SelectedValuePathProperty, "Value");
+            colorFactory.SetBinding(ComboBox.SelectedValueProperty, 
+                new System.Windows.Data.Binding("RowColor") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged });
+            colorFactory.SetValue(ComboBox.HeightProperty, 28.0);
+            colorFactory.SetValue(ComboBox.FontSizeProperty, 11.0);
+            colorTemplate.VisualTree = colorFactory;
+
+            // 읽기 전용 모드 (색상 표시)
+            var colorDisplayTemplate = new DataTemplate();
+            var colorDisplayFactory = new FrameworkElementFactory(typeof(Border));
+            colorDisplayFactory.SetValue(Border.WidthProperty, 80.0);
+            colorDisplayFactory.SetValue(Border.HeightProperty, 20.0);
+            colorDisplayFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(4));
+            colorDisplayFactory.SetValue(Border.BorderThicknessProperty, new Thickness(1));
+            colorDisplayFactory.SetValue(Border.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(128, 128, 128)));
+            
+            var colorBinding = new System.Windows.Data.Binding("RowColor");
+            colorBinding.Converter = new Converters.RowColorToBackgroundConverter();
+            colorDisplayFactory.SetBinding(Border.BackgroundProperty, colorBinding);
+            
+            colorDisplayTemplate.VisualTree = colorDisplayFactory;
+
+           
 
             // 🔥 비즈명 (모든 탭에서 표시)
             dataGrid.Columns.Add(new DataGridTextColumn
@@ -788,6 +884,14 @@ namespace FACTOVA_QueryHelper.Controls
                 Width = 250
             });
 
+            dataGrid.Columns.Add(new DataGridTemplateColumn
+            {
+                Header = "🎨 색상",
+                CellTemplate = colorDisplayTemplate,
+                CellEditingTemplate = colorTemplate,
+                Width = 100
+            });
+
             // 순번 (정보 조회, 비즈 조회에서만 표시)
             if (queryType == "정보 조회" || queryType == "비즈 조회")
             {
@@ -837,7 +941,7 @@ namespace FACTOVA_QueryHelper.Controls
             var connectionTemplate = new DataTemplate();
             var connectionFactory = new FrameworkElementFactory(typeof(ComboBox));
             connectionFactory.SetValue(ComboBox.ItemsSourceProperty, _connectionInfos);
-            connectionFactory.SetValue(ComboBox.DisplayMemberPathProperty, "DisplayName");
+            connectionFactory.SetValue(ComboBox.DisplayMemberPathProperty, "Id");
             connectionFactory.SetValue(ComboBox.SelectedValuePathProperty, "Id");
             connectionFactory.SetBinding(ComboBox.SelectedValueProperty, 
                 new System.Windows.Data.Binding("ConnectionInfoId") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged });
@@ -1040,6 +1144,29 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         #region 이벤트 핸들러
+
+        /// <summary>
+        /// 🔥 DataGrid 행 로딩 시 색상 적용
+        /// </summary>
+        private void QueriesDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
+        {
+            if (e.Row.Item is QueryItem query && !string.IsNullOrWhiteSpace(query.RowColor))
+            {
+                try
+                {
+                    var color = (Color)ColorConverter.ConvertFromString(query.RowColor);
+                    e.Row.Background = new SolidColorBrush(color);
+                }
+                catch
+                {
+                    e.Row.Background = Brushes.White;
+                }
+            }
+            else
+            {
+                e.Row.Background = Brushes.White;
+            }
+        }
 
         private void LoadFromDbButton_Click(object sender, RoutedEventArgs e)
         {
@@ -1245,10 +1372,23 @@ namespace FACTOVA_QueryHelper.Controls
                 UpdateStatus($"변경사항이 저장되었습니다. (신규: {newCount}, 수정: {updateCount})", Colors.Green);
             }
             catch (Exception ex)
+            //{
+            //    MessageBox.Show($"저장 중 오류가 발생했습니다:\n{ex.Message}", "오류", 
+            //        MessageBoxButton.OK, MessageBoxImage.Error);
+            //    UpdateStatus($"저장 실패: {ex.Message}", Colors.Red);
+            //}
+
             {
-                MessageBox.Show($"저장 중 오류가 발생했습니다:\n{ex.Message}", "오류", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-                UpdateStatus($"저장 실패: {ex.Message}", Colors.Red);
+                // 예외 처리를 위한 디버그 출력
+                System.Diagnostics.Debug.WriteLine($"저장 중 오류: {ex.Message}");
+
+                // 사용자에게 오류 메시지 표시
+                MessageBox.Show("저장 중 오류가 발생했습니다.\n\n" +
+                                $"오류 내용: {ex.Message}\n" +
+                                "상세한 오류 정보는 디버그 출력을 확인하세요.",
+                                "오류",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error);
             }
         }
 
@@ -1479,10 +1619,10 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     int totalSheetCount = 0;
 
-                    // 🔥 쿼리 실행 시트 추가
+                    // 🔥 실시간 모니터링 시트 추가
                     if (_queryExecutionQueries != null && _queryExecutionQueries.Count > 0)
                     {
-                        AddQuerySheetToExcel(package, "쿼리 실행", _queryExecutionQueries, true);
+                        AddQuerySheetToExcel(package, "실시간 모니터링", _queryExecutionQueries, true);
                         totalSheetCount++;
                     }
 
@@ -1532,128 +1672,183 @@ namespace FACTOVA_QueryHelper.Controls
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Excel 파일 생성 실패:\n{ex.Message}", "오류",
+                MessageBox.Show($"Excel 다운로드 중 오류가 발생했습니다:\n{ex.Message}", "오류",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 UpdateStatus($"Excel 다운로드 실패: {ex.Message}", Colors.Red);
             }
         }
 
         /// <summary>
-        /// Excel 패키지에 쿼리 시트를 추가합니다.
+        /// 쿼리 목록을 Excel 시트에 추가
         /// </summary>
-        private void AddQuerySheetToExcel(
-            OfficeOpenXml.ExcelPackage package, 
-            string sheetName, 
-            System.Collections.ObjectModel.ObservableCollection<QueryItem> queries,
-            bool isQueryExecutionTab)
+        private void AddQuerySheetToExcel(OfficeOpenXml.ExcelPackage package, string sheetName, 
+            System.Collections.ObjectModel.ObservableCollection<QueryItem> queries, bool isMainSheet)
         {
-            var worksheet = package.Workbook.Worksheets.Add(sheetName);
+            try
+            {
+                var worksheet = package.Workbook.Worksheets.Add(sheetName);
+                worksheet.Cells.Style.Font.Size = 11;
+                worksheet.Cells.Style.Font.Name = "굴림";
 
-            // 헤더 작성
-            var headers = new List<string>
-            {
-                "ID", "그룹명", "비즈명", "쿼리비즈명", "설명", "표시순번"
-            };
-            
-            // 🔥 정보 조회, 비즈 조회 팝은 Version 컬럼 추가
-            if (!isQueryExecutionTab)
-            {
-                headers.Add("버전");
-            }
-            
-            headers.AddRange(new[] { "접속 정보", "SQL 쿼리" });
-
-            for (int i = 0; i < headers.Count; i++)
-            {
-                worksheet.Cells[1, i + 1].Value = headers[i];
-            }
-
-            // 헤더 스타일
-            using (var range = worksheet.Cells[1, 1, 1, headers.Count])
-            {
-                range.Style.Font.Bold = true;
-                range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(0, 120, 215));
-                range.Style.Font.Color.SetColor(System.Drawing.Color.White);
-                range.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                range.Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin);
-            }
-
-            // 데이터 작성
-            int row = 2;
-            foreach (var query in queries)
-            {
+                // 헤더
+                worksheet.Row(1).Height = 15;
+                worksheet.Row(1).Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                worksheet.Row(1).Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(0, 120, 215));
+                worksheet.Row(1).Style.Font.Color.SetColor(System.Drawing.Color.White);
+                worksheet.Row(1).Style.Font.Bold = true;
+                
+                var properties = typeof(QueryItem).GetProperties();
                 int col = 1;
-                
-                worksheet.Cells[row, col++].Value = query.RowNumber;
-                worksheet.Cells[row, col++].Value = query.QueryName;
-                worksheet.Cells[row, col++].Value = query.BizName;
-                worksheet.Cells[row, col++].Value = query.QueryBizName;
-                worksheet.Cells[row, col++].Value = query.Description2;
-                worksheet.Cells[row, col++].Value = query.OrderNumber;
-                
-                // 🔥 정보 조회, 비즈 조회 탭은 Version 컬럼 추가
-                if (!isQueryExecutionTab)
+                foreach (var prop in properties)
                 {
-                    worksheet.Cells[row, col++].Value = query.Version;
+                    // ID는 숨김
+                    if (prop.Name == "RowNumber")
+                    {
+                        worksheet.Column(col).Hidden = true;
+                    }
+                    else
+                    {
+                        worksheet.Cells[1, col].Value = prop.Name.Replace("_", " ");
+                        worksheet.Column(col).Width = 15;
+                    }
+                    col++;
                 }
-                
-                // 접속 정보 이름
-                if (query.ConnectionInfoId.HasValue)
+
+                // 데이터
+                int row = 2;
+                foreach (var query in queries)
                 {
-                    var connInfo = _connectionInfos.FirstOrDefault(c => c.Id == query.ConnectionInfoId.Value);
-                    worksheet.Cells[row, col++].Value = connInfo?.DisplayName ?? "-";
+                    col = 1;
+                    foreach (var prop in properties)
+                    {
+                        // ID는 건너뜀
+                        if (prop.Name != "RowNumber")
+                        {
+                            var value = prop.GetValue(query);
+                            
+                            // 불리언 값 형식화
+                            if (value is bool boolValue)
+                            {
+                                worksheet.Cells[row, col].Value = boolValue ? "✔️" : "❌";
+                            }
+                            else
+                            {
+                                worksheet.Cells[row, col].Value = value;
+                            }
+                        }
+                        col++;
+                    }
+                    row++;
+                }
+
+                // 필터 활성화
+                worksheet.Cells[1, 1, 1, properties.Length].AutoFilter = true;
+
+                // 시트 이름 지정
+                worksheet.Name = sheetName;
+                
+                // 첫 번째 시트인 경우 전체 시트 스타일 적용
+                if (isMainSheet)
+                {
+                    worksheet.Cells.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    worksheet.Cells.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    worksheet.Cells.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    worksheet.Cells.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                }
+
+                // Freeze Panes
+                worksheet.View.FreezePanes(2, 1);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Excel 내보내기 오류: {ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                UpdateStatus($"Excel 내보내기 실패: {ex.Message}", Colors.Red);
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 🔥 그룹명 필터 TextBox 텍스트 변경 이벤트
+        /// </summary>
+        private void FilterTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (sender is not TextBox textBox) return;
+
+            var currentTabIndex = QueryTypeTabControl.SelectedIndex;
+            var filterText = textBox.Text?.Trim().ToUpper() ?? "";
+
+            try
+            {
+                System.Collections.ObjectModel.ObservableCollection<QueryItem>? originalQueries = null;
+                System.Collections.ObjectModel.ObservableCollection<QueryItem>? filteredQueries = null;
+
+                switch (currentTabIndex)
+                {
+                    case 1: // 정보 조회
+                        originalQueries = _infoQueriesOriginal;
+                        break;
+                    case 2: // 비즈 조회
+                        originalQueries = _bizQueriesOriginal;
+                        break;
+                    default:
+                        return;
+                }
+
+                if (originalQueries == null) return;
+
+                // 🔥 필터링 적용
+                if (string.IsNullOrWhiteSpace(filterText))
+                {
+                    // 필터가 비어있으면 전체 표시
+                    filteredQueries = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(originalQueries);
                 }
                 else
                 {
-                    worksheet.Cells[row, col++].Value = "-";
+                    // 그룹명에 필터 텍스트가 포함된 항목만 필터링
+                    var filtered = originalQueries.Where(q => 
+                        q.QueryName.ToUpper().Contains(filterText) ||
+                        (q.BizName?.ToUpper().Contains(filterText) ?? false) ||
+                        (q.QueryBizName?.ToUpper().Contains(filterText) ?? false)
+                    ).ToList();
+                    
+                    filteredQueries = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(filtered);
                 }
-                
-                worksheet.Cells[row, col++].Value = query.Query;
 
-                // 쿼리 실행 탭 전용 컬럼
-                if (isQueryExecutionTab)
+                // 🔥 필터링된 결과를 현재 탭의 쿼리 컬렉션으로 설정
+                switch (currentTabIndex)
                 {
-                    worksheet.Cells[row, col++].Value = query.EnabledFlag;
-                    worksheet.Cells[row, col++].Value = query.NotifyFlag;
-                    worksheet.Cells[row, col++].Value = query.CountGreaterThan;
-                    worksheet.Cells[row, col++].Value = query.CountEquals;
-                    worksheet.Cells[row, col++].Value = query.CountLessThan;
-                    worksheet.Cells[row, col++].Value = query.ColumnNames;
-                    worksheet.Cells[row, col++].Value = query.ColumnValues;
-                    worksheet.Cells[row, col++].Value = query.ExcludeFlag == "N" ? "Y" : "N"; // 사용여부
-                    worksheet.Cells[row, col++].Value = query.DefaultFlag;
+                    case 1:
+                        _infoQueries = filteredQueries;
+                        break;
+                    case 2:
+                        _bizQueries = filteredQueries;
+                        break;
                 }
 
-                // 테두리 추가
-                using (var range = worksheet.Cells[row, 1, row, headers.Count])
+                // DataGrid 업데이트
+                if (_currentDataGrid != null && filteredQueries != null)
                 {
-                    range.Style.Border.BorderAround(OfficeOpenXml.Style.ExcelBorderStyle.Thin);
-                }
+                    _currentDataGrid.ItemsSource = filteredQueries;
+                    
+                    if (_currentQueryCountTextBlock != null)
+                    {
+                        _currentQueryCountTextBlock.Text = $"{filteredQueries.Count}개";
+                    }
 
-                row++;
+                    UpdateStatus($"필터 적용: {filteredQueries.Count}개 쿼리 표시 (전체: {originalQueries.Count}개)", Colors.Blue);
+                }
             }
-
-            // 열 너비 자동 조정
-            worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
-
-            // 최소/최대 열 너비 설정
-            for (int col = 1; col <= headers.Count; col++)
+            catch (Exception ex)
             {
-                var column = worksheet.Column(col);
-                if (column.Width < 10)
-                    column.Width = 10;
-                else if (column.Width > 60)
-                    column.Width = 60;
+                System.Diagnostics.Debug.WriteLine($"❌ FilterTextBox_TextChanged error: {ex.Message}");
             }
-
-            // SQL 쿼리 컬럼은 더 넓게
-            worksheet.Column(8).Width = 80;
-
-            // 틀 고정 (헤더 행)
-            worksheet.View.FreezePanes(2, 1);
         }
 
+        /// <summary>
+        /// 쿼리 추가 버튼 클릭
+        /// </summary>
         private void AddQueryButton_Click(object sender, RoutedEventArgs e)
         {
             // 🔥 현재 탭의 쿼리 타입 결정
@@ -1697,7 +1892,26 @@ namespace FACTOVA_QueryHelper.Controls
                 ColumnValues = ""
             };
 
-            currentQueries.Add(newQuery);
+            // 🔥 선택된 행이 있으면 그 바로 아래에 추가, 없으면 맨 아래에 추가
+            if (_selectedQuery != null)
+            {
+                int selectedIndex = currentQueries.IndexOf(_selectedQuery);
+                if (selectedIndex >= 0)
+                {
+                    // 선택된 행 바로 아래에 추가
+                    currentQueries.Insert(selectedIndex + 1, newQuery);
+                }
+                else
+                {
+                    // 인덱스를 찾을 수 없으면 맨 아래에 추가
+                    currentQueries.Add(newQuery);
+                }
+            }
+            else
+            {
+                // 선택된 행이 없으면 맨 아래에 추가
+                currentQueries.Add(newQuery);
+            }
             
             // 🔥 현재 탭의 수정 추적에 추가
             var modifiedQueries = GetCurrentModifiedCollection();
@@ -1722,40 +1936,6 @@ namespace FACTOVA_QueryHelper.Controls
             }
 
             UpdateStatus("새 쿼리 항목이 추가되었습니다. 정보를 입력하고 '💾 변경사항 저장'을 클릭하세요.", Colors.Blue);
-        }
-        #endregion
-    }
-    
-    /// <summary>
-    /// ConnectionInfoId를 DisplayName으로 변환하는 컨버터
-    /// </summary>
-    public class ConnectionInfoIdToNameConverter : System.Windows.Data.IValueConverter
-    {
-        private readonly List<Models.ConnectionInfo> _connectionInfos;
-
-        public ConnectionInfoIdToNameConverter(List<Models.ConnectionInfo> connectionInfos)
-        {
-            _connectionInfos = connectionInfos;
-        }
-
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            if (value is int id)
-            {
-                var connInfo = _connectionInfos.FirstOrDefault(c => c.Id == id);
-                return connInfo?.DisplayName ?? "(접속 정보 없음)";
-            }
-            else if (value == null)
-            {
-                return "(접속 정보 선택 안됨)";
-            }
-            
-            return "(알 수 없음)";
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            throw new NotImplementedException();
         }
     }
 }

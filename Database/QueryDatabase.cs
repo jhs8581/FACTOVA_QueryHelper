@@ -69,7 +69,7 @@ namespace FACTOVA_QueryHelper.Database
                 )";
             command.ExecuteNonQuery();
             
-            // 🔥 Connections 테이블 생성 (접속 정보 관리용)
+            // 🔥 Connections テーブル 생성 (접속 정보 관리용)
             var connCommand = connection.CreateCommand();
             connCommand.CommandText = @"
                 CREATE TABLE IF NOT EXISTS Connections (
@@ -185,6 +185,18 @@ namespace FACTOVA_QueryHelper.Database
                 // 컬럼이 이미 존재하면 무시
             }
             
+            // 🔥 RowColor 컬럼 추가 (행 색상)
+            try
+            {
+                var alterCommand = connection.CreateCommand();
+                alterCommand.CommandText = "ALTER TABLE Queries ADD COLUMN RowColor TEXT";
+                alterCommand.ExecuteNonQuery();
+            }
+            catch
+            {
+                // 컬럼이 이미 존재하면 무시
+            }
+            
             // 🔥 SiteInfo 테이블 생성 (사업장 정보 관리용)
             var siteCommand = connection.CreateCommand();
             siteCommand.CommandText = @"
@@ -227,6 +239,19 @@ namespace FACTOVA_QueryHelper.Database
             {
                 // 컬럼이 이미 존재하면 무시
             }
+            
+            // 🔥 TableShortcuts 테이블 생성 (테이블 단축어 관리용)
+            var shortcutCommand = connection.CreateCommand();
+            shortcutCommand.CommandText = @"
+                CREATE TABLE IF NOT EXISTS TableShortcuts (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Shortcut TEXT NOT NULL UNIQUE,
+                    FullTableName TEXT NOT NULL,
+                    Description TEXT,
+                    CreatedDate TEXT DEFAULT CURRENT_TIMESTAMP,
+                    ModifiedDate TEXT DEFAULT CURRENT_TIMESTAMP
+                )";
+            shortcutCommand.ExecuteNonQuery();
         }
 
         /// <summary>
@@ -263,6 +288,7 @@ namespace FACTOVA_QueryHelper.Database
                     OrderNumber = reader["OrderNumber"] != DBNull.Value ? Convert.ToInt32(reader["OrderNumber"]) : 0,
                     QueryBizName = reader["QueryBizName"]?.ToString() ?? "",
                     Version = reader["Version"]?.ToString() ?? "",
+                    RowColor = reader["RowColor"]?.ToString() ?? "",
                     EnabledFlag = reader["EnabledFlag"]?.ToString() ?? "Y",
                     NotifyFlag = reader["NotifyFlag"]?.ToString() ?? "N",
                     CountGreaterThan = reader["CountGreaterThan"]?.ToString() ?? "",
@@ -298,12 +324,12 @@ namespace FACTOVA_QueryHelper.Database
             command.CommandText = @"
                 INSERT INTO Queries (
                     QueryName, QueryType, ConnectionInfoId, TnsName, Host, Port, ServiceName, UserId, Password, Query,
-                    BizName, Description2, OrderNumber, QueryBizName, Version,
+                    BizName, Description2, OrderNumber, QueryBizName, Version, RowColor,
                     EnabledFlag, NotifyFlag, CountGreaterThan, CountEquals, CountLessThan,
                     ColumnNames, ColumnValues, ExcludeFlag, DefaultFlag
                 ) VALUES (
                     $queryName, $queryType, $connectionInfoId, $tnsName, $host, $port, $serviceName, $userId, $password, $query,
-                    $bizName, $description2, $orderNumber, $queryBizName, $version,
+                    $bizName, $description2, $orderNumber, $queryBizName, $version, $rowColor,
                     $enabledFlag, $notifyFlag, $countGreaterThan, $countEquals, $countLessThan,
                     $columnNames, $columnValues, $excludeFlag, $defaultFlag
                 )";
@@ -338,6 +364,7 @@ namespace FACTOVA_QueryHelper.Database
                     OrderNumber = $orderNumber,
                     QueryBizName = $queryBizName,
                     Version = $version,
+                    RowColor = $rowColor,
                     EnabledFlag = $enabledFlag,
                     NotifyFlag = $notifyFlag,
                     CountGreaterThan = $countGreaterThan,
@@ -402,6 +429,7 @@ namespace FACTOVA_QueryHelper.Database
             command.Parameters.AddWithValue("$orderNumber", query.OrderNumber);
             command.Parameters.AddWithValue("$queryBizName", query.QueryBizName ?? "");
             command.Parameters.AddWithValue("$version", query.Version ?? "");
+            command.Parameters.AddWithValue("$rowColor", query.RowColor ?? "");
             command.Parameters.AddWithValue("$enabledFlag", query.EnabledFlag ?? "Y");
             command.Parameters.AddWithValue("$notifyFlag", query.NotifyFlag ?? "N");
             command.Parameters.AddWithValue("$countGreaterThan", query.CountGreaterThan ?? "");

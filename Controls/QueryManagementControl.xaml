@@ -59,7 +59,7 @@
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="▶" FontSize="16" Margin="0,0,8,0"/>
-                        <TextBlock Text="쿼리 실행"/>
+                        <TextBlock Text="실시간 모니터링"/>
                     </StackPanel>
                 </TabItem.Header>
                 <Grid x:Name="QueryExecutionGrid" Margin="15"/>
