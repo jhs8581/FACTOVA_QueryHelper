@@ -1,0 +1,204 @@
+﻿<UserControl x:Class="FACTOVA_QueryHelper.Controls.TableShortcutManagementControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:FACTOVA_QueryHelper.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="900">
+    <Grid Margin="0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 버튼 영역 -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+            <Button x:Name="RefreshButton" Content="🔄 새로고침" Width="120" Height="40" Margin="0,0,5,0"
+                    Background="#FF2196F3" Foreground="White" FontWeight="Bold" FontSize="13"
+                    Click="RefreshButton_Click"/>
+            <Button x:Name="AddButton" Content="➕ 정보 추가" Width="120" Height="40" Margin="0,0,5,0"
+                    Background="#FF4CAF50" Foreground="White" FontWeight="Bold" FontSize="13"
+                    Click="AddButton_Click"/>
+            <Button x:Name="DeleteButton" Content="🗑️ 삭제" Width="100" Height="40" Margin="0,0,5,0"
+                    Background="#FFF44336" Foreground="White" FontWeight="Bold" FontSize="13"
+                    Click="DeleteButton_Click"/>
+            <TextBlock Text="모든 단축어: " VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Margin="30,0,5,0"/>
+            <TextBlock x:Name="TotalCountTextBlock" Text="0개" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"
+                       Foreground="#FF2196F3"/>
+        </StackPanel>
+
+        <!-- 편집 중 경고 메시지 -->
+        <Border x:Name="EditModeBorder" 
+                Grid.Row="1" 
+                Margin="0,0,0,10" 
+                Padding="12,8" 
+                Background="#FFFFEAA7" 
+                BorderBrush="#FFFFC107" 
+                BorderThickness="1" 
+                CornerRadius="6"
+                Visibility="Collapsed">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" 
+                           Text="✏️" 
+                           FontSize="16" 
+                           VerticalAlignment="Center" 
+                           Margin="0,0,10,0"/>
+
+                <TextBlock Grid.Column="1" 
+                           VerticalAlignment="Center">
+                    <Run Text="편집 중입니다. " FontWeight="Bold"/>
+                    <Run Text="필드를 수정한 후 저장하거나 취소하세요."/>
+                </TextBlock>
+
+                <StackPanel Grid.Column="2" 
+                            Orientation="Horizontal">
+                    <Button Content="💾 변경사항 저장" 
+                            Background="#FF28A745" 
+                            Foreground="White" 
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Width="130" 
+                            Height="30"
+                            Margin="0,0,8,0"
+                            FontWeight="SemiBold"
+                            Click="SaveChangesButton_Click"/>
+                    <Button Content="❌ 취소" 
+                            Background="#FF6C757D" 
+                            Foreground="White" 
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Width="80" 
+                            Height="30"
+                            Click="CancelChangesButton_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 데이터 그리드 -->
+        <Border Grid.Row="2" BorderThickness="1" BorderBrush="#FFCCCCCC" CornerRadius="5">
+            <DataGrid x:Name="ShortcutsDataGrid" 
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      SelectionMode="Single"
+                      HeadersVisibility="Column"
+                      GridLinesVisibility="All"
+                      AlternatingRowBackground="#FFF5F5F5"
+                      RowHeight="35"
+                      FontSize="11"
+                      CellEditEnding="ShortcutsDataGrid_CellEditEnding">
+                
+                <!-- 🔥 선택된 행/셀 스타일 -->
+                <DataGrid.Resources>
+                    <Style TargetType="DataGridCell">
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#FF2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="BorderBrush" Value="#FF1976D2"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                    <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#FF2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.Resources>
+                
+                <DataGrid.Columns>
+                    <!-- 단축어 (편집 가능) -->
+                    <DataGridTextColumn Header="단축어" Binding="{Binding Shortcut, UpdateSourceTrigger=PropertyChanged}" Width="150" IsReadOnly="False">
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#FF2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="11"/>
+                                <Setter Property="Padding" Value="10,5"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="Foreground" Value="#FF0078D7"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridCell}, Path=IsSelected}" Value="True">
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                        <DataGridTextColumn.EditingElementStyle>
+                            <Style TargetType="TextBox">
+                                <Setter Property="CharacterCasing" Value="Upper"/>
+                            </Style>
+                        </DataGridTextColumn.EditingElementStyle>
+                    </DataGridTextColumn>
+
+                    <!-- 테이블명 (편집 가능) -->
+                    <DataGridTextColumn Header="테이블명" Binding="{Binding FullTableName, UpdateSourceTrigger=PropertyChanged}" Width="*" MinWidth="300" IsReadOnly="False">
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#FF2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="11"/>
+                                <Setter Property="Padding" Value="10,5"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridCell}, Path=IsSelected}" Value="True">
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                        <DataGridTextColumn.EditingElementStyle>
+                            <Style TargetType="TextBox">
+                                <Setter Property="CharacterCasing" Value="Upper"/>
+                            </Style>
+                        </DataGridTextColumn.EditingElementStyle>
+                    </DataGridTextColumn>
+
+                    <!-- 설명 (편집 가능) -->
+                    <DataGridTextColumn Header="설명" Binding="{Binding Description, UpdateSourceTrigger=PropertyChanged}" Width="250" IsReadOnly="False">
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#FF2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="11"/>
+                                <Setter Property="Padding" Value="10,5"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#FF6C757D"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridCell}, Path=IsSelected}" Value="True">
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</UserControl>

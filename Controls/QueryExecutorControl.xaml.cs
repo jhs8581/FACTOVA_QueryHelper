@@ -24,6 +24,8 @@ namespace FACTOVA_QueryHelper.Controls
         // 🔥 SharedDataContext 추가 - TnsEntries 접근용
         private SharedDataContext? _sharedData;
 
+        // 🔥 오프라인 모드용 캐시 서비스
+        private MetadataCacheService? _cacheService;
 
         // 🔥 현재 정렬 상태 저장
         private Button? _currentSortButton = null;
@@ -59,6 +61,9 @@ namespace FACTOVA_QueryHelper.Controls
             
             // 🔥 SharedData 설정 후 ConnectionInfo 로드
             LoadConnectionInfos();
+            
+            // 🔥 SqlEditorControl에 단축어 서비스 초기화
+            QueryTextBox.InitializeShortcutService(sharedData.Settings.DatabasePath);
             
             // 🔥 접속 정보 변경 이벤트 구독
             if (_sharedData != null)
@@ -153,6 +158,11 @@ namespace FACTOVA_QueryHelper.Controls
             QueryTextBox.SetDbService(dbService);
         }
 
+        public void SetCacheService(MetadataCacheService? cacheService)
+        {
+            _cacheService = cacheService;
+            QueryTextBox.SetCacheService(cacheService);
+        }
 
         public void SetQuery(string query)
         {
@@ -712,6 +722,15 @@ namespace FACTOVA_QueryHelper.Controls
         public void RegisterTableNames(List<string> tableNames)
         {
             QueryTextBox.RegisterTableNames(tableNames);
+        }
+        
+        /// <summary>
+        /// 🔥 테이블 단축어 재로드
+        /// </summary>
+        public void ReloadShortcuts(string databasePath)
+        {
+            QueryTextBox.InitializeShortcutService(databasePath);
+            System.Diagnostics.Debug.WriteLine($"✅ Shortcuts reloaded for QueryExecutor with DB: {databasePath}");
         }
 
         private void QueryTextBox_TextChanged(object sender, EventArgs e)

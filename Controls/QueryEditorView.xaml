@@ -1,0 +1,174 @@
+﻿<UserControl x:Class="FACTOVA_QueryHelper.Controls.QueryEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:FACTOVA_QueryHelper.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="900" d:DesignWidth="1200">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Database Connection Section -->
+        <Expander Header="Database Connection (Query Editor)" IsExpanded="True" Grid.Row="0" Margin="0,0,0,10">
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button x:Name="LoadCacheButton" Content="📁 Load Cache" Grid.Column="0" Width="110" Margin="0,0,5,0" 
+                            Background="#FF9C27B0" Foreground="White" FontWeight="Bold" Click="LoadCacheButton_Click"
+                            ToolTip="캐시 폴더에서 메타데이터 로드 (자동완성 지원)"/>
+                    <Button x:Name="ClearCacheButton" Content="🗑️ Clear Cache" Grid.Column="1" Width="110" Margin="0,0,5,0"
+                            Background="#FFFFC107" Foreground="White" Click="ClearCacheButton_Click" IsEnabled="False"
+                            ToolTip="캐시 삭제"/>
+                    <Button x:Name="OpenCacheFolderButton" Content="📂 Folder" Grid.Column="2" Width="90"
+                            Background="#FF6C757D" Foreground="White" Click="OpenCacheFolderButton_Click"
+                            ToolTip="캐시 폴더 열기"/>
+                </Grid>
+
+                <Border x:Name="ConnectionStatusBorder" Grid.Row="1" Margin="0,10,0,0" Padding="8,5" 
+                        BorderThickness="1" CornerRadius="3" Background="#F8D7DA" BorderBrush="#F5C6CB">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Status: " FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="ConnectionStatusText" Text="No Cache" VerticalAlignment="Center" 
+                                   FontWeight="Bold" Foreground="#721C24"/>
+                        <Ellipse x:Name="ConnectionStatusIndicator" Width="10" Height="10" Margin="10,0,0,0" 
+                                 VerticalAlignment="Center" Fill="#DC3545"/>
+                        <TextBlock x:Name="CacheStatusText" Margin="15,0,0,0" VerticalAlignment="Center" 
+                                   Foreground="Gray" FontSize="11"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Expander>
+
+        <!-- Query Tabs (Full Width) -->
+        <TabControl x:Name="QueryTabControl" Grid.Row="1" Margin="5">
+            <TabControl.Resources>
+                <Style TargetType="TabPanel">
+                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                </Style>
+            </TabControl.Resources>
+            <TabControl.Template>
+                <ControlTemplate TargetType="TabControl">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- ScrollViewer로 탭 헤더 감싸기 -->
+                        <ScrollViewer Grid.Row="0" 
+                                      HorizontalScrollBarVisibility="Auto" 
+                                      VerticalScrollBarVisibility="Disabled"
+                                      CanContentScroll="True">
+                            <TabPanel IsItemsHost="True" 
+                                      Background="Transparent"
+                                      HorizontalAlignment="Left"/>
+                        </ScrollViewer>
+                        
+                        <Border Grid.Row="1" 
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter ContentSource="SelectedContent"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </TabControl.Template>
+            
+            <TabItem Header="Query 1">
+                <TabItem.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="이름 변경" Click="RenameTab_Click" Tag="0"/>
+                    </ContextMenu>
+                </TabItem.ContextMenu>
+                <local:QueryExecutorControl x:Name="QueryExecutor1"/>
+            </TabItem>
+            <TabItem Header="Query 2">
+                <TabItem.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="이름 변경" Click="RenameTab_Click" Tag="1"/>
+                    </ContextMenu>
+                </TabItem.ContextMenu>
+                <local:QueryExecutorControl x:Name="QueryExecutor2"/>
+            </TabItem>
+            <TabItem Header="Query 3">
+                <TabItem.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="이름 변경" Click="RenameTab_Click" Tag="2"/>
+                    </ContextMenu>
+                </TabItem.ContextMenu>
+                <local:QueryExecutorControl x:Name="QueryExecutor3"/>
+            </TabItem>
+            <TabItem Header="Query 4">
+                <TabItem.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="이름 변경" Click="RenameTab_Click" Tag="3"/>
+                    </ContextMenu>
+                </TabItem.ContextMenu>
+                <local:QueryExecutorControl x:Name="QueryExecutor4"/>
+            </TabItem>
+            <TabItem Header="Query 5">
+                <TabItem.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="이름 변경" Click="RenameTab_Click" Tag="4"/>
+                    </ContextMenu>
+                </TabItem.ContextMenu>
+                <local:QueryExecutorControl x:Name="QueryExecutor5"/>
+            </TabItem>
+            <TabItem Header="Query 6">
+                <TabItem.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="이름 변경" Click="RenameTab_Click" Tag="5"/>
+                    </ContextMenu>
+                </TabItem.ContextMenu>
+                <local:QueryExecutorControl x:Name="QueryExecutor6"/>
+            </TabItem>
+            <TabItem Header="Query 7">
+                <TabItem.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="이름 변경" Click="RenameTab_Click" Tag="6"/>
+                    </ContextMenu>
+                </TabItem.ContextMenu>
+                <local:QueryExecutorControl x:Name="QueryExecutor7"/>
+            </TabItem>
+            <TabItem Header="Query 8">
+                <TabItem.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="이름 변경" Click="RenameTab_Click" Tag="7"/>
+                    </ContextMenu>
+                </TabItem.ContextMenu>
+                <local:QueryExecutorControl x:Name="QueryExecutor8"/>
+            </TabItem>
+            <TabItem Header="Query 9">
+                <TabItem.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="이름 변경" Click="RenameTab_Click" Tag="8"/>
+                    </ContextMenu>
+                </TabItem.ContextMenu>
+                <local:QueryExecutorControl x:Name="QueryExecutor9"/>
+            </TabItem>
+            <TabItem Header="Query 10">
+                <TabItem.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="이름 변경" Click="RenameTab_Click" Tag="9"/>
+                    </ContextMenu>
+                </TabItem.ContextMenu>
+                <local:QueryExecutorControl x:Name="QueryExecutor10"/>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

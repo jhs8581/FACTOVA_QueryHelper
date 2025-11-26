@@ -1,0 +1,187 @@
+﻿<?xml version="1.0"?>
+<SyntaxDefinition name="SQL" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+    <Color name="Comment" foreground="Green" />
+    <Color name="String" foreground="#A31515" />
+    <Color name="Keyword" foreground="#0000FF" fontWeight="bold" />
+    <Color name="Function" foreground="#795E26" fontWeight="bold" />
+    <Color name="Parameter" foreground="#FF8C00" fontWeight="bold" />
+    <Color name="Number" foreground="#098658" />
+    
+    <RuleSet ignoreCase="true">
+        <!-- 주석 -->
+        <Span color="Comment" begin="--" />
+        <Span color="Comment" multiline="true" begin="/\*" end="\*/" />
+        
+        <!-- 문자열 -->
+        <Span color="String">
+            <Begin>'</Begin>
+            <End>'</End>
+            <RuleSet>
+                <Span begin="''" end="" />
+            </RuleSet>
+        </Span>
+        
+        <!-- 🔥 @ 치환 파라미터 (주황색, 굵게) -->
+        <Rule color="Parameter">
+            @[A-Za-z_][A-Za-z0-9_]*
+        </Rule>
+        
+        <!-- 🔥 & 치환 파라미터 (주황색, 굵게) -->
+        <Rule color="Parameter">
+            &amp;[A-Za-z_][A-Za-z0-9_]*
+        </Rule>
+        
+        <!-- 숫자 -->
+        <Rule color="Number">
+            \b\d+(\.\d+)?\b
+        </Rule>
+        
+        <!-- SQL 키워드 (SELECT, FROM 등) -->
+        <Keywords color="Keyword">
+            <Word>SELECT</Word>
+            <Word>FROM</Word>
+            <Word>WHERE</Word>
+            <Word>INSERT</Word>
+            <Word>UPDATE</Word>
+            <Word>DELETE</Word>
+            <Word>INTO</Word>
+            <Word>VALUES</Word>
+            <Word>SET</Word>
+            <Word>ORDER</Word>
+            <Word>BY</Word>
+            <Word>GROUP</Word>
+            <Word>HAVING</Word>
+            <Word>DISTINCT</Word>
+            <Word>ALL</Word>
+            <Word>AS</Word>
+            <Word>JOIN</Word>
+            <Word>INNER</Word>
+            <Word>LEFT</Word>
+            <Word>RIGHT</Word>
+            <Word>FULL</Word>
+            <Word>OUTER</Word>
+            <Word>CROSS</Word>
+            <Word>ON</Word>
+            <Word>AND</Word>
+            <Word>OR</Word>
+            <Word>NOT</Word>
+            <Word>IN</Word>
+            <Word>EXISTS</Word>
+            <Word>BETWEEN</Word>
+            <Word>LIKE</Word>
+            <Word>IS</Word>
+            <Word>NULL</Word>
+            <Word>CREATE</Word>
+            <Word>ALTER</Word>
+            <Word>DROP</Word>
+            <Word>TABLE</Word>
+            <Word>VIEW</Word>
+            <Word>INDEX</Word>
+            <Word>DATABASE</Word>
+            <Word>SCHEMA</Word>
+            <Word>ADD</Word>
+            <Word>MODIFY</Word>
+            <Word>COLUMN</Word>
+            <Word>CONSTRAINT</Word>
+            <Word>PRIMARY</Word>
+            <Word>FOREIGN</Word>
+            <Word>KEY</Word>
+            <Word>UNIQUE</Word>
+            <Word>CHECK</Word>
+            <Word>DEFAULT</Word>
+            <Word>REFERENCES</Word>
+            <Word>GRANT</Word>
+            <Word>REVOKE</Word>
+            <Word>DENY</Word>
+            <Word>COMMIT</Word>
+            <Word>ROLLBACK</Word>
+            <Word>SAVEPOINT</Word>
+            <Word>UNION</Word>
+            <Word>INTERSECT</Word>
+            <Word>EXCEPT</Word>
+            <Word>MINUS</Word>
+            <Word>CASE</Word>
+            <Word>WHEN</Word>
+            <Word>THEN</Word>
+            <Word>ELSE</Word>
+            <Word>END</Word>
+            <Word>WITH</Word>
+            <Word>RECURSIVE</Word>
+            <Word>LIMIT</Word>
+            <Word>OFFSET</Word>
+            <Word>FETCH</Word>
+            <Word>NEXT</Word>
+            <Word>FIRST</Word>
+            <Word>ROWS</Word>
+            <Word>ONLY</Word>
+            <Word>TOP</Word>
+            <Word>ROWNUM</Word>
+            <Word>PARTITION</Word>
+            <Word>OVER</Word>
+            <Word>CONNECT</Word>
+            <Word>START</Word>
+            <Word>PRIOR</Word>
+            <Word>LEVEL</Word>
+        </Keywords>
+        
+        <!-- 🔥 SQL 함수 (갈색, 굵게) -->
+        <Keywords color="Function">
+            <Word>COUNT</Word>
+            <Word>SUM</Word>
+            <Word>AVG</Word>
+            <Word>MAX</Word>
+            <Word>MIN</Word>
+            <Word>ROW_NUMBER</Word>
+            <Word>RANK</Word>
+            <Word>DENSE_RANK</Word>
+            <Word>SYSDATE</Word>
+            <Word>DUAL</Word>
+            <Word>DECODE</Word>
+            <Word>NVL</Word>
+            <Word>NVL2</Word>
+            <Word>COALESCE</Word>
+            <Word>TO_CHAR</Word>
+            <Word>TO_DATE</Word>
+            <Word>TO_NUMBER</Word>
+            <Word>TRUNC</Word>
+            <Word>ROUND</Word>
+            <Word>CEIL</Word>
+            <Word>FLOOR</Word>
+            <Word>SUBSTR</Word>
+            <Word>SUBSTRING</Word>
+            <Word>INSTR</Word>
+            <Word>REPLACE</Word>
+            <Word>TRANSLATE</Word>
+            <Word>UPPER</Word>
+            <Word>LOWER</Word>
+            <Word>TRIM</Word>
+            <Word>LTRIM</Word>
+            <Word>RTRIM</Word>
+            <Word>LPAD</Word>
+            <Word>RPAD</Word>
+            <Word>CONCAT</Word>
+            <Word>LENGTH</Word>
+            <Word>CHAR_LENGTH</Word>
+            <Word>ABS</Word>
+            <Word>MOD</Word>
+            <Word>POWER</Word>
+            <Word>SQRT</Word>
+            <Word>EXP</Word>
+            <Word>LN</Word>
+            <Word>LOG</Word>
+            <Word>CAST</Word>
+            <Word>CONVERT</Word>
+            <Word>EXTRACT</Word>
+            <Word>CURRENT_DATE</Word>
+            <Word>CURRENT_TIME</Word>
+            <Word>CURRENT_TIMESTAMP</Word>
+            <Word>ADD_MONTHS</Word>
+            <Word>MONTHS_BETWEEN</Word>
+            <Word>LAST_DAY</Word>
+            <Word>NEXT_DAY</Word>
+            <Word>FN_GET_NAME_BY_LANGID</Word>
+            <Word>FN_GET_MULTI_LANG_DICT</Word>
+            <Word>FN_SOM_MULTI_ITEM</Word>
+        </Keywords>
+    </RuleSet>
+</SyntaxDefinition>

@@ -31,10 +31,17 @@ namespace FACTOVA_QueryHelper.Controls
         // 🔥 테이블 목록 캐시 (TB_ 자동완성용)
         private List<string> _tableNamesCache = new List<string>();
         
- 
-        
+        // 🔥 테이블 단축어 캐시 (LOT → TB_LOT_MASTER)
+        private Dictionary<string, string> _tableShortcuts = new Dictionary<string, string>();
+
+        // 🔥 오프라인 모드용 캐시 서비스
+        private MetadataCacheService? _cacheService;
+
         // 🔥 DB 서비스 (온라인 모드용)
         private OracleDbService? _dbService;
+        
+        // 🔥 단축어 서비스
+        private TableShortcutService? _shortcutService;
 
 
         /// <summary>
@@ -102,6 +109,15 @@ namespace FACTOVA_QueryHelper.Controls
                 System.Diagnostics.Debug.WriteLine($"❌ Failed to load SQL syntax highlighting: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// 오프라인 모드용 캐시 서비스 설정
+        /// </summary>
+        public void SetCacheService(MetadataCacheService? cacheService)
+        {
+            _cacheService = cacheService;
+        }
+
         /// <summary>
         /// DB 서비스 설정 (온라인 모드용)
         /// </summary>
@@ -129,7 +145,60 @@ namespace FACTOVA_QueryHelper.Controls
             _tableNamesCache = tableNames;
             System.Diagnostics.Debug.WriteLine($"🔧 Registered {tableNames.Count} table names for autocomplete");
         }
+        
+        /// <summary>
+        /// 🔥 단축어 서비스 초기화 (DB 경로 지정)
+        /// </summary>
+        public void InitializeShortcutService(string databasePath)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"🔍 InitializeShortcutService called with DB: {databasePath}");
+                
+                _shortcutService = new TableShortcutService(databasePath);
+                LoadShortcuts();
+                System.Diagnostics.Debug.WriteLine($"✅ TableShortcutService initialized with DB: {databasePath}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Failed to initialize shortcut service: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"   Stack: {ex.StackTrace}");
+            }
+        }
+        
+        /// <summary>
+        /// 🔥 단축어 목록 로드
+        /// </summary>
+        private void LoadShortcuts()
+        {
+            try
+            {
+                if (_shortcutService == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("⚠️ LoadShortcuts: _shortcutService is null");
+                    return;
+                }
 
+                _tableShortcuts.Clear();
+                var shortcuts = _shortcutService.GetAll();
+                
+                System.Diagnostics.Debug.WriteLine($"🔍 LoadShortcuts: Retrieved {shortcuts.Count} shortcuts from DB");
+                
+                foreach (var shortcut in shortcuts)
+                {
+                    _tableShortcuts[shortcut.Shortcut.ToUpper()] = shortcut.FullTableName.ToUpper();
+                    System.Diagnostics.Debug.WriteLine($"   📌 Added: {shortcut.Shortcut} → {shortcut.FullTableName}");
+                }
+
+                System.Diagnostics.Debug.WriteLine($"✅ Loaded {_tableShortcuts.Count} table shortcuts into cache");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Failed to load shortcuts: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"   Stack: {ex.StackTrace}");
+            }
+        }
+        
         /// <summary>
         /// 현재 커서 위치의 쿼리만 추출 (세미콜론으로 구분)
         /// </summary>
@@ -241,9 +310,101 @@ namespace FACTOVA_QueryHelper.Controls
                     
                     System.Diagnostics.Debug.WriteLine($"🔍 Looking for alias '{alias}' with filter '{filterText}'");
                     System.Diagnostics.Debug.WriteLine($"   Cached aliases: {string.Join(", ", _queryParsedAliases.Keys)}");
-              
+                    
+                    // 🔥 쿼리에서 파싱한 alias인지 확인
+                    if (_queryColumnsCache.ContainsKey(alias))
+                    {
+                        var columns = _queryColumnsCache[alias];
+                        
+                        if (!string.IsNullOrEmpty(filterText))
+                        {
+                            columns = columns.Where(c => c.ColumnName.ToUpper().Contains(filterText)).ToList();
+                        }
+                        
+                        if (columns.Count > 0)
+                        {
+                            AutocompleteHeaderText.Text = $"Columns for '{alias}' ({columns.Count} items)";
+                            AutocompleteListBox.ItemsSource = columns;
+                            ShowPopup();
+                            System.Diagnostics.Debug.WriteLine($"✅ Showing {columns.Count} columns for alias '{alias}'");
+                            return;
+                        }
+                    }
                 }
 
+                // 우선순위 2: TB_ 테이블 이름 자동완성 (개선)
+                // 🔥 TB_로 시작하거나, TB_를 포함하거나, 테이블 이름의 일부를 입력한 경우
+                if (!string.IsNullOrEmpty(currentWord) && currentWord.Length >= 2)
+                {
+                    var filterText = currentWord.ToUpper();
+                    
+                    // 🔥 우선순위 1: 단축어 매칭 (부분 일치 포함)
+                    var matchedShortcuts = _tableShortcuts
+                        .Where(kvp => kvp.Key.StartsWith(filterText))
+                        .OrderBy(kvp => kvp.Key.Length) // 짧은 것부터 (완전 일치 우선)
+                        .Take(10)
+                        .Select(kvp => new ColumnInfo
+                        {
+                            ColumnName = kvp.Value,
+                            DataType = "TABLE",
+                            Comments = $"Shortcut: {kvp.Key}"
+                        })
+                        .ToList();
+                    
+                    if (matchedShortcuts.Count > 0)
+                    {
+                        AutocompleteHeaderText.Text = $"Shortcuts ({matchedShortcuts.Count} items)";
+                        AutocompleteListBox.ItemsSource = matchedShortcuts;
+                        ShowPopup();
+                        System.Diagnostics.Debug.WriteLine($"✅ Showing {matchedShortcuts.Count} shortcut matches for '{filterText}'");
+                        return;
+                    }
+                    
+                    // 🔥 우선순위 2: 테이블명 검색
+                    var matchedTables = _tableNamesCache
+                        .Where(t => 
+                        {
+                            var upperTable = t.ToUpper();
+                            // TB_로 시작하는 경우
+                            if (upperTable.StartsWith(filterText))
+                                return true;
+                            // TB_를 포함하는 경우
+                            if (upperTable.Contains(filterText))
+                                return true;
+                            // filterText가 TB_로 시작하지 않지만 테이블명에 포함된 경우
+                            // 예: "LOT" 입력 → "TB_LOT_INFO" 검색
+                            if (!filterText.StartsWith("TB_") && upperTable.Contains(filterText))
+                                return true;
+                            
+                            return false;
+                        })
+                        .OrderBy(t =>
+                        {
+                            var upperTable = t.ToUpper();
+                            // 우선순위: StartsWith > TB_ + filterText > Contains
+                            if (upperTable.StartsWith(filterText))
+                                return 0;
+                            if (upperTable.StartsWith("TB_" + filterText))
+                                return 1;
+                            return 2;
+                        })
+                        .Take(50)
+                        .Select(t => new ColumnInfo { ColumnName = t, DataType = "TABLE", Comments = "Table" })
+                        .ToList();
+                    
+                    if (matchedTables.Count > 0)
+                    {
+                        AutocompleteHeaderText.Text = $"Tables ({matchedTables.Count} items)";
+                        AutocompleteListBox.ItemsSource = matchedTables;
+                        ShowPopup();
+                        System.Diagnostics.Debug.WriteLine($"✅ Showing {matchedTables.Count} tables for '{filterText}' (total cache: {_tableNamesCache.Count})");
+                        return;
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"⚠️ No tables matched for '{filterText}' (total cache: {_tableNamesCache.Count})");
+                    }
+                }
               
                 AutocompletePopup.IsOpen = false;
             }
@@ -387,6 +548,17 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 System.Diagnostics.Debug.WriteLine($"🔍 [Query] Loading columns for alias '{alias}' -> table '{tableName}'");
 
+                // 🔥 오프라인 모드 우선 (캐시 서비스)
+                if (_cacheService != null)
+                {
+                    var columns = _cacheService.GetTableColumns(tableName);
+                    if (columns != null && columns.Count > 0)
+                    {
+                        _queryColumnsCache[alias] = columns;
+                        System.Diagnostics.Debug.WriteLine($"✅ [Query] Loaded {columns.Count} columns from CACHE for alias '{alias}'");
+                        return;
+                    }
+                }
 
                 // 온라인 모드 (DB 조회)
                 if (_dbService != null && _dbService.IsConfigured)
@@ -582,7 +754,7 @@ namespace FACTOVA_QueryHelper.Controls
 
                 if (string.IsNullOrWhiteSpace(selectedText))
                 {
-                    MessageBox.Show("변환할 변수명을 선택해주세요.\n\n예시:\n@ORGANIZATION_ID\n\n→ SELECT ITEM_VALUE\n  FROM TABLE(MES_MGR.FN_SOM_MULTI_ITEM(',',@ORGANIZATION_ID))",
+                    MessageBox.Show("변환할 변수명을 선택해주세요.\n\n예시:\n@ORGANIZATION_ID\n\n→ SELECT ITEM_VALUE\n  FROM TABLE(MES_MGR.FN_SOM_MULTI_ITEM(',',@변수))",
                         "선택 오류", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }

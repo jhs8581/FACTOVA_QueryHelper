@@ -87,13 +87,16 @@ namespace FACTOVA_QueryHelper
             this.GmesInfoControl.Initialize(_sharedData);
             this.BizQueryControl.Initialize(_sharedData);
             this.QueryManagementControl.Initialize(_sharedData);
+            this.QueryEditorView.SetSharedDataContext(_sharedData);  // 🔥 SharedDataContext 설정
+            this.QueryEditorView.RefreshAllQueryExecutorConnections();  // 🔥 연결 정보 새로고침
             this.SfcMonitoringControl.Initialize(_sharedData);
-            this.QueryBizTransformView.Initialize(_sharedData);  // 🔥 비즈 변환 탭 초기화 추가
+            this.QueryBizTransformView.Initialize(_sharedData);
             this.SettingsControl.Initialize(_sharedData);
             
             // 설정 탭의 이벤트 구독
             this.SettingsControl.TnsPathChanged += (s, args) => LoadTnsEntries();
             this.SettingsControl.ConnectionInfoChanged += OnConnectionInfoChanged;
+            this.SettingsControl.ShortcutsChanged += OnShortcutsChanged;  // 🔥 단축어 변경 이벤트 구독
         }
 
         /// <summary>
@@ -104,8 +107,23 @@ namespace FACTOVA_QueryHelper
             System.Diagnostics.Debug.WriteLine("🔔 Connection info changed - notifying all controls");
             UpdateStatus("접속 정보가 업데이트되었습니다.", Colors.Blue);
             
+            // 🔥 QueryEditorView의 접속 정보도 새로고침
+            this.QueryEditorView.RefreshAllQueryExecutorConnections();
+            
             // 필요한 경우 다른 컨트롤에 알림
             // 예: QueryExecutorControl이 열려 있다면 연결 정보 새로고침
+        }
+        
+        /// <summary>
+        /// 🔥 테이블 단축어가 변경되었을 때 호출됩니다.
+        /// </summary>
+        private void OnShortcutsChanged(object? sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("🔔 Table shortcuts changed - reloading shortcuts in all controls");
+            UpdateStatus("테이블 단축어가 업데이트되었습니다.", Colors.Green);
+            
+            // 🔥 QueryEditorView의 모든 QueryExecutor에 단축어 재로드
+            this.QueryEditorView.ReloadAllShortcuts();
         }
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)

@@ -20,7 +20,32 @@
                                TextChanged="SqlTextEditor_TextChanged"
                                PreviewKeyDown="SqlTextEditor_PreviewKeyDown"
                                MouseRightButtonUp="SqlTextEditor_MouseRightButtonUp">
-            
+            <!-- 🔥 Context Menu 추가 -->
+            <avalonedit:TextEditor.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="🔍 찾기 (Ctrl+F)" Click="FindMenuItem_Click" FontWeight="Bold"/>
+                    <Separator/>
+                    <MenuItem Header="📋 IN 조건 변환" Click="InConditionTransform_Click">
+                        <MenuItem.ToolTip>
+                            <TextBlock>
+                                선택한 텍스트를 IN 조건 형식으로 변환합니다<LineBreak/>
+                                예: value1&#x0a;value2 → 'value1', 'value2'
+                            </TextBlock>
+                        </MenuItem.ToolTip>
+                    </MenuItem>
+                    <MenuItem Header="🔢 MULTI_ITEM 변환" Click="MultiItemTransform_Click">
+                        <MenuItem.ToolTip>
+                            <TextBlock>
+                                변수명을 MULTI_ITEM 쿼리로 변환합니다<LineBreak/>
+                                예: @VAR → SELECT ITEM_VALUE FROM TABLE(...)
+                            </TextBlock>
+                        </MenuItem.ToolTip>
+                    </MenuItem>
+                    <Separator/>
+                    <MenuItem Header="🌐 다국어 변환 (FN_GET_NAME_BY_LANGID)" Click="MultiLangTransform_Click"/>
+                    <MenuItem Header="📖 다국어 단어 (FN_GET_MULTI_LANG_DICT)" Click="MultiLangDict_Click"/>
+                </ContextMenu>
+            </avalonedit:TextEditor.ContextMenu>
         </avalonedit:TextEditor>
 
         <!-- Autocomplete Popup -->

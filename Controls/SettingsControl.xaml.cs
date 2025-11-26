@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using FACTOVA_QueryHelper.Database;
+using FACTOVA_QueryHelper.Models;
+using FACTOVA_QueryHelper.Services;
 
 namespace FACTOVA_QueryHelper.Controls
 {
@@ -19,6 +22,12 @@ namespace FACTOVA_QueryHelper.Controls
         
         // 접속 정보 변경 이벤트
         public event EventHandler? ConnectionInfoChanged;
+        
+        // 🔥 단축어 변경 이벤트
+        public event EventHandler? ShortcutsChanged;
+        
+        // 🔥 캐시 빌드용 서비스
+        private OracleDbService? _cacheDbService;
 
         public SettingsControl()
         {
@@ -26,6 +35,9 @@ namespace FACTOVA_QueryHelper.Controls
             
             // ConnectionManagementControl의 저장 완료 이벤트 구독
             ConnectionManagement.ConnectionInfosSaved += OnConnectionInfosSaved;
+            
+            // 🔥 캐시 빌드용 DB 서비스 초기화
+            _cacheDbService = new OracleDbService();
         }
 
         /// <summary>
@@ -69,6 +81,15 @@ namespace FACTOVA_QueryHelper.Controls
             
             // 🔥 SiteManagementControl의 저장 이벤트 구독
             SiteManagement.SiteInfosSaved += OnSiteInfosSaved;
+            
+            // 🔥 TableShortcutManagementControl 초기화 (NEW)
+            TableShortcutManagement.Initialize(sharedData.Settings.DatabasePath);
+            
+            // 🔥 TableShortcutManagementControl의 저장 이벤트 구독
+            TableShortcutManagement.ShortcutsSaved += OnShortcutsSaved;
+            
+            // 🔥 캐시 빌드용 접속 정보 콤보박스 로드
+            LoadCacheConnectionInfos();
         }
 
         /// <summary>
@@ -80,6 +101,48 @@ namespace FACTOVA_QueryHelper.Controls
             
             // 상태바 업데이트
             UpdateStatus("사업장 정보가 저장되었습니다.", Colors.Green);
+        }
+        
+        /// <summary>
+        /// 🔥 단축어가 저장되었을 때 호출됩니다.
+        /// </summary>
+        private void OnShortcutsSaved(object? sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("✅ Shortcuts saved in TableShortcutManagementControl");
+            
+            // 상위로 이벤트 전파
+            ShortcutsChanged?.Invoke(this, EventArgs.Empty);
+            
+            // 상태바 업데이트
+            UpdateStatus("테이블 단축어가 저장되었습니다.", Colors.Green);
+        }
+
+        /// <summary>
+        /// 🔥 캐시 빌드용 접속 정보 목록 로드
+        /// </summary>
+        private void LoadCacheConnectionInfos()
+        {
+            try
+            {
+                if (_sharedData == null)
+                    return;
+
+                var connectionService = new ConnectionInfoService(_sharedData.Settings.DatabasePath);
+                var connections = connectionService.GetAllConnections();
+                
+                CacheConnectionComboBox.ItemsSource = connections;
+                
+                if (connections.Count > 0)
+                {
+                    CacheConnectionComboBox.SelectedIndex = 0;
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"✅ Loaded {connections.Count} connections for cache building");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Failed to load cache connections: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -554,6 +617,215 @@ namespace FACTOVA_QueryHelper.Controls
                     "변경된 항목 없음",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
+            }
+        }
+
+        /// <summary>
+        /// 🔥 캐시 빌드 버튼 클릭
+        /// </summary>
+        private async void BuildCacheButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (CacheConnectionComboBox.SelectedItem is not ConnectionInfo selectedConnection)
+                {
+                    MessageBox.Show("접속 정보를 선택해주세요.", "선택 오류",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var result = MessageBox.Show(
+                    $"메타데이터 캐시를 빌드하시겠습니까?\n\n" +
+                    $"접속 정보: {selectedConnection.DisplayName}\n" +
+                    $"TNS: {selectedConnection.TNS}\n\n" +
+                    "이 작업은 몇 분 정도 소요될 수 있습니다.",
+                    "캐시 빌드 확인",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result != MessageBoxResult.Yes)
+                    return;
+
+                // UI 상태 변경
+                BuildCacheButton.IsEnabled = false;
+                CacheConnectionComboBox.IsEnabled = false;
+                CacheBuildProgressPanel.Visibility = Visibility.Visible;
+                CacheBuildResultPanel.Visibility = Visibility.Collapsed;
+                CacheBuildProgressBar.Value = 0;
+                CacheBuildStatusText.Text = "데이터베이스에 연결 중...";
+                CacheBuildDetailText.Text = "";
+
+                System.Diagnostics.Debug.WriteLine($"🚀 Starting cache build for: {selectedConnection.DisplayName}");
+
+                // 데이터베이스 연결
+                if (_sharedData == null || _cacheDbService == null)
+                {
+                    throw new Exception("서비스가 초기화되지 않았습니다.");
+                }
+
+                var selectedTns = _sharedData.TnsEntries.FirstOrDefault(t =>
+                    t.Name.Equals(selectedConnection.TNS, StringComparison.OrdinalIgnoreCase));
+
+                if (selectedTns == null)
+                {
+                    throw new Exception($"TNS '{selectedConnection.TNS}'를 찾을 수 없습니다.");
+                }
+
+                bool connected = await _cacheDbService.ConfigureAsync(
+                    selectedTns,
+                    selectedConnection.UserId,
+                    selectedConnection.Password);
+
+                if (!connected)
+                {
+                    throw new Exception("데이터베이스 연결에 실패했습니다.");
+                }
+
+                System.Diagnostics.Debug.WriteLine("✅ Database connected successfully");
+
+                // 진행 상태 업데이트
+                CacheBuildProgressBar.Value = 10;
+                CacheBuildStatusText.Text = "캐시 서비스 초기화 중...";
+                await Task.Delay(100); // UI 업데이트 대기
+
+                // 캐시 서비스 초기화
+                var dbIdentifier = $"{selectedConnection.TNS}_{selectedConnection.UserId}";
+                var cacheService = new MetadataCacheService(_cacheDbService, dbIdentifier);
+
+                // 메타데이터 빌드
+                CacheBuildStatusText.Text = "메타데이터 캐싱 중...";
+                CacheBuildDetailText.Text = "테이블 목록 조회 및 메타데이터 수집 중...";
+                
+                var progress = new Progress<CacheBuildProgress>(p =>
+                {
+                    double percentage = 10 + (p.PercentComplete * 0.85);
+                    CacheBuildProgressBar.Value = percentage;
+                    CacheBuildStatusText.Text = p.Stage;
+                    CacheBuildDetailText.Text = $"진행: {p.CurrentTable}/{p.TotalTables}" + 
+                        (string.IsNullOrEmpty(p.CurrentTableName) ? "" : $" - {p.CurrentTableName}");
+                });
+
+                var metadata = await cacheService.BuildAndSaveCacheAsync(progress);
+
+                // 완료
+                CacheBuildProgressBar.Value = 100;
+                CacheBuildStatusText.Text = "완료";
+                CacheBuildDetailText.Text = $"총 {metadata.Tables.Count}개 테이블의 메타데이터가 캐시되었습니다.";
+                await Task.Delay(500);
+
+                // 연결 종료
+                _cacheDbService.Disconnect();
+
+                // 캐시 정보 가져오기
+                var cacheInfo = cacheService.GetCacheInfo();
+
+                // 성공 메시지 표시
+                ShowCacheBuildSuccess(cacheInfo, metadata.Tables.Count);
+
+                System.Diagnostics.Debug.WriteLine("✅ Cache build completed successfully");
+
+                UpdateStatus($"메타데이터 캐시 빌드 완료: {metadata.Tables.Count}개 테이블", Colors.Green);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Cache build failed: {ex.Message}");
+                ShowCacheBuildError(ex.Message);
+                UpdateStatus($"캐시 빌드 실패: {ex.Message}", Colors.Red);
+            }
+            finally
+            {
+                BuildCacheButton.IsEnabled = true;
+                CacheConnectionComboBox.IsEnabled = true;
+                CacheBuildProgressPanel.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        /// <summary>
+        /// 🔥 캐시 빌드 성공 메시지 표시
+        /// </summary>
+        private void ShowCacheBuildSuccess(CacheInfo cacheInfo, int tableCount)
+        {
+            CacheBuildResultPanel.Visibility = Visibility.Visible;
+            CacheBuildResultPanel.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D4EDDA"));
+            CacheBuildResultPanel.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#28A745"));
+            
+            CacheBuildResultIcon.Text = "✅";
+            CacheBuildResultIcon.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#28A745"));
+            CacheBuildResultTitle.Text = "캐시 빌드 완료!";
+            CacheBuildResultTitle.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#155724"));
+            
+            CacheBuildResultMessage.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#155724"));
+            CacheBuildResultMessage.Text = 
+                $"✨ 메타데이터 캐시가 성공적으로 생성되었습니다.\n\n" +
+                $"📊 빌드된 정보:\n" +
+                $"  • 테이블 수: {tableCount}개\n" +
+                $"  • 파일 크기: {cacheInfo.FileSizeMB:F2} MB\n" +
+                $"  • 저장 위치: {cacheInfo.CacheFilePath}\n" +
+                $"  • 빌드 시간: {cacheInfo.LastModified:yyyy-MM-dd HH:mm:ss}\n\n" +
+                $"이제 SQL Window 탭에서 '캐시 로드' 버튼을 눌러 오프라인 모드로 사용할 수 있습니다.";
+
+            MessageBox.Show(
+                $"메타데이터 캐시 빌드가 완료되었습니다!\n\n" +
+                $"테이블: {tableCount}개\n" +
+                $"파일 크기: {cacheInfo.FileSizeMB:F2} MB\n\n" +
+                "SQL Window 탭에서 사용할 수 있습니다.",
+                "빌드 완료",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+
+        /// <summary>
+        /// 🔥 캐시 빌드 오류 메시지 표시
+        /// </summary>
+        private void ShowCacheBuildError(string errorMessage)
+        {
+            CacheBuildResultPanel.Visibility = Visibility.Visible;
+            CacheBuildResultPanel.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F8D7DA"));
+            CacheBuildResultPanel.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DC3545"));
+            
+            CacheBuildResultIcon.Text = "❌";
+            CacheBuildResultIcon.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DC3545"));
+            CacheBuildResultTitle.Text = "캐시 빌드 실패";
+            CacheBuildResultTitle.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#721C24"));
+            
+            CacheBuildResultMessage.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#721C24"));
+            CacheBuildResultMessage.Text = 
+                $"⚠️ 캐시 빌드 중 오류가 발생했습니다.\n\n" +
+                $"오류 메시지:\n{errorMessage}\n\n" +
+                $"확인 사항:\n" +
+                $"  • 데이터베이스 연결 정보가 올바른지 확인\n" +
+                $"  • 네트워크 연결 상태 확인\n" +
+                $"  • 데이터베이스 권한 확인";
+
+            MessageBox.Show(
+                $"캐시 빌드 중 오류가 발생했습니다:\n\n{errorMessage}",
+                "빌드 오류",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+
+        /// <summary>
+        /// 🔥 캐시 폴더 열기 버튼 클릭
+        /// </summary>
+        private void OpenCacheFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var cacheDir = MetadataCacheService.GetCacheDirectory();
+                
+                if (!System.IO.Directory.Exists(cacheDir))
+                {
+                    System.IO.Directory.CreateDirectory(cacheDir);
+                }
+
+                System.Diagnostics.Process.Start("explorer.exe", cacheDir);
+                
+                System.Diagnostics.Debug.WriteLine($"📂 Opened cache folder: {cacheDir}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"캐시 폴더를 열 수 없습니다:\n{ex.Message}", 
+                    "오류", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

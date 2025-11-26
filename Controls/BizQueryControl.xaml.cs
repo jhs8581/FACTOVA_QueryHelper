@@ -154,29 +154,33 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         /// <summary>
-        /// 🔥 비즈명 및 쿼리비즈명 텍스트 필터를 적용합니다.
+        /// 🔥 그룹명, 비즈명, 쿼리비즈명 텍스트 필터를 적용합니다.
         /// </summary>
         private void ApplyTextFilters()
         {
+            string groupNameFilter = GroupNameFilterTextBox.Text?.Trim().ToLower() ?? "";
             string bizNameFilter = BizNameFilterTextBox.Text?.Trim().ToLower() ?? "";
             string queryBizNameFilter = QueryBizNameFilterTextBox.Text?.Trim().ToLower() ?? "";
 
             _displayedQueries = _filteredQueries.Where(q =>
             {
+                bool matchesGroupName = string.IsNullOrEmpty(groupNameFilter) ||
+                                       (q.QueryName?.ToLower().Contains(groupNameFilter) ?? false);
+
                 bool matchesBizName = string.IsNullOrEmpty(bizNameFilter) ||
                                      (q.BizName?.ToLower().Contains(bizNameFilter) ?? false);
 
                 bool matchesQueryBizName = string.IsNullOrEmpty(queryBizNameFilter) ||
                                           (q.QueryBizName?.ToLower().Contains(queryBizNameFilter) ?? false);
 
-                return matchesBizName && matchesQueryBizName;
+                return matchesGroupName && matchesBizName && matchesQueryBizName;
             }).ToList();
 
             QueriesDataGrid.ItemsSource = null;
             QueriesDataGrid.ItemsSource = _displayedQueries;
             QueryCountTextBlock.Text = _displayedQueries.Count.ToString();
 
-            if (!string.IsNullOrEmpty(bizNameFilter) || !string.IsNullOrEmpty(queryBizNameFilter))
+            if (!string.IsNullOrEmpty(groupNameFilter) || !string.IsNullOrEmpty(bizNameFilter) || !string.IsNullOrEmpty(queryBizNameFilter))
             {
                 UpdateStatus($"필터 적용됨: {_displayedQueries.Count}개 항목 표시 중", Colors.Green);
             }
@@ -205,6 +209,7 @@ namespace FACTOVA_QueryHelper.Controls
         /// </summary>
         private void ClearFilterButton_Click(object sender, RoutedEventArgs e)
         {
+            GroupNameFilterTextBox.Text = "";
             BizNameFilterTextBox.Text = "";
             QueryBizNameFilterTextBox.Text = "";
             UpdateStatus("필터가 초기화되었습니다.", Colors.Blue);

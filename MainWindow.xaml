@@ -30,6 +30,11 @@
                 <controls:QueryManagementControl x:Name="QueryManagementControl"/>
             </TabItem>
 
+            <!-- SQL Window 탭 -->
+            <TabItem Header="SQL Window">
+                <controls:QueryEditorView x:Name="QueryEditorView"/>
+            </TabItem>
+
             <!-- SFC 모니터링 탭 -->
             <TabItem Header="SFC 모니터링">
                 <controls:SfcMonitoringControl x:Name="SfcMonitoringControl"/>
