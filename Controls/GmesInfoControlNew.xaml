@@ -13,7 +13,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- 상단 조회 영역 (쿼리 로드 + 사업장) -->
+        <!-- 상단 조회 영역 (사업장) -->
         <Border Grid.Row="0" 
                 x:Name="SearchConditionBorder"
                 Background="White" 
@@ -25,33 +25,13 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="400"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- 쿼리 로드 버튼 -->
-                <Button x:Name="LoadQueriesButton" 
-                        Grid.Column="0"
-                        Height="38"
-                        Click="LoadQueriesButton_Click"
-                        Background="#FF28A745" 
-                        Foreground="White"
-                        BorderThickness="0"
-                        Cursor="Hand"
-                        FontWeight="Bold"
-                        FontSize="12"
-                        Padding="10,0"
-                        Margin="0,0,10,0">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="🔄" FontSize="16" Margin="0,0,5,0"/>
-                        <TextBlock Text="쿼리 로드"/>
-                    </StackPanel>
-                </Button>
-
-                <Border Grid.Column="1" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
+                <Border Grid.Column="0" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
                     <TextBlock Text="사업장" FontWeight="SemiBold" VerticalAlignment="Center" Margin="10,5" FontSize="11"/>
                 </Border>
-                <Border Grid.Column="2" BorderBrush="#FFE0E0E0" BorderThickness="1">
+                <Border Grid.Column="1" BorderBrush="#FFE0E0E0" BorderThickness="1">
                     <Grid Margin="5">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -371,7 +351,7 @@
                             </Button>
                         </StackPanel>
 
-                        <!-- 두 번째 줄: 기준정보 쿼리 선택 + 전체 조회 버튼 -->
+                        <!-- 두 번째 줄: 기준정보 쿼리 선택 + 전체 조회 버튼 + 쿼리 로드 버튼 -->
                         <Border BorderBrush="#FF28A745" 
                                 BorderThickness="2" 
                                 CornerRadius="8" 
@@ -402,7 +382,7 @@
                                 
                                 <!-- 전체 조회 버튼 -->
                                 <Button x:Name="ExecuteAllGridsButton" 
-                                        Width="150"
+                                        Width="120"
                                         Height="32"
                                         Background="#FFDC3545" 
                                         Foreground="White"
@@ -410,10 +390,28 @@
                                         Cursor="Hand"
                                         FontWeight="Bold"
                                         FontSize="12"
-                                        Click="ExecuteAllGridsButton_Click">
+                                        Click="ExecuteAllGridsButton_Click"
+                                        Margin="0,0,10,0">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                         <TextBlock Text="⚡" FontSize="14" Margin="0,0,5,0"/>
                                         <TextBlock Text="전체 조회"/>
+                                    </StackPanel>
+                                </Button>
+                                
+                                <!-- 쿼리 로드 버튼 -->
+                                <Button x:Name="LoadQueriesButton" 
+                                        Width="120"
+                                        Height="32"
+                                        Click="LoadQueriesButton_Click"
+                                        Background="#FF28A745" 
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        Cursor="Hand"
+                                        FontWeight="Bold"
+                                        FontSize="12">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <TextBlock Text="🔄" FontSize="14" Margin="0,0,5,0"/>
+                                        <TextBlock Text="쿼리 로드"/>
                                     </StackPanel>
                                 </Button>
                             </StackPanel>

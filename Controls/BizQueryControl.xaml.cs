@@ -176,8 +176,13 @@ namespace FACTOVA_QueryHelper.Controls
                 return matchesGroupName && matchesBizName && matchesQueryBizName;
             }).ToList();
 
+            // 🔥 ItemsSource를 null로 설정 후 다시 바인딩하여 LoadingRow 이벤트가 발생하도록 함
             QueriesDataGrid.ItemsSource = null;
             QueriesDataGrid.ItemsSource = _displayedQueries;
+            
+            // 🔥 명시적으로 Items.Refresh() 호출
+            QueriesDataGrid.Items.Refresh();
+            
             QueryCountTextBlock.Text = _displayedQueries.Count.ToString();
 
             if (!string.IsNullOrEmpty(groupNameFilter) || !string.IsNullOrEmpty(bizNameFilter) || !string.IsNullOrEmpty(queryBizNameFilter))
@@ -219,17 +224,36 @@ namespace FACTOVA_QueryHelper.Controls
         {
             // 현재 선택된 그룹명 저장
             string? currentSelection = BizNameComboBox.SelectedItem as string;
+            int currentIndex = BizNameComboBox.SelectedIndex;
             
-            // 쿼리 재로드
+            // 🔥 쿼리 재로드 (데이터베이스에서 최신 데이터 가져오기)
             LoadQueries();
             
-            // 이전 선택 복원 (가능한 경우)
-            if (!string.IsNullOrEmpty(currentSelection))
+            // 🔥 이전 선택 복원 (인덱스 기반으로 복원)
+            if (currentIndex >= 0 && currentIndex < BizNameComboBox.Items.Count)
             {
-                BizNameComboBox.SelectedItem = currentSelection;
+                BizNameComboBox.SelectedIndex = currentIndex;
+            }
+            else if (!string.IsNullOrEmpty(currentSelection))
+            {
+                // 인덱스 복원이 안 되면 문자열로 찾기
+                for (int i = 0; i < BizNameComboBox.Items.Count; i++)
+                {
+                    if (BizNameComboBox.Items[i] as string == currentSelection)
+                    {
+                        BizNameComboBox.SelectedIndex = i;
+                        break;
+                    }
+                }
             }
             
-            UpdateStatus("쿼리 목록이 새로고침되었습니다.", Colors.Blue);
+            // 🔥 선택이 제대로 복원되지 않았다면 수동으로 필터링 호출
+            if (BizNameComboBox.SelectedItem is string selectedName)
+            {
+                FilterQueriesByBizName(selectedName);
+            }
+            
+            UpdateStatus("쿼리 목록이 새로고침되었습니다. (색상 포함)", Colors.Blue);
         }
 
         private void QueriesDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)

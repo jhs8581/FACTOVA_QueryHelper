@@ -13,17 +13,23 @@ namespace FACTOVA_QueryHelper.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value == null || string.IsNullOrWhiteSpace(value.ToString()))
-                return Brushes.White;
+            {
+                // 🔥 RowColor가 없으면 투명 반환 (AlternatingRowBackground가 적용됨)
+                return Brushes.Transparent;
+            }
 
             try
             {
                 var colorName = value.ToString();
-                var color = (Color)ColorConverter.ConvertFromString(colorName);
-                return new SolidColorBrush(color);
+                var color = (Color)ColorConverter.ConvertFromString(colorName!);
+                var brush = new SolidColorBrush(color);
+                brush.Freeze(); // 🔥 성능 최적화
+                return brush;
             }
-            catch
+            catch (Exception ex)
             {
-                return Brushes.White;
+                System.Diagnostics.Debug.WriteLine($"❌ RowColor 변환 실패: {value} - {ex.Message}");
+                return Brushes.Transparent;
             }
         }
 

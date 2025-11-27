@@ -3,9 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:FACTOVA_QueryHelper.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="700" d:DesignWidth="1200"
              Background="#FFF8F9FA">
+    
+    <UserControl.Resources>
+        <converters:RowColorToBackgroundConverter x:Key="RowColorConverter"/>
+    </UserControl.Resources>
     
     <Grid Margin="10">
         <Grid.RowDefinitions>
@@ -209,7 +214,7 @@
                           CanUserAddRows="False"
                           CanUserDeleteRows="False"
                           IsReadOnly="True"
-                          AlternatingRowBackground="#FFF8F9FA"
+                          AlternationCount="2"
                           GridLinesVisibility="All"
                           HeadersVisibility="All"
                           FontSize="11"
@@ -217,6 +222,28 @@
                           BorderBrush="#FFE0E0E0"
                           Background="White"
                           SelectionChanged="QueriesDataGrid_SelectionChanged">
+                    
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <!-- 🔥 RowColor를 Background에 바인딩 (Converter 사용) -->
+                            <Setter Property="Background" Value="{Binding RowColor, Converter={StaticResource RowColorConverter}}"/>
+                            
+                            <Style.Triggers>
+                                <!-- 🔥 RowColor가 비어있을 때 AlternatingRowBackground 사용 -->
+                                <DataTrigger Binding="{Binding RowColor}" Value="">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding RowColor}" Value="{x:Null}">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                </DataTrigger>
+                                
+                                <!-- 마우스 오버 시 커서 변경 -->
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Cursor" Value="Hand"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
                     
                     <DataGrid.ColumnHeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
