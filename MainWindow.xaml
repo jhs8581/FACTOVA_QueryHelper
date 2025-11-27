@@ -20,6 +20,11 @@
                 <controls:GmesInfoControl x:Name="GmesInfoControl"/>
             </TabItem>
             
+            <!-- GMES 정보 조회 (New) 탭 -->
+            <TabItem Header="GMES 정보 조회 (New)">
+                <controls:GmesInfoControlNewNew x:Name="GmesInfoControlNew"/>
+            </TabItem>
+            
             <!-- 비즈 쿼리 조회 탭 -->
             <TabItem Header="비즈 쿼리 조회">
                 <controls:BizQueryControl x:Name="BizQueryControl"/>

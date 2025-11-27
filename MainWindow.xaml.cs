@@ -85,6 +85,7 @@ namespace FACTOVA_QueryHelper
             // QueryExecutionManager는 LogAnalysisControl에서 초기화됨
             this.LogAnalysisControl.Initialize(_sharedData);
             this.GmesInfoControl.Initialize(_sharedData);
+            this.GmesInfoControlNew.Initialize(_sharedData);  // 🔥 GMES 정보 조회 (New) 초기화
             this.BizQueryControl.Initialize(_sharedData);
             this.QueryManagementControl.Initialize(_sharedData);
             this.QueryEditorView.SetSharedDataContext(_sharedData);  // 🔥 SharedDataContext 설정

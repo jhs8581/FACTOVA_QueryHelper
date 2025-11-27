@@ -941,7 +941,7 @@ namespace FACTOVA_QueryHelper.Controls
             var connectionTemplate = new DataTemplate();
             var connectionFactory = new FrameworkElementFactory(typeof(ComboBox));
             connectionFactory.SetValue(ComboBox.ItemsSourceProperty, _connectionInfos);
-            connectionFactory.SetValue(ComboBox.DisplayMemberPathProperty, "Id");
+            connectionFactory.SetValue(ComboBox.DisplayMemberPathProperty, "DisplayName");  // 🔥 Id → DisplayName 변경
             connectionFactory.SetValue(ComboBox.SelectedValuePathProperty, "Id");
             connectionFactory.SetBinding(ComboBox.SelectedValueProperty, 
                 new System.Windows.Data.Binding("ConnectionInfoId") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged });
@@ -960,7 +960,7 @@ namespace FACTOVA_QueryHelper.Controls
             connectionDisplayFactory.SetBinding(TextBlock.TextProperty, connectionBinding);
             connectionDisplayFactory.SetValue(TextBlock.PaddingProperty, new Thickness(4));
             connectionDisplayFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
-            connectionDisplayFactory.SetValue(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            connectionDisplayFactory.SetValue(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Left);  // 🔥 Center → Left로 변경
             connectionDisplayTemplate.VisualTree = connectionDisplayFactory;
 
             dataGrid.Columns.Add(new DataGridTemplateColumn
@@ -968,7 +968,7 @@ namespace FACTOVA_QueryHelper.Controls
                 Header = "🔌 접속 정보",
                 CellTemplate = connectionDisplayTemplate,
                 CellEditingTemplate = connectionTemplate,
-                Width = 200
+                Width = 250  // 🔥 너비 200 → 250으로 증가
             });
 
             // TNS (숨김 - 과거 버전 호환성 유지)

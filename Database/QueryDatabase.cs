@@ -252,6 +252,20 @@ namespace FACTOVA_QueryHelper.Database
                     ModifiedDate TEXT DEFAULT CURRENT_TIMESTAMP
                 )";
             shortcutCommand.ExecuteNonQuery();
+            
+            // 🔥 Parameters 테이블 생성 (기준정보 파라미터 관리용)
+            var paramCommand = connection.CreateCommand();
+            paramCommand.CommandText = @"
+                CREATE TABLE IF NOT EXISTS Parameters (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Parameter TEXT NOT NULL,
+                    Description TEXT,
+                    Value TEXT,
+                    DisplayOrder INTEGER DEFAULT 0,
+                    CreatedDate TEXT DEFAULT CURRENT_TIMESTAMP,
+                    ModifiedDate TEXT DEFAULT CURRENT_TIMESTAMP
+                )";
+            paramCommand.ExecuteNonQuery();
         }
 
         /// <summary>
@@ -645,6 +659,97 @@ namespace FACTOVA_QueryHelper.Database
             return command.ExecuteNonQuery();
         }
         
+        #endregion
+        
+        #region 기준정보 파라미터 관리
+
+        /// <summary>
+        /// 모든 파라미터 정보를 조회합니다.
+        /// </summary>
+        public List<Models.ParameterInfo> GetAllParameters()
+        {
+            var parameters = new List<Models.ParameterInfo>();
+
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = "SELECT * FROM Parameters ORDER BY DisplayOrder, Id";
+
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                parameters.Add(new Models.ParameterInfo
+                {
+                    Id = Convert.ToInt32(reader["Id"]),
+                    Parameter = reader["Parameter"]?.ToString() ?? "",
+                    Description = reader["Description"]?.ToString() ?? "",
+                    Value = reader["Value"]?.ToString() ?? ""
+                });
+            }
+
+            return parameters;
+        }
+
+        /// <summary>
+        /// 파라미터 정보를 추가합니다.
+        /// </summary>
+        public void AddParameter(Models.ParameterInfo parameter)
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                INSERT INTO Parameters (Parameter, Description, Value, DisplayOrder)
+                VALUES ($parameter, $description, $value, 0)";
+
+            command.Parameters.AddWithValue("$parameter", parameter.Parameter);
+            command.Parameters.AddWithValue("$description", parameter.Description ?? "");
+            command.Parameters.AddWithValue("$value", parameter.Value ?? "");
+
+            command.ExecuteNonQuery();
+        }
+
+        /// <summary>
+        /// 파라미터 정보를 수정합니다.
+        /// </summary>
+        public void UpdateParameter(Models.ParameterInfo parameter)
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                UPDATE Parameters SET
+                    Parameter = $parameter,
+                    Description = $description,
+                    Value = $value,
+                    ModifiedDate = CURRENT_TIMESTAMP
+                WHERE Id = $id";
+
+            command.Parameters.AddWithValue("$id", parameter.Id);
+            command.Parameters.AddWithValue("$parameter", parameter.Parameter);
+            command.Parameters.AddWithValue("$description", parameter.Description ?? "");
+            command.Parameters.AddWithValue("$value", parameter.Value ?? "");
+
+            command.ExecuteNonQuery();
+        }
+
+        /// <summary>
+        /// 파라미터 정보를 삭제합니다.
+        /// </summary>
+        public void DeleteParameter(int id)
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = "DELETE FROM Parameters WHERE Id = $id";
+            command.Parameters.AddWithValue("$id", id);
+            command.ExecuteNonQuery();
+        }
+
         #endregion
     }
 }
