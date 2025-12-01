@@ -89,7 +89,7 @@ namespace FACTOVA_QueryHelper.Controls
             
             LoadQueriesFromDatabase();
             
-            // 🔥 접속 정보 변경 이벤트 구독
+            // 🔥 접속 정보 변화 이벤트 구독
             if (_sharedData != null)
             {
                 _sharedData.ConnectionInfosChanged += OnConnectionInfosChanged;
@@ -98,7 +98,7 @@ namespace FACTOVA_QueryHelper.Controls
         }
         
         /// <summary>
-        /// 🔥 접속 정보 변경 이벤트 핸들러
+        /// 🔥 접속 정보 변화 이벤트 핸들러
         /// </summary>
         private void OnConnectionInfosChanged(object? sender, EventArgs e)
         {
@@ -349,6 +349,9 @@ namespace FACTOVA_QueryHelper.Controls
         /// </summary>
         private void CreateQueryManagementUI(Grid parentGrid, string queryType, int tabIndex)
         {
+            // 🔥 디버그 로그 추가
+            System.Diagnostics.Debug.WriteLine($"CreateQueryManagementUI called - tabIndex: {tabIndex}, queryType: '{queryType}'");
+            
             parentGrid.Children.Clear();
             parentGrid.RowDefinitions.Clear();
             
@@ -568,8 +571,8 @@ namespace FACTOVA_QueryHelper.Controls
             Grid.SetRow(headerGrid, 0);
             grid.Children.Add(headerGrid);
 
-            // 🔥 그룹명 필터 (정보 조회, 비즈 조회만)
-            if (queryType == "정보 조회" || queryType == "비즈 조회")
+            // 🔥 그룹명 필터 (정보 조회, 비즈 조회만) - 탭 인덱스 기준으로 변경
+            if (tabIndex == 1 || tabIndex == 2) // 정보 조회 또는 비즈 조회
             {
                 var filterBorder = new Border
                 {
@@ -624,8 +627,8 @@ namespace FACTOVA_QueryHelper.Controls
             Grid.SetRow(editModeBorder, 2);
             grid.Children.Add(editModeBorder);
 
-            // 🔥 DataGrid 직접 추가 (ScrollViewer 제거)
-            var dataGrid = CreateDataGrid(queryType);
+            // 🔥 DataGrid 직접 추가 (ScrollViewer 제거) - tabIndex도 전달
+            var dataGrid = CreateDataGrid(queryType, tabIndex);
             _dataGrids[tabIndex] = dataGrid;
             
             Grid.SetRow(dataGrid, 3);
@@ -715,7 +718,7 @@ namespace FACTOVA_QueryHelper.Controls
         /// <summary>
         /// DataGrid 생성
         /// </summary>
-        private DataGrid CreateDataGrid(string queryType)
+        private DataGrid CreateDataGrid(string queryType, int tabIndex)
         {
             var dataGrid = new DataGrid
             {
@@ -764,8 +767,8 @@ namespace FACTOVA_QueryHelper.Controls
             cellStyle.Setters.Add(new Setter(DataGridCell.PaddingProperty, new Thickness(8, 5, 8, 5)));
             dataGrid.CellStyle = cellStyle;
 
-            // 컬럼 정의
-            AddDataGridColumns(dataGrid, queryType);
+            // 컬럼 정의 - tabIndex 전달
+            AddDataGridColumns(dataGrid, queryType, tabIndex);
 
             return dataGrid;
         }
@@ -773,8 +776,11 @@ namespace FACTOVA_QueryHelper.Controls
         /// <summary>
         /// DataGrid 컬럼 추가
         /// </summary>
-        private void AddDataGridColumns(DataGrid dataGrid, string queryType)
+        private void AddDataGridColumns(DataGrid dataGrid, string queryType, int tabIndex)
         {
+            // 🔥 디버그 로그 추가
+            System.Diagnostics.Debug.WriteLine($"AddDataGridColumns called - tabIndex: {tabIndex}, queryType: '{queryType}'");
+            
             // ID 형식화
             var idColumn = new DataGridTextColumn
             {
@@ -832,7 +838,13 @@ namespace FACTOVA_QueryHelper.Controls
             
             colorDisplayTemplate.VisualTree = colorDisplayFactory;
 
-           
+            dataGrid.Columns.Add(new DataGridTemplateColumn
+            {
+                Header = "🎨 색상",
+                CellTemplate = colorDisplayTemplate,
+                CellEditingTemplate = colorTemplate,
+                Width = 100
+            });
 
             // 🔥 비즈명 (모든 탭에서 표시)
             dataGrid.Columns.Add(new DataGridTextColumn
@@ -884,16 +896,8 @@ namespace FACTOVA_QueryHelper.Controls
                 Width = 250
             });
 
-            dataGrid.Columns.Add(new DataGridTemplateColumn
-            {
-                Header = "🎨 색상",
-                CellTemplate = colorDisplayTemplate,
-                CellEditingTemplate = colorTemplate,
-                Width = 100
-            });
-
-            // 순번 (정보 조회, 비즈 조회에서만 표시)
-            if (queryType == "정보 조회" || queryType == "비즈 조회")
+            // 순번 (정보 조회, 비즈 조회에서만 표시) - 탭 인덱스 기준으로 변경
+            if (tabIndex == 1 || tabIndex == 2) // 정보 조회 또는 비즈 조회
             {
                 var orderColumn = new DataGridTextColumn
                 {
@@ -971,39 +975,6 @@ namespace FACTOVA_QueryHelper.Controls
                 Width = 250  // 🔥 너비 200 → 250으로 증가
             });
 
-            // TNS (숨김 - 과거 버전 호환성 유지)
-            var tnsColumn = new DataGridTextColumn
-            {
-                Header = "TNS",
-                Binding = new System.Windows.Data.Binding("TnsName"),
-                Width = 0,
-                IsReadOnly = true,
-                Visibility = Visibility.Collapsed
-            };
-            dataGrid.Columns.Add(tnsColumn);
-
-            // User ID (숨김 - 과거 버전 호환성 유지)
-            var userIdColumn = new DataGridTextColumn
-            {
-                Header = "User ID",
-                Binding = new System.Windows.Data.Binding("UserId"),
-                Width = 0,
-                IsReadOnly = true,
-                Visibility = Visibility.Collapsed
-            };
-            dataGrid.Columns.Add(userIdColumn);
-
-            // Password (숨김 - 과거 버전 호환성 유지)
-            var passwordColumn = new DataGridTextColumn
-            {
-                Header = "Password",
-                Binding = new System.Windows.Data.Binding("Password"),
-                Width = 0,
-                IsReadOnly = true,
-                Visibility = Visibility.Collapsed
-            };
-            dataGrid.Columns.Add(passwordColumn);
-
             // SQL 쿼리
             var queryTemplate = new DataTemplate();
             var factory = new FrameworkElementFactory(typeof(Button));
@@ -1026,9 +997,11 @@ namespace FACTOVA_QueryHelper.Controls
                 Width = 120
             });
 
-            // 쿼리 실행 탭 전용 컬럼들
-            if (queryType == "쿼리 실행")
+            // 🔥 쿼리 실행 탭 전용 컬럼들 - 탭 인덱스 기준으로 변경
+            if (tabIndex == 0) // 실시간 모니터링
             {
+                System.Diagnostics.Debug.WriteLine($"✅ Adding '쿼리 실행' specific columns for tabIndex: {tabIndex}");
+                
                 dataGrid.Columns.Add(new DataGridCheckBoxColumn
                 {
                     Header = "실행",
@@ -1091,10 +1064,12 @@ namespace FACTOVA_QueryHelper.Controls
                     Binding = new System.Windows.Data.Binding("DefaultFlagBool") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged },
                     Width = 60
                 });
+                
+                System.Diagnostics.Debug.WriteLine($"✅ Total columns added: {dataGrid.Columns.Count}");
             }
             
-            // 🔥 정보 조회, 비즈 조회 탭도 사용여부 컬럼 추가
-            if (queryType == "정보 조회" || queryType == "비즈 조회")
+            // 🔥 정보 조회, 비즈 조회 탭도 사용여부 컬럼 추가 - 탭 인덱스 기준으로 변경
+            if (tabIndex == 1 || tabIndex == 2) // 정보 조회 또는 비즈 조회
             {
                 dataGrid.Columns.Add(new DataGridCheckBoxColumn
                 {
@@ -1103,8 +1078,41 @@ namespace FACTOVA_QueryHelper.Controls
                     Width = 70
                 });
             }
-        }
 
+            // TNS (숨김 - 과거 버전 호환성 유지)
+            var tnsColumn = new DataGridTextColumn
+            {
+                Header = "TNS",
+                Binding = new System.Windows.Data.Binding("TnsName"),
+                Width = 0,
+                IsReadOnly = true,
+                Visibility = Visibility.Collapsed
+            };
+            dataGrid.Columns.Add(tnsColumn);
+
+            // User ID (숨김 - 과거 버전 호환성 유지)
+            var userIdColumn = new DataGridTextColumn
+            {
+                Header = "User ID",
+                Binding = new System.Windows.Data.Binding("UserId"),
+                Width = 0,
+                IsReadOnly = true,
+                Visibility = Visibility.Collapsed
+            };
+            dataGrid.Columns.Add(userIdColumn);
+
+            // Password (숨김 - 과거 버전 호환성 유지)
+            var passwordColumn = new DataGridTextColumn
+            {
+                Header = "Password",
+                Binding = new System.Windows.Data.Binding("Password"),
+                Width = 0,
+                IsReadOnly = true,
+                Visibility = Visibility.Collapsed
+            };
+            dataGrid.Columns.Add(passwordColumn);
+        }
+        
         /// <summary>
         /// 하단 상태바 생성
         /// </summary>

@@ -7,9 +7,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Icons\free-icon-database-4248443.ico</ApplicationIcon>
-    <Version>4.5.0</Version>
-    <AssemblyVersion>4.5.0.0</AssemblyVersion>
-    <FileVersion>4.5.0.0</FileVersion>
+    <Version>4.6.0</Version>
+    <AssemblyVersion>4.6.0.0</AssemblyVersion>
+    <FileVersion>4.6.0.0</FileVersion>
     <Company>FACTOVA</Company>
     <Product>FACTOVA Query Helper</Product>
     <Description>Oracle 데이터베이스 쿼리 실행 및 모니터링 도구</Description>
