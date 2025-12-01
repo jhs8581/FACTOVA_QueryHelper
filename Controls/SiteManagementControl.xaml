@@ -197,6 +197,19 @@
                         </DataGridTextColumn.HeaderStyle>
                     </DataGridTextColumn>
 
+                    <!-- DIVISION (편집 가능) -->
+                    <DataGridTextColumn Header="DIVISION" Binding="{Binding Division, UpdateSourceTrigger=PropertyChanged}" Width="*" IsReadOnly="False">
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#FF2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="11"/>
+                                <Setter Property="Padding" Value="10,5"/>
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                    </DataGridTextColumn>
+
                     <!-- 🔥 TNS (1.0) - 접속 정보 ComboBox -->
                     <DataGridComboBoxColumn Header="TNS (1.0)" 
                                             SelectedItemBinding="{Binding Tns10ConnectionInfo, UpdateSourceTrigger=PropertyChanged}" 

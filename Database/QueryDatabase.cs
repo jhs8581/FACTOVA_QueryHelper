@@ -208,6 +208,7 @@ namespace FACTOVA_QueryHelper.Database
                     Facility TEXT,
                     WipLineId TEXT,
                     EquipLineId TEXT,
+                    Division TEXT,
                     IsDefault INTEGER DEFAULT 0,
                     DisplayOrder INTEGER DEFAULT 0,
                     TnsVersionMapping TEXT DEFAULT '{}',
@@ -234,6 +235,18 @@ namespace FACTOVA_QueryHelper.Database
                 var alterTnsCommand = connection.CreateCommand();
                 alterTnsCommand.CommandText = "ALTER TABLE SiteInfo ADD COLUMN TnsVersionMapping TEXT DEFAULT '{}'";
                 alterTnsCommand.ExecuteNonQuery();
+            }
+            catch
+            {
+                // 컬럼이 이미 존재하면 무시
+            }
+            
+            // 🔥 Division 컬럼 추가 (기존 테이블 호환성)
+            try
+            {
+                var alterDivisionCommand = connection.CreateCommand();
+                alterDivisionCommand.CommandText = "ALTER TABLE SiteInfo ADD COLUMN Division TEXT";
+                alterDivisionCommand.ExecuteNonQuery();
             }
             catch
             {
@@ -507,6 +520,7 @@ namespace FACTOVA_QueryHelper.Database
                     Facility = reader["Facility"]?.ToString() ?? "",
                     WipLineId = reader["WipLineId"]?.ToString() ?? "",
                     EquipLineId = reader["EquipLineId"]?.ToString() ?? "",
+                    Division = reader["Division"]?.ToString() ?? "",
                     IsDefault = reader["IsDefault"] != DBNull.Value ? Convert.ToInt32(reader["IsDefault"]) : 0,
                     TnsVersionMapping = reader["TnsVersionMapping"]?.ToString() ?? "{}"
                 });
@@ -527,10 +541,10 @@ namespace FACTOVA_QueryHelper.Database
             command.CommandText = @"
                 INSERT INTO SiteInfo (
                     SiteName, RepresentativeFactory, Organization, Facility, 
-                    WipLineId, EquipLineId, IsDefault, TnsVersionMapping
+                    WipLineId, EquipLineId, Division, IsDefault, TnsVersionMapping
                 ) VALUES (
                     $siteName, $representativeFactory, $organization, $facility,
-                    $wipLineId, $equipLineId, $isDefault, $tnsVersionMapping
+                    $wipLineId, $equipLineId, $division, $isDefault, $tnsVersionMapping
                 )";
 
             command.Parameters.AddWithValue("$siteName", site.SiteName);
@@ -539,6 +553,7 @@ namespace FACTOVA_QueryHelper.Database
             command.Parameters.AddWithValue("$facility", site.Facility ?? "");
             command.Parameters.AddWithValue("$wipLineId", site.WipLineId ?? "");
             command.Parameters.AddWithValue("$equipLineId", site.EquipLineId ?? "");
+            command.Parameters.AddWithValue("$division", site.Division ?? "");
             command.Parameters.AddWithValue("$isDefault", site.IsDefault);
             command.Parameters.AddWithValue("$tnsVersionMapping", site.TnsVersionMapping);
 
@@ -562,6 +577,7 @@ namespace FACTOVA_QueryHelper.Database
                     Facility = $facility,
                     WipLineId = $wipLineId,
                     EquipLineId = $equipLineId,
+                    Division = $division,
                     IsDefault = $isDefault,
                     TnsVersionMapping = $tnsVersionMapping,
                     ModifiedDate = CURRENT_TIMESTAMP
@@ -574,6 +590,7 @@ namespace FACTOVA_QueryHelper.Database
             command.Parameters.AddWithValue("$facility", site.Facility ?? "");
             command.Parameters.AddWithValue("$wipLineId", site.WipLineId ?? "");
             command.Parameters.AddWithValue("$equipLineId", site.EquipLineId ?? "");
+            command.Parameters.AddWithValue("$division", site.Division ?? "");
             command.Parameters.AddWithValue("$isDefault", site.IsDefault);
             command.Parameters.AddWithValue("$tnsVersionMapping", site.TnsVersionMapping);
 

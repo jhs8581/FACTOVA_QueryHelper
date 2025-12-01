@@ -12,6 +12,7 @@
         public string Facility { get; set; } = string.Empty;
         public string WipLineId { get; set; } = string.Empty;
         public string EquipLineId { get; set; } = string.Empty;
+        public string Division { get; set; } = string.Empty;
         
         // 🔥 IsDefault를 int로 사용 (표시순번으로 재사용)
         public int IsDefault { get; set; }
@@ -98,7 +99,7 @@
         /// ComboBox 표시용 텍스트
         /// </summary>
         public string DisplayText =>
-            $"[{SiteName}] ({RepresentativeFactory}, {Organization}, {Facility}, {WipLineId}, {EquipLineId})";
+            $"[{SiteName}] ({RepresentativeFactory}, {Organization}, {Facility}, {WipLineId}, {EquipLineId}, {Division})";
 
         public override string ToString() => DisplayText;
         

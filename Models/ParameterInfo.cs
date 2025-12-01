@@ -11,6 +11,7 @@ namespace FACTOVA_QueryHelper.Models
         private string _parameter = string.Empty;
         private string _description = string.Empty;
         private string _value = string.Empty;
+        private bool _isHighlighted;
 
         public int Id
         {
@@ -60,6 +61,22 @@ namespace FACTOVA_QueryHelper.Models
                 {
                     _value = value;
                     OnPropertyChanged(nameof(Value));
+                }
+            }
+        }
+
+        /// <summary>
+        /// 파라미터 확인 시 하이라이트 여부
+        /// </summary>
+        public bool IsHighlighted
+        {
+            get => _isHighlighted;
+            set
+            {
+                if (_isHighlighted != value)
+                {
+                    _isHighlighted = value;
+                    OnPropertyChanged(nameof(IsHighlighted));
                 }
             }
         }

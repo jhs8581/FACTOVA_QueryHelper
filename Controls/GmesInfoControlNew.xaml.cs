@@ -332,6 +332,32 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         /// <summary>
+        /// 색상 초기화 버튼 클릭
+        /// </summary>
+        private void ClearHighlightButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_parameters == null) return;
+
+            try
+            {
+                foreach (var param in _parameters)
+                {
+                    param.IsHighlighted = false;
+                }
+
+                PlanInfoDataGrid.Items.Refresh();
+
+                ParameterStatusTextBlock.Text = "파라미터 색상이 초기화되었습니다.";
+                ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Gray);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"색상 초기화 실패:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
         /// 값 초기화 버튼 클릭
         /// </summary>
         private void ClearValuesButton_Click(object sender, RoutedEventArgs e)
@@ -773,7 +799,7 @@ namespace FACTOVA_QueryHelper.Controls
                 Cursor = Cursors.Hand,
                 FontSize = 11,
                 FontWeight = FontWeights.SemiBold,
-                Margin = new Thickness(0, 0, 10, 0),
+                Margin = new Thickness(0, 0, 5, 0),
                 ToolTip = "쿼리 보기"
             };
             
@@ -804,11 +830,38 @@ namespace FACTOVA_QueryHelper.Controls
                 }
             };
 
+            // 파라미터 확인 버튼
+            var validateParamsButton = new Button
+            {
+                Content = "✔️ 파라미터",
+                Width = 100,
+                Height = 28,
+                Background = new SolidColorBrush(Color.FromRgb(0, 120, 215)), // Blue
+                Foreground = Brushes.White,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand,
+                FontSize = 11,
+                FontWeight = FontWeights.SemiBold,
+                Margin = new Thickness(0, 0, 10, 0),
+                ToolTip = "이 쿼리의 파라미터 확인"
+            };
+
+            // 마우스 오버 스타일
+            var validateButtonStyle = new Style(typeof(Button));
+            validateButtonStyle.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(0, 120, 215))));
+            var validateTrigger = new System.Windows.Trigger { Property = Button.IsMouseOverProperty, Value = true };
+            validateTrigger.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(0, 86, 160))));
+            validateButtonStyle.Triggers.Add(validateTrigger);
+            validateParamsButton.Style = validateButtonStyle;
+
+            validateParamsButton.Click += (s, e) => ValidateGridParameters(gridInfo);
+
             headerPanel.Children.Add(titleBlock);
             headerPanel.Children.Add(gridInfo.QueryComboBox);  // 쿼리 선택 콤보박스
             headerPanel.Children.Add(gridInfo.ClearButton);     // 취소 버튼
             headerPanel.Children.Add(executeButton);            // 실행 버튼
             headerPanel.Children.Add(viewQueryButton);          // 쿼리 보기 버튼
+            headerPanel.Children.Add(validateParamsButton);     // 파라미터 확인 버튼
             headerPanel.Children.Add(gridInfo.ResultInfoTextBlock); // 결과 정보
 
             Grid.SetRow(headerPanel, 0);
@@ -1080,17 +1133,22 @@ namespace FACTOVA_QueryHelper.Controls
         {
             string result = query;
 
-            string factory = _sharedData?.Settings.GmesFactory ?? "";
-            string org = _sharedData?.Settings.GmesOrg ?? "";
-            string facility = _sharedData?.Settings.GmesFacility ?? "";
-            string wipLineId = _sharedData?.Settings.GmesWipLineId ?? "";
-            string equipLineId = _sharedData?.Settings.GmesEquipLineId ?? "";
+            // 사업장 선택 정보 가져오기
+            var selectedSite = SiteComboBox.SelectedItem as SiteInfo;
+            
+            string factory = selectedSite?.RepresentativeFactory ?? _sharedData?.Settings.GmesFactory ?? "";
+            string org = selectedSite?.Organization ?? _sharedData?.Settings.GmesOrg ?? "";
+            string facility = selectedSite?.Facility ?? _sharedData?.Settings.GmesFacility ?? "";
+            string wipLineId = selectedSite?.WipLineId ?? _sharedData?.Settings.GmesWipLineId ?? "";
+            string equipLineId = selectedSite?.EquipLineId ?? _sharedData?.Settings.GmesEquipLineId ?? "";
+            string division = selectedSite?.Division ?? "";
 
             result = result.Replace("@REPRESENTATIVE_FACTORY_CODE", $"'{factory}'");
             result = result.Replace("@ORGANIZATION_ID", $"'{org}'");
             result = result.Replace("@FACILITY_CODE", $"'{facility}'");
             result = result.Replace("@WIP_LINE_ID", $"'{wipLineId}'");
             result = result.Replace("@LINE_ID", $"'{equipLineId}'");
+            result = result.Replace("@DIVISION", $"'{division}'");
 
             if (_parameters != null)
             {
@@ -1188,6 +1246,7 @@ namespace FACTOVA_QueryHelper.Controls
 
         private void DataGrid_LoadingRow(object? sender, DataGridRowEventArgs e)
         {
+            // 동적 그리드만 처리 (파라미터 그리드는 XAML의 DataTrigger로 처리됨)
             if (e.Row.Item is DataRowView rowView)
             {
                 var row = rowView.Row;
@@ -1478,6 +1537,262 @@ namespace FACTOVA_QueryHelper.Controls
                 (double)fontSize));
             
             dataGrid.ColumnHeaderStyle = headerStyle;
+        }
+
+        #endregion
+
+        #region 파라미터 확인
+
+        /// <summary>
+        /// 파라미터 확인 버튼 클릭
+        /// </summary>
+        private void ValidateParametersButton_Click(object sender, RoutedEventArgs e)
+        {
+            // 선택된 쿼리 확인
+            if (QuerySelectComboBox.SelectedItem is not QueryItem selectedQuery || selectedQuery.OrderNumber < 0)
+            {
+                MessageBox.Show("먼저 기준정보 쿼리를 선택하세요.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (_parameters == null || _parameters.Count == 0)
+            {
+                MessageBox.Show("파라미터가 없습니다.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                // 선택된 쿼리 그룹의 모든 쿼리 가져오기
+                var groupQueries = _infoQueries
+                    .Where(q => q.QueryName == selectedQuery.QueryName)
+                    .ToList();
+
+                if (groupQueries.Count == 0)
+                {
+                    MessageBox.Show("해당 그룹의 쿼리를 찾을 수 없습니다.", "오류",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // 모든 쿼리에서 사용되는 파라미터 추출
+                var allUsedParameters = new HashSet<string>();
+                foreach (var query in groupQueries)
+                {
+                    var usedParams = ExtractParametersFromQuery(query.Query);
+                    foreach (var param in usedParams)
+                    {
+                        allUsedParameters.Add(param);
+                    }
+                }
+
+                // 기본 사업장 파라미터 제외
+                var defaultParams = new HashSet<string>
+                {
+                    "@REPRESENTATIVE_FACTORY_CODE",
+                    "@ORGANIZATION_ID",
+                    "@FACILITY_CODE",
+                    "@WIP_LINE_ID",
+                    "@LINE_ID",
+                    "@DIVISION"
+                };
+
+                // 사용자 정의 파라미터만 필터링
+                var userDefinedParams = allUsedParameters.Except(defaultParams).ToList();
+
+                // 기준정보 파라미터에 정의된 파라미터 목록
+                var definedParams = _parameters
+                    .Where(p => !string.IsNullOrWhiteSpace(p.Parameter))
+                    .Select(p => p.Parameter.StartsWith("@") ? p.Parameter : $"@{p.Parameter}")
+                    .ToHashSet();
+
+                // 없는 파라미터 확인
+                var missingParams = userDefinedParams.Except(definedParams).ToList();
+
+                // 모든 파라미터 행의 색상 초기화
+                foreach (var param in _parameters)
+                {
+                    param.IsHighlighted = false;
+                }
+
+                if (missingParams.Count > 0)
+                {
+                    // 없는 파라미터가 있으면 경고 메시지
+                    var missingParamList = string.Join("\n", missingParams.Select(p => $"  - {p}"));
+                    MessageBox.Show(
+                        $"다음 파라미터가 기준정보에 정의되어 있지 않습니다:\n\n{missingParamList}\n\n" +
+                        "이 파라미터들을 기준정보에 추가하거나 쿼리를 수정하세요.",
+                        "파라미터 누락",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+
+                    ParameterStatusTextBlock.Text = $"⚠️ {missingParams.Count}개 파라미터 누락";
+                    ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Red);
+                }
+                else
+                {
+                    // 사용되는 파라미터 행을 하이라이트
+                    foreach (var param in _parameters)
+                    {
+                        var paramName = param.Parameter.StartsWith("@") ? param.Parameter : $"@{param.Parameter}";
+                        if (userDefinedParams.Contains(paramName))
+                        {
+                            param.IsHighlighted = true;
+                        }
+                    }
+
+                    ParameterStatusTextBlock.Text = $"✅ {userDefinedParams.Count}개 파라미터 확인 완료 (LightCoral 색상 표시)";
+                    ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Green);
+                }
+
+                PlanInfoDataGrid.Items.Refresh();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"파라미터 확인 중 오류가 발생했습니다:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                ParameterStatusTextBlock.Text = "파라미터 확인 실패";
+                ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Red);
+            }
+        }
+
+        /// <summary>
+        /// 쿼리에서 파라미터 추출 (@로 시작하는 문자열)
+        /// </summary>
+        private List<string> ExtractParametersFromQuery(string query)
+        {
+            var parameters = new List<string>();
+            if (string.IsNullOrWhiteSpace(query)) return parameters;
+
+            // 정규식으로 @로 시작하는 파라미터 추출
+            var regex = new System.Text.RegularExpressions.Regex(@"@[A-Za-z0-9_]+");
+            var matches = regex.Matches(query);
+
+            foreach (System.Text.RegularExpressions.Match match in matches)
+            {
+                if (!parameters.Contains(match.Value))
+                {
+                    parameters.Add(match.Value);
+                }
+            }
+
+            return parameters;
+        }
+
+        /// <summary>
+        /// 개별 그리드의 파라미터 확인
+        /// </summary>
+        private void ValidateGridParameters(DynamicGridInfo gridInfo)
+        {
+            // 선택된 쿼리 확인
+            if (gridInfo.QueryComboBox.SelectedItem is not QueryItem selectedQuery)
+            {
+                MessageBox.Show($"그리드 {gridInfo.Index}에서 쿼리를 먼저 선택하세요.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (_parameters == null || _parameters.Count == 0)
+            {
+                MessageBox.Show("파라미터가 없습니다.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                // 선택된 쿼리에서 사용되는 파라미터 추출
+                var usedParams = ExtractParametersFromQuery(selectedQuery.Query);
+
+                // 기본 사업장 파라미터 제외
+                var defaultParams = new HashSet<string>
+                {
+                    "@REPRESENTATIVE_FACTORY_CODE",
+                    "@ORGANIZATION_ID",
+                    "@FACILITY_CODE",
+                    "@WIP_LINE_ID",
+                    "@LINE_ID",
+                    "@DIVISION"
+                };
+
+                // 사용자 정의 파라미터만 필터링
+                var userDefinedParams = usedParams.Except(defaultParams).ToList();
+
+                // 기준정보 파라미터에 정의된 파라미터 목록
+                var definedParams = _parameters
+                    .Where(p => !string.IsNullOrWhiteSpace(p.Parameter))
+                    .Select(p => p.Parameter.StartsWith("@") ? p.Parameter : $"@{p.Parameter}")
+                    .ToHashSet();
+
+                // 없는 파라미터 확인
+                var missingParams = userDefinedParams.Except(definedParams).ToList();
+
+                // 모든 파라미터 행의 색상 초기화
+                foreach (var param in _parameters)
+                {
+                    param.IsHighlighted = false;
+                }
+
+                if (missingParams.Count > 0)
+                {
+                    // 없는 파라미터가 있으면 경고 메시지
+                    var missingParamList = string.Join("\n", missingParams.Select(p => $"  - {p}"));
+                    MessageBox.Show(
+                        $"[그리드 {gridInfo.Index}]\n\n" +
+                        $"다음 파라미터가 기준정보에 정의되어 있지 않습니다:\n\n{missingParamList}\n\n" +
+                        "이 파라미터들을 기준정보에 추가하거나 쿼리를 수정하세요.",
+                        "파라미터 누락",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+
+                    gridInfo.ResultInfoTextBlock.Text = $"⚠️ {missingParams.Count}개 파라미터 누락";
+                    gridInfo.ResultInfoTextBlock.Foreground = new SolidColorBrush(Color.FromRgb(220, 53, 69));
+
+                    ParameterStatusTextBlock.Text = $"⚠️ 그리드 {gridInfo.Index}: {missingParams.Count}개 파라미터 누락";
+                    ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Red);
+                }
+                else
+                {
+                    // 사용되는 파라미터 행을 하이라이트
+                    foreach (var param in _parameters)
+                    {
+                        var paramName = param.Parameter.StartsWith("@") ? param.Parameter : $"@{param.Parameter}";
+                        if (userDefinedParams.Contains(paramName))
+                        {
+                            param.IsHighlighted = true;
+                        }
+                    }
+
+                    if (userDefinedParams.Count > 0)
+                    {
+                        gridInfo.ResultInfoTextBlock.Text = $"✅ {userDefinedParams.Count}개 파라미터 확인";
+                        gridInfo.ResultInfoTextBlock.Foreground = new SolidColorBrush(Color.FromRgb(40, 167, 69));
+
+                        ParameterStatusTextBlock.Text = $"✅ 그리드 {gridInfo.Index}: {userDefinedParams.Count}개 파라미터 확인 완료 (LightCoral 색상 표시)";
+                        ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Green);
+                    }
+                    else
+                    {
+                        gridInfo.ResultInfoTextBlock.Text = "ℹ️ 파라미터 없음";
+                        gridInfo.ResultInfoTextBlock.Foreground = new SolidColorBrush(Color.FromRgb(108, 117, 125));
+
+                        ParameterStatusTextBlock.Text = $"ℹ️ 그리드 {gridInfo.Index}: 사용자 정의 파라미터 없음";
+                        ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Gray);
+                    }
+                }
+
+                PlanInfoDataGrid.Items.Refresh();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"파라미터 확인 중 오류가 발생했습니다:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                
+                gridInfo.ResultInfoTextBlock.Text = "❌ 확인 실패";
+                gridInfo.ResultInfoTextBlock.Foreground = new SolidColorBrush(Color.FromRgb(220, 53, 69));
+            }
         }
 
         #endregion

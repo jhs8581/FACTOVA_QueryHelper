@@ -176,6 +176,7 @@ namespace FACTOVA_QueryHelper.Controls
                 Facility = "",
                 WipLineId = "",
                 EquipLineId = "",
+                Division = "",
                 IsDefault = 0  // 🔥 표시순번 0으로 초기화
             };
 
