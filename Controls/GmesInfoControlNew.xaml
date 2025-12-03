@@ -137,6 +137,21 @@
                                 <TextBlock Text="🗑️"/>
                             </Button>
                             
+                            <!-- XML 입력 버튼 -->
+                            <Button x:Name="XmlInputButton" 
+                                    Width="30" Height="30"
+                                    Click="XmlInputButton_Click"
+                                    Background="#FF6F42C1" 
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    FontWeight="Bold"
+                                    FontSize="14"
+                                    Margin="0,0,5,0"
+                                    ToolTip="XML 입력">
+                                <TextBlock Text="📝"/>
+                            </Button>
+                            
                             <!-- 색상 초기화 버튼 -->
                             <Button x:Name="ClearHighlightButton" 
                                     Width="30" Height="30"

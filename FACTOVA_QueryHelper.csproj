@@ -7,9 +7,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Icons\free-icon-database-4248443.ico</ApplicationIcon>
-    <Version>4.7.0</Version>
-    <AssemblyVersion>4.7.0.0</AssemblyVersion>
-    <FileVersion>4.7.0.0</FileVersion>
+    <Version>4.8.0</Version>
+    <AssemblyVersion>4.8.0.0</AssemblyVersion>
+    <FileVersion>4.8.0.0</FileVersion>
     <Company>FACTOVA</Company>
     <Product>FACTOVA Query Helper</Product>
     <Description>Oracle 데이터베이스 쿼리 실행 및 모니터링 도구</Description>
@@ -21,6 +21,10 @@
     <EmbeddedResource Remove="Windows\**" />
     <None Remove="Windows\**" />
     <Page Remove="Windows\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Windows\XmlParameterInputWindow.xaml.cs" />
   </ItemGroup>
 
   <!-- 🔥 SQL 구문 강조 리소스 임베디드 -->
@@ -53,6 +57,10 @@
 
   <ItemGroup>
     <None Include=".github\workflows\release.yml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Include="Windows\XmlParameterInputWindow.xaml" />
   </ItemGroup>
 
 </Project>

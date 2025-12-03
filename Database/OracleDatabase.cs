@@ -47,6 +47,9 @@ namespace FACTOVA_QueryHelper.Database
                     using var connection = new OracleConnection(fullConnectionString);
                     connection.Open();
 
+                    // 🔥 세션 NLS 설정 통일 (탭마다 다른 결과 방지)
+                    SetSessionNlsSettings(connection);
+
                     using var command = new OracleCommand(processedQuery, connection);
                     command.CommandTimeout = 300; // 5분 타임아웃
 
@@ -198,6 +201,39 @@ namespace FACTOVA_QueryHelper.Database
                 // 일반 오류 로깅
                 System.Diagnostics.Debug.WriteLine($"연결 테스트 실패: {ex.Message}");
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// 🔥 Oracle 세션의 NLS 설정을 통일 (탭마다 다른 결과 방지)
+        /// </summary>
+        private static void SetSessionNlsSettings(OracleConnection connection)
+        {
+            try
+            {
+                using var command = connection.CreateCommand();
+                
+                // 🔥 모든 세션에서 동일한 날짜 형식, 언어, 지역 설정 적용
+                command.CommandText = @"
+                    BEGIN
+                        EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_DATE_FORMAT = ''YYYY-MM-DD HH24:MI:SS''';
+                        EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_TIMESTAMP_FORMAT = ''YYYY-MM-DD HH24:MI:SS.FF''';
+                        EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_LANGUAGE = ''AMERICAN''';
+                        EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_TERRITORY = ''AMERICA''';
+                        EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ''.,''';
+                        EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_SORT = ''BINARY''';
+                        EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_COMP = ''BINARY''';
+                    END;
+                ";
+                
+                command.ExecuteNonQuery();
+                
+                System.Diagnostics.Debug.WriteLine("✅ NLS settings applied to session");
+            }
+            catch (Exception ex)
+            {
+                // NLS 설정 실패는 경고만 하고 계속 진행
+                System.Diagnostics.Debug.WriteLine($"⚠️ Failed to set NLS settings: {ex.Message}");
             }
         }
     }

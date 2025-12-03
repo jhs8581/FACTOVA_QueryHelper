@@ -1,0 +1,107 @@
+﻿<Window x:Class="FACTOVA_QueryHelper.Windows.XmlParameterInputWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="XML 파라미터 입력" Height="600" Width="800"
+        WindowStartupLocation="CenterOwner"
+        Background="#FFF8F9FA">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 상단 안내 -->
+        <Border Grid.Row="0" 
+                Background="#FFE3F2FD" 
+                BorderBrush="#FF0078D7" 
+                BorderThickness="1" 
+                CornerRadius="8"
+                Padding="15"
+                Margin="0,0,0,15">
+            <StackPanel>
+                <TextBlock Text="📋 XML 형식의 파라미터 값을 입력하세요" 
+                           FontSize="14" 
+                           FontWeight="Bold"
+                           Foreground="#FF0078D7"
+                           Margin="0,0,0,10"/>
+                <TextBlock TextWrapping="Wrap" 
+                           FontSize="11"
+                           Foreground="#FF555555">
+                    <Run Text="• "/>
+                    <Run Text="NewDataSet 이 최상위 태그입니다"/>
+                    <LineBreak/>
+                    <Run Text="• "/>
+                    <Run Text="IN_DATA, IN_PARAM 등 여러 개의 하위 그룹이 있을 수 있습니다"/>
+                    <LineBreak/>
+                    <Run Text="• "/>
+                    <Run Text="중복된 태그명이 있을 경우 첫 번째 값만 사용됩니다"/>
+                </TextBlock>
+            </StackPanel>
+        </Border>
+
+        <!-- XML 입력 영역 -->
+        <Border Grid.Row="1" 
+                Background="White" 
+                BorderBrush="#FFE0E0E0" 
+                BorderThickness="1" 
+                CornerRadius="8"
+                Padding="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" 
+                           Text="XML 데이터" 
+                           FontSize="12" 
+                           FontWeight="Bold"
+                           Margin="0,0,0,5"/>
+
+                <TextBox x:Name="XmlTextBox"
+                         Grid.Row="1"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"
+                         HorizontalScrollBarVisibility="Auto"
+                         FontFamily="Consolas"
+                         FontSize="11"
+                         Padding="5"/>
+            </Grid>
+        </Border>
+
+        <!-- 하단 버튼 -->
+        <StackPanel Grid.Row="2" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right"
+                    Margin="0,15,0,0">
+            <Button x:Name="OkButton" 
+                    Content="✅ 확인" 
+                    Width="100" 
+                    Height="35"
+                    Background="#FF28A745"
+                    Foreground="White"
+                    BorderThickness="0"
+                    FontWeight="Bold"
+                    FontSize="12"
+                    Cursor="Hand"
+                    Margin="0,0,10,0"
+                    Click="OkButton_Click"/>
+            <Button x:Name="CancelButton" 
+                    Content="❌ 취소" 
+                    Width="100" 
+                    Height="35"
+                    Background="#FF6C757D"
+                    Foreground="White"
+                    BorderThickness="0"
+                    FontWeight="Bold"
+                    FontSize="12"
+                    Cursor="Hand"
+                    Click="CancelButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

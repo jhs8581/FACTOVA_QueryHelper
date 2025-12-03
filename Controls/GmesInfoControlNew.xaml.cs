@@ -402,6 +402,114 @@ namespace FACTOVA_QueryHelper.Controls
             DeleteParameterButton.IsEnabled = _selectedParameter != null;
         }
 
+        /// <summary>
+        /// XML 입력 버튼 클릭
+        /// </summary>
+        private void XmlInputButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_parameters == null)
+            {
+                MessageBox.Show("파라미터 목록이 초기화되지 않았습니다.", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            try
+            {
+                var xmlWindow = new Windows.XmlParameterInputWindow
+                {
+                    Owner = Window.GetWindow(this),
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+                };
+
+                if (xmlWindow.ShowDialog() == true)
+                {
+                    var parsedParams = xmlWindow.ParsedParameters;
+                    
+                    if (parsedParams.Count == 0)
+                    {
+                        MessageBox.Show("파싱된 파라미터가 없습니다.", "알림",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
+                        return;
+                    }
+
+                    int updatedCount = 0;
+                    int matchedCount = 0;
+
+                    // 파싱된 파라미터를 기준정보 파라미터에 매칭
+                    foreach (var param in _parameters)
+                    {
+                        string paramName = param.Parameter.TrimStart('@');
+                        
+                        if (parsedParams.ContainsKey(paramName))
+                        {
+                            matchedCount++;
+                            
+                            // 값이 변경된 경우만 카운트
+                            if (param.Value != parsedParams[paramName])
+                            {
+                                param.Value = parsedParams[paramName];
+                                updatedCount++;
+                            }
+                        }
+                    }
+
+                    PlanInfoDataGrid.Items.Refresh();
+
+                    if (updatedCount > 0)
+                    {
+                        ParameterStatusTextBlock.Text = $"✅ {updatedCount}개 파라미터 값이 업데이트되었습니다. (총 {matchedCount}개 매칭됨)";
+                        ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Green);
+
+                        MessageBox.Show(
+                            $"XML 파싱 완료!\n\n" +
+                            $"• 총 파싱된 항목: {parsedParams.Count}개\n" +
+                            $"• 매칭된 파라미터: {matchedCount}개\n" +
+                            $"• 업데이트된 파라미터: {updatedCount}개\n\n" +
+                            $"변경사항을 저장하려면 '저장' 버튼을 눌러주세요.",
+                            "완료",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                    else if (matchedCount > 0)
+                    {
+                        ParameterStatusTextBlock.Text = $"ℹ️ {matchedCount}개 파라미터가 매칭되었으나 값은 동일합니다.";
+                        ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Blue);
+
+                        MessageBox.Show(
+                            $"XML 파싱 완료!\n\n" +
+                            $"• 총 파싱된 항목: {parsedParams.Count}개\n" +
+                            $"• 매칭된 파라미터: {matchedCount}개\n" +
+                            $"• 업데이트된 파라미터: 0개 (모두 동일한 값)\n",
+                            "완료",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        ParameterStatusTextBlock.Text = $"⚠️ 매칭되는 파라미터가 없습니다.";
+                        ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Orange);
+
+                        MessageBox.Show(
+                            $"XML 파싱 완료!\n\n" +
+                            $"• 총 파싱된 항목: {parsedParams.Count}개\n" +
+                            $"• 매칭된 파라미터: 0개\n\n" +
+                            $"XML의 태그명과 기준정보 파라미터명이 일치하는지 확인하세요.",
+                            "알림",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"XML 입력 중 오류가 발생했습니다:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                ParameterStatusTextBlock.Text = "XML 입력 실패";
+                ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Red);
+            }
+        }
+
         #endregion
 
         #region 쿼리 관리
