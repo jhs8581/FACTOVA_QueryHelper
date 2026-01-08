@@ -53,10 +53,40 @@ namespace FACTOVA_QueryHelper.Services
                     SQLQuery TEXT,
                     IsActive INTEGER DEFAULT 0,
                     IsFavorite INTEGER DEFAULT 0,
+                    Org TEXT,
+                    Version TEXT,
                     CreatedAt TEXT DEFAULT CURRENT_TIMESTAMP,
                     UpdatedAt TEXT DEFAULT CURRENT_TIMESTAMP
                 )";
             command.ExecuteNonQuery();
+            
+            // 🔥 기존 테이블에 Org 컬럼이 없으면 추가 (마이그레이션)
+            try
+            {
+                var alterCommand = connection.CreateCommand();
+                alterCommand.CommandText = "ALTER TABLE Connections ADD COLUMN Org TEXT";
+                alterCommand.ExecuteNonQuery();
+                System.Diagnostics.Debug.WriteLine("✅ Org 컬럼 추가 완료");
+            }
+            catch
+            {
+                // 컬럼이 이미 존재하면 무시
+                System.Diagnostics.Debug.WriteLine("ℹ️ Org 컬럼이 이미 존재합니다");
+            }
+            
+            // 🔥 기존 테이블에 Version 컬럼이 없으면 추가 (마이그레이션)
+            try
+            {
+                var alterCommand = connection.CreateCommand();
+                alterCommand.CommandText = "ALTER TABLE Connections ADD COLUMN Version TEXT";
+                alterCommand.ExecuteNonQuery();
+                System.Diagnostics.Debug.WriteLine("✅ Version 컬럼 추가 완료");
+            }
+            catch
+            {
+                // 컬럼이 이미 존재하면 무시
+                System.Diagnostics.Debug.WriteLine("ℹ️ Version 컬럼이 이미 존재합니다");
+            }
         }
 
         /// <summary>
@@ -115,24 +145,30 @@ namespace FACTOVA_QueryHelper.Services
             connection.Open();
 
             var command = connection.CreateCommand();
-            command.CommandText = "SELECT * FROM Connections ORDER BY Id ASC";
+            // 🔥 SELECT * 대신 명시적으로 컬럼 지정 (순서 보장)
+            command.CommandText = @"
+                SELECT Id, Name, TNS, Host, Port, Service, UserId, Password, SQLQuery, IsActive, IsFavorite, Org, Version
+                FROM Connections
+                ORDER BY Id ASC";
 
             using var reader = command.ExecuteReader();
             while (reader.Read())
             {
                 connections.Add(new ConnectionInfo
                 {
-                    Id = reader.GetInt32(0),
-                    Name = reader.GetString(1),
-                    TNS = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
-                    Host = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
-                    Port = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
-                    Service = reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
-                    UserId = reader.GetString(6),
-                    Password = DecryptPassword(reader.GetString(7)),
-                    SQLQuery = reader.IsDBNull(8) ? string.Empty : reader.GetString(8),
-                    IsActive = reader.GetInt32(9) == 1,
-                    IsFavorite = reader.GetInt32(10) == 1
+                    Id = reader.GetInt32(0),        // Id
+                    Name = reader.GetString(1),     // Name
+                    TNS = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),     // TNS
+                    Host = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),    // Host
+                    Port = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),    // Port
+                    Service = reader.IsDBNull(5) ? string.Empty : reader.GetString(5), // Service
+                    UserId = reader.GetString(6),                                       // UserId
+                    Password = DecryptPassword(reader.GetString(7)),                    // Password
+                    SQLQuery = reader.IsDBNull(8) ? string.Empty : reader.GetString(8), // SQLQuery
+                    IsActive = reader.GetInt32(9) == 1,                                 // IsActive
+                    IsFavorite = reader.GetInt32(10) == 1,                              // IsFavorite
+                    Org = reader.IsDBNull(11) ? string.Empty : reader.GetString(11),    // Org
+                    Version = reader.IsDBNull(12) ? string.Empty : reader.GetString(12) // Version
                 });
             }
 
@@ -154,8 +190,8 @@ namespace FACTOVA_QueryHelper.Services
 
             var command = connection.CreateCommand();
             command.CommandText = @"
-                INSERT INTO Connections (Name, TNS, Host, Port, Service, UserId, Password, SQLQuery, IsActive, IsFavorite)
-                VALUES (@name, @tns, @host, @port, @service, @userId, @password, @sqlQuery, @isActive, @isFavorite);
+                INSERT INTO Connections (Name, TNS, Host, Port, Service, UserId, Password, SQLQuery, IsActive, IsFavorite, Org, Version)
+                VALUES (@name, @tns, @host, @port, @service, @userId, @password, @sqlQuery, @isActive, @isFavorite, @org, @version);
                 SELECT last_insert_rowid();";
 
             command.Parameters.AddWithValue("@name", info.Name);
@@ -168,6 +204,8 @@ namespace FACTOVA_QueryHelper.Services
             command.Parameters.AddWithValue("@sqlQuery", info.SQLQuery ?? string.Empty);
             command.Parameters.AddWithValue("@isActive", info.IsActive ? 1 : 0);
             command.Parameters.AddWithValue("@isFavorite", info.IsFavorite ? 1 : 0);
+            command.Parameters.AddWithValue("@org", info.Org ?? string.Empty);
+            command.Parameters.AddWithValue("@version", info.Version ?? string.Empty);
 
             var result = command.ExecuteScalar();
             return Convert.ToInt32(result);
@@ -186,7 +224,7 @@ namespace FACTOVA_QueryHelper.Services
                 UPDATE Connections
                 SET Name = @name, TNS = @tns, Host = @host, Port = @port, Service = @service,
                     UserId = @userId, Password = @password, SQLQuery = @sqlQuery,
-                    IsActive = @isActive, IsFavorite = @isFavorite, UpdatedAt = CURRENT_TIMESTAMP
+                    IsActive = @isActive, IsFavorite = @isFavorite, Org = @org, Version = @version, UpdatedAt = CURRENT_TIMESTAMP
                 WHERE Id = @id";
 
             command.Parameters.AddWithValue("@id", info.Id);
@@ -200,6 +238,8 @@ namespace FACTOVA_QueryHelper.Services
             command.Parameters.AddWithValue("@sqlQuery", info.SQLQuery ?? string.Empty);
             command.Parameters.AddWithValue("@isActive", info.IsActive ? 1 : 0);
             command.Parameters.AddWithValue("@isFavorite", info.IsFavorite ? 1 : 0);
+            command.Parameters.AddWithValue("@org", info.Org ?? string.Empty);
+            command.Parameters.AddWithValue("@version", info.Version ?? string.Empty);
 
             command.ExecuteNonQuery();
         }

@@ -18,6 +18,8 @@ namespace FACTOVA_QueryHelper.Models
         private string _sqlQuery = string.Empty;
         private bool _isActive;
         private bool _isFavorite;
+        private string _org = string.Empty;
+        private string _version = string.Empty;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -128,6 +130,26 @@ namespace FACTOVA_QueryHelper.Models
             {
                 _isFavorite = value;
                 OnPropertyChanged(nameof(IsFavorite));
+            }
+        }
+
+        public string Org
+        {
+            get => _org;
+            set
+            {
+                _org = value;
+                OnPropertyChanged(nameof(Org));
+            }
+        }
+
+        public string Version
+        {
+            get => _version;
+            set
+            {
+                _version = value;
+                OnPropertyChanged(nameof(Version));
             }
         }
 

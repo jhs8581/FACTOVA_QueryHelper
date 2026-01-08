@@ -25,6 +25,26 @@ namespace FACTOVA_QueryHelper.Controls
             _connectionService = null!;
             _connections = new ObservableCollection<ConnectionInfo>();
             ConnectionsDataGrid.ItemsSource = _connections;
+            
+            // 🔥 Version ComboBox 컬럼에 ItemsSource 설정
+            SetupVersionColumn();
+        }
+        
+        /// <summary>
+        /// Version 컬럼의 ComboBox에 ItemsSource를 설정합니다.
+        /// </summary>
+        private void SetupVersionColumn()
+        {
+            // Version 컬럼 찾기 (DataGridComboBoxColumn)
+            foreach (var column in ConnectionsDataGrid.Columns)
+            {
+                if (column is DataGridComboBoxColumn comboColumn && 
+                    comboColumn.Header?.ToString() == "Version")
+                {
+                    comboColumn.ItemsSource = new[] { "", "1.0", "2.0" };
+                    break;
+                }
+            }
         }
 
         /// <summary>

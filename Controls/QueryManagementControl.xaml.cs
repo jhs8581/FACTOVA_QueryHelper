@@ -32,11 +32,13 @@ namespace FACTOVA_QueryHelper.Controls
         private System.Collections.ObjectModel.ObservableCollection<QueryItem>? _queryExecutionQueries;
         private System.Collections.ObjectModel.ObservableCollection<QueryItem>? _infoQueries;
         private System.Collections.ObjectModel.ObservableCollection<QueryItem>? _bizQueries;
+        private System.Collections.ObjectModel.ObservableCollection<QueryItem>? _nerpValidationQueries;
         
         // 🔥 각 탭별 수정 추적 (독립적으로 관리)
         private HashSet<QueryItem> _queryExecutionModified = new HashSet<QueryItem>();
         private HashSet<QueryItem> _infoQueriesModified = new HashSet<QueryItem>();
         private HashSet<QueryItem> _bizQueriesModified = new HashSet<QueryItem>();
+        private HashSet<QueryItem> _nerpValidationModified = new HashSet<QueryItem>();
 
         // 🔥 각 탭별 UI 요소 (동적 생성) - 탭별로 독립적으로 관리
         private Dictionary<int, DataGrid> _dataGrids = new Dictionary<int, DataGrid>();
@@ -201,6 +203,15 @@ namespace FACTOVA_QueryHelper.Controls
                 _bizQueriesOriginal = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(bizQueriesList);
                 _bizQueries = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(bizQueriesList);
                 
+                // 🔥 NERP 검증은 그룹명 → 표시순서로 정렬
+                var nerpValidationList = allQueries.Where(q => q.QueryType == "NERP 검증")
+                              .OrderBy(q => q.QueryName)
+                              .ThenBy(q => q.OrderNumber)
+                              .ThenBy(q => q.RowNumber)
+                              .ToList();
+                
+                _nerpValidationQueries = new System.Collections.ObjectModel.ObservableCollection<QueryItem>(nerpValidationList);
+                
                 // 🔥 현재 탭의 DataGrid 업데이트
                 UpdateCurrentTabDataGrid();
                 
@@ -208,6 +219,7 @@ namespace FACTOVA_QueryHelper.Controls
                 _queryExecutionModified.Clear();
                 _infoQueriesModified.Clear();
                 _bizQueriesModified.Clear();
+                _nerpValidationModified.Clear();
                 
                 // 🔥 편집 모드 Border는 현재 탭의 수정 상태에 따라 표시
                 if (_currentEditModeBorder != null)
@@ -246,6 +258,9 @@ namespace FACTOVA_QueryHelper.Controls
                     break;
                 case 2: // 비즈 조회
                     queries = _bizQueries;
+                    break;
+                case 3: // NERP 검증
+                    queries = _nerpValidationQueries;
                     break;
             }
 
@@ -335,6 +350,9 @@ namespace FACTOVA_QueryHelper.Controls
                     break;
                 case 2:
                     targetGrid = BizQueryGrid;
+                    break;
+                case 3:
+                    targetGrid = NerpValidationGrid;
                     break;
             }
 
@@ -941,6 +959,51 @@ namespace FACTOVA_QueryHelper.Controls
                 });
             }
 
+            // 🔥 NERP 검증 탭에도 버전 컬럼 추가
+            if (tabIndex == 3) // NERP 검증
+            {
+                var orderColumn = new DataGridTextColumn
+                {
+                    Header = "표시순번",
+                    Binding = new System.Windows.Data.Binding("OrderNumber") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged },
+                    Width = 80
+                };
+                var orderStyle = new Style(typeof(TextBlock));
+                orderStyle.Setters.Add(new Setter(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Center));
+                orderColumn.ElementStyle = orderStyle;
+                dataGrid.Columns.Add(orderColumn);
+                
+                // 🔥 Version 컬럼을 ComboBox로 변경
+                var versionList = new List<string> { "", "1.0", "2.0" }; // 빈 값, 1.0, 2.0
+                
+                var versionTemplate = new DataTemplate();
+                var versionFactory = new FrameworkElementFactory(typeof(ComboBox));
+                versionFactory.SetValue(ComboBox.ItemsSourceProperty, versionList);
+                versionFactory.SetBinding(ComboBox.SelectedItemProperty, 
+                    new System.Windows.Data.Binding("Version") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged });
+                versionFactory.SetValue(ComboBox.HeightProperty, 28.0);
+                versionFactory.SetValue(ComboBox.FontSizeProperty, 11.0);
+                versionTemplate.VisualTree = versionFactory;
+
+                // 읽기 전용 모드 (버전 텍스트 표시)
+                var versionDisplayTemplate = new DataTemplate();
+                var versionDisplayFactory = new FrameworkElementFactory(typeof(TextBlock));
+                versionDisplayFactory.SetBinding(TextBlock.TextProperty, 
+                    new System.Windows.Data.Binding("Version"));
+                versionDisplayFactory.SetValue(TextBlock.PaddingProperty, new Thickness(4));
+                versionDisplayFactory.SetValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center);
+                versionDisplayFactory.SetValue(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+                versionDisplayTemplate.VisualTree = versionDisplayFactory;
+
+                dataGrid.Columns.Add(new DataGridTemplateColumn
+                {
+                    Header = "버전",
+                    CellTemplate = versionDisplayTemplate,
+                    CellEditingTemplate = versionTemplate,
+                    Width = 80
+                });
+            }
+
             // 🔥 접속 정보 선택 콤보박스
             var connectionTemplate = new DataTemplate();
             var connectionFactory = new FrameworkElementFactory(typeof(ComboBox));
@@ -1068,8 +1131,8 @@ namespace FACTOVA_QueryHelper.Controls
                 System.Diagnostics.Debug.WriteLine($"✅ Total columns added: {dataGrid.Columns.Count}");
             }
             
-            // 🔥 정보 조회, 비즈 조회 탭도 사용여부 컬럼 추가 - 탭 인덱스 기준으로 변경
-            if (tabIndex == 1 || tabIndex == 2) // 정보 조회 또는 비즈 조회
+            // 🔥 정보 조회, 비즈 조회, NERP 검증 탭에 사용여부 컬럼 추가 - 탭 인덱스 기준으로 변경
+            if (tabIndex == 1 || tabIndex == 2 || tabIndex == 3) // 정보 조회, 비즈 조회, NERP 검증
             {
                 dataGrid.Columns.Add(new DataGridCheckBoxColumn
                 {
@@ -1565,6 +1628,7 @@ namespace FACTOVA_QueryHelper.Controls
                 0 => _queryExecutionQueries,
                 1 => _infoQueries,
                 2 => _bizQueries,
+                3 => _nerpValidationQueries,
                 _ => null
             };
         }
@@ -1579,6 +1643,7 @@ namespace FACTOVA_QueryHelper.Controls
                 0 => _queryExecutionModified,
                 1 => _infoQueriesModified,
                 2 => _bizQueriesModified,
+                3 => _nerpValidationModified,
                 _ => new HashSet<QueryItem>()
             };
         }
@@ -1599,7 +1664,8 @@ namespace FACTOVA_QueryHelper.Controls
             // 🔥 모든 탭의 쿼지를 한 번에 다운로드
             var totalCount = (_queryExecutionQueries?.Count ?? 0) + 
                             (_infoQueries?.Count ?? 0) + 
-                            (_bizQueries?.Count ?? 0);
+                            (_bizQueries?.Count ?? 0) +
+                            (_nerpValidationQueries?.Count ?? 0);
 
             if (totalCount == 0)
             {
@@ -1645,6 +1711,13 @@ namespace FACTOVA_QueryHelper.Controls
                     if (_bizQueries != null && _bizQueries.Count > 0)
                     {
                         AddQuerySheetToExcel(package, "비즈 조회", _bizQueries, false);
+                        totalSheetCount++;
+                    }
+
+                    // 🔥 NERP 검증 쿼리 시트 추가
+                    if (_nerpValidationQueries != null && _nerpValidationQueries.Count > 0)
+                    {
+                        AddQuerySheetToExcel(package, "NERP 검증 쿼리", _nerpValidationQueries, false);
                         totalSheetCount++;
                     }
 
@@ -1865,6 +1938,7 @@ namespace FACTOVA_QueryHelper.Controls
                 0 => "쿼리 실행",
                 1 => "정보 조회",
                 2 => "비즈 조회",
+                3 => "NERP 검증",
                 _ => "쿼리 실행"
             };
 

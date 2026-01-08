@@ -1,18 +1,18 @@
-# ¸ğµç .cs ÆÄÀÏÀ» UTF-8 BOMÀ¸·Î º¯È¯ÇÏ´Â ½ºÅ©¸³Æ®
+ï»¿# ëª¨ë“  .cs íŒŒì¼ì„ UTF-8 BOMìœ¼ë¡œ ë³€í™˜í•˜ëŠ” ìŠ¤í¬ë¦½íŠ¸
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "=== C# ÆÄÀÏÀ» UTF-8 BOMÀ¸·Î º¯È¯ Áß... ===" -ForegroundColor Green
+Write-Host "=== C# íŒŒì¼ì„ UTF-8 BOMìœ¼ë¡œ ë³€í™˜ ì¤‘... ===" -ForegroundColor Green
 
 $csFiles = Get-ChildItem -Path . -Filter *.cs -Recurse | Where-Object { $_.FullName -notlike "*\obj\*" -and $_.FullName -notlike "*\bin\*" }
 
 $count = 0
 foreach ($file in $csFiles) {
     try {
-        # ÆÄÀÏ ³»¿ë ÀĞ±â (ÇöÀç ÀÎÄÚµù ÀÚµ¿ °¨Áö)
-        $content = Get-Content -Path $file.FullName -Raw
+        # íŒŒì¼ ë‚´ìš© ì½ê¸° (í˜„ì¬ ì¸ì½”ë”© ìë™ ê°ì§€)
+        $content = Get-Content -Path $file.FullName -Raw 
         
-        # UTF-8 BOMÀ¸·Î ÀúÀå
+        # UTF-8 BOMìœ¼ë¡œ ì €ì¥
         $utf8Bom = New-Object System.Text.UTF8Encoding $true
         [System.IO.File]::WriteAllText($file.FullName, $content, $utf8Bom)
         
@@ -20,14 +20,14 @@ foreach ($file in $csFiles) {
         Write-Host "  ? $($file.FullName)" -ForegroundColor Gray
     }
     catch {
-        Write-Host "  ? ½ÇÆĞ: $($file.FullName) - $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "  ? ì‹¤íŒ¨: $($file.FullName) - $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
 Write-Host ""
-Write-Host "=== º¯È¯ ¿Ï·á: $count °³ ÆÄÀÏ ===" -ForegroundColor Green
+Write-Host "=== ë³€í™˜ ì™„ë£Œ: $count ê°œ íŒŒì¼ ===" -ForegroundColor Green
 Write-Host ""
-Write-Host "´ÙÀ½ ´Ü°è:" -ForegroundColor Yellow
-Write-Host "1. º¯°æ»çÇ×À» È®ÀÎÇÏ¼¼¿ä" -ForegroundColor White
-Write-Host "2. ºôµå Å×½ºÆ®¸¦ ½ÇÇàÇÏ¼¼¿ä: dotnet build" -ForegroundColor White
-Write-Host "3. Git¿¡ Ä¿¹ÔÇÏ¼¼¿ä: git add . && git commit -m 'Fix: Convert source files to UTF-8 BOM'" -ForegroundColor White
+Write-Host "ë‹¤ìŒ ë‹¨ê³„:" -ForegroundColor Yellow
+Write-Host "1. ë³€ê²½ì‚¬í•­ì„ í™•ì¸í•˜ì„¸ìš”" -ForegroundColor White
+Write-Host "2. ë¹Œë“œ í…ŒìŠ¤íŠ¸ë¥¼ ì‹¤í–‰í•˜ì„¸ìš”: dotnet build" -ForegroundColor White
+Write-Host "3. Gitì— ì»¤ë°‹í•˜ì„¸ìš”: git add . && git commit -m 'Fix: Convert source files to UTF-8 BOM'" -ForegroundColor White

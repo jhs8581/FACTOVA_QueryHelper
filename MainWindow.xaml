@@ -40,6 +40,11 @@
                 <controls:QueryEditorView x:Name="QueryEditorView"/>
             </TabItem>
 
+            <!-- NERP 검증 탭 -->
+            <TabItem Header="🔍 NERP 검증">
+                <controls:NerpValidationControl x:Name="NerpValidationControl"/>
+            </TabItem>
+
             <!-- SFC 모니터링 탭 -->
             <TabItem Header="SFC 모니터링">
                 <controls:SfcMonitoringControl x:Name="SfcMonitoringControl"/>

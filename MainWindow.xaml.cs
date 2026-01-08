@@ -90,6 +90,7 @@ namespace FACTOVA_QueryHelper
             this.QueryManagementControl.Initialize(_sharedData);
             this.QueryEditorView.SetSharedDataContext(_sharedData);  // 🔥 SharedDataContext 설정
             this.QueryEditorView.RefreshAllQueryExecutorConnections();  // 🔥 연결 정보 새로고침
+            this.NerpValidationControl.SetSharedDataContext(_sharedData);  // 🔥 NERP 검증 컨트롤 초기화
             this.SfcMonitoringControl.Initialize(_sharedData);
             this.QueryBizTransformView.Initialize(_sharedData);
             this.SettingsControl.Initialize(_sharedData);
@@ -111,6 +112,9 @@ namespace FACTOVA_QueryHelper
             // 🔥 QueryEditorView의 접속 정보도 새로고침
             this.QueryEditorView.RefreshAllQueryExecutorConnections();
             
+            // 🔥 NERP 검증 컨트롤의 접속 정보도 새로고침
+            this.NerpValidationControl.RefreshConnectionInfos();
+            
             // 필요한 경우 다른 컨트롤에 알림
             // 예: QueryExecutorControl이 열려 있다면 연결 정보 새로고침
         }
@@ -125,6 +129,9 @@ namespace FACTOVA_QueryHelper
             
             // 🔥 QueryEditorView의 모든 QueryExecutor에 단축어 재로드
             this.QueryEditorView.ReloadAllShortcuts();
+            
+            // 🔥 NERP 검증 컨트롤에도 단축어 재로드
+            this.NerpValidationControl.ReloadShortcuts(_sharedData.Settings.DatabasePath);
         }
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
