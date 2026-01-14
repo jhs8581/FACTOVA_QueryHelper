@@ -25,7 +25,7 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="400"/>
+                    <ColumnDefinition Width="600"/>
                 </Grid.ColumnDefinitions>
 
                 <Border Grid.Column="0" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
@@ -208,7 +208,7 @@
                               HeadersVisibility="All"
                               BorderThickness="1"
                               BorderBrush="#FFE0E0E0"
-                              FontSize="10"
+                              FontSize="12"
                               HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Auto"
                               LoadingRow="DataGrid_LoadingRow"
@@ -225,7 +225,7 @@
                             <!-- 파라미터 컬럼 (편집 가능) -->
                             <DataGridTextColumn Header="파라미터" 
                                                 Binding="{Binding Parameter, UpdateSourceTrigger=PropertyChanged}" 
-                                                Width="120"
+                                                Width="180"
                                                 IsReadOnly="False">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
@@ -259,7 +259,7 @@
                             <!-- 값 컬럼 (편집 가능) -->
                             <DataGridTextColumn Header="값" 
                                                 Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}" 
-                                                Width="150"
+                                                Width="180"
                                                 IsReadOnly="False">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
@@ -278,12 +278,13 @@
                             <!-- 설명 컬럼 (편집 가능하도록 변경) -->
                             <DataGridTextColumn Header="설명" 
                                                 Binding="{Binding Description, UpdateSourceTrigger=PropertyChanged}" 
-                                                Width="*"
+                                                Width="250"
                                                 IsReadOnly="False">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Foreground" Value="Black"/>
-                                        <Setter Property="TextWrapping" Value="Wrap"/>
+                                        <Setter Property="TextWrapping" Value="NoWrap"/>
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
                                         <Setter Property="Background" Value="#FFF5F5F5"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>

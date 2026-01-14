@@ -1504,9 +1504,28 @@ namespace FACTOVA_QueryHelper.Controls
                     return;
                 }
 
-                var window = new QueryTextEditWindow(query.Query);
-                if (window.ShowDialog() == true)
+                // 🔥 queryId와 databasePath를 전달하여 팝업에서 직접 저장 가능하도록 수정
+                var window = new QueryTextEditWindow(
+                    query.Query,
+                    isReadOnly: false,
+                    queryId: query.RowNumber,
+                    databasePath: _sharedData?.Settings.DatabasePath ?? "");
+                    
+                window.Title = $"쿼리 편집 - {query.QueryName}";
+                window.Owner = Window.GetWindow(this);
+                window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                
+                // 🔥 저장 후 쿼리 목록 다시 로드
+                window.QuerySaved += (s, args) =>
                 {
+                    LoadQueriesFromDatabase();
+                    UpdateCurrentTabDataGrid();
+                    UpdateStatus($"'{query.QueryName}' 쿼리가 저장되었습니다.", Colors.Green);
+                };
+                
+                if (window.ShowDialog() == true && string.IsNullOrEmpty(_sharedData?.Settings.DatabasePath))
+                {
+                    // DB 경로가 없는 경우 (기존 방식으로 동작)
                     query.Query = window.QueryText;
                     
                     // 🔥 현재 탭의 수정 추적 컬렉션에 추가

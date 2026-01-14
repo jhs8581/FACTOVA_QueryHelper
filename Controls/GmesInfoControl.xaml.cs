@@ -1573,9 +1573,8 @@ namespace FACTOVA_QueryHelper.Controls
                 
                 textColumn.ElementStyle = displayStyle;
                 
-                // 🔥 NERP 스타일: 자동 너비 + 최소 너비
-                e.Column.MinWidth = 80;
-                e.Column.Width = new DataGridLength(1, DataGridLengthUnitType.Auto);
+                // 🔥 그냥 Auto - 헤더/데이터 중 더 긴 쪽에 맞춤
+                e.Column.Width = DataGridLength.Auto;
             }
             
             // 🔥 일반 컬럼 선택 시 글자색 검정 유지

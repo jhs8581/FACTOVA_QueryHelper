@@ -963,12 +963,40 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 if (gridInfo.QueryComboBox.SelectedItem is QueryItem query)
                 {
+                    // 🔥 전달할 파라미터 로깅
+                    var dbPath = _sharedData?.Settings.DatabasePath ?? "";
+                    System.Diagnostics.Debug.WriteLine("=== GmesInfoControlNew: Opening QueryTextEditWindow ===");
+                    System.Diagnostics.Debug.WriteLine($"Query.RowNumber: {query.RowNumber}");
+                    System.Diagnostics.Debug.WriteLine($"Query.QueryName: {query.QueryName}");
+                    System.Diagnostics.Debug.WriteLine($"Query.Query Length: {query.Query?.Length ?? 0}");
+                    System.Diagnostics.Debug.WriteLine($"DatabasePath: {(string.IsNullOrEmpty(dbPath) ? "(empty)" : dbPath)}");
+                    System.Diagnostics.Debug.WriteLine($"_sharedData is null: {_sharedData == null}");
+                    
+                    if (_sharedData != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"_sharedData.Settings is null: {_sharedData.Settings == null}");
+                        if (_sharedData.Settings != null)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"_sharedData.Settings.DatabasePath: {_sharedData.Settings.DatabasePath ?? "(null)"}");
+                        }
+                    }
+                    
+                    // 🔥 DB 경로가 비어있으면 경고
+                    if (string.IsNullOrEmpty(dbPath))
+                    {
+                        System.Diagnostics.Debug.WriteLine("❌ DatabasePath is empty!");
+                        MessageBox.Show("데이터베이스 경로가 설정되지 않았습니다.\n\n" +
+                            "설정 탭에서 DB 파일 경로를 확인해 주세요.\n\n" +
+                            "쿼리를 보기만 할 수 있으며 저장은 불가능합니다.", 
+                            "경고", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                    
                     // 🔥 쿼리 RowNumber와 DB 경로를 포함하여 팝업 열기 (편집 및 저장 가능)
                     var window = new QueryTextEditWindow(
                         query.Query, 
                         isReadOnly: true, 
                         queryId: query.RowNumber, 
-                        databasePath: _sharedData?.Settings.DatabasePath ?? "")
+                        databasePath: dbPath)
                     {
                         Title = $"쿼리 보기 - {query.QueryName}",
                         Owner = Window.GetWindow(this),
@@ -978,6 +1006,7 @@ namespace FACTOVA_QueryHelper.Controls
                     // 🔥 저장 후 쿼리 목록 다시 로드
                     window.QuerySaved += (sender, args) =>
                     {
+                        System.Diagnostics.Debug.WriteLine("🔥 QuerySaved event received in GmesInfoControlNew");
                         LoadInfoQueries();
                         UpdateAllGridComboBoxes();
                         
@@ -995,7 +1024,9 @@ namespace FACTOVA_QueryHelper.Controls
                         }
                     };
                     
+                    System.Diagnostics.Debug.WriteLine("🔥 Showing QueryTextEditWindow dialog...");
                     window.ShowDialog();
+                    System.Diagnostics.Debug.WriteLine("🔥 QueryTextEditWindow dialog closed");
                 }
                 else
                 {
@@ -1333,6 +1364,14 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     targetGrid.ItemsSource = result.DefaultView;
                     ApplyFontSizeToGrid(targetGrid);
+                    
+                    // 🔥 데이터 로드 후 컬럼 너비를 내용에 맞게 재조정
+                    targetGrid.UpdateLayout();
+                    foreach (var column in targetGrid.Columns)
+                    {
+                        column.Width = new DataGridLength(1, DataGridLengthUnitType.Auto);
+                    }
+                    targetGrid.UpdateLayout();
                 }
                 else
                 {
@@ -1497,9 +1536,8 @@ namespace FACTOVA_QueryHelper.Controls
                 
                 textColumn.ElementStyle = displayStyle;
                 
-                // 🔥 NERP 스타일: 자동 너비 + 최소 너비
-                e.Column.MinWidth = 80;
-                e.Column.Width = new DataGridLength(1, DataGridLengthUnitType.Auto);
+                // 🔥 일단 Auto로 설정 (데이터 로드 후 재조정됨)
+                e.Column.Width = DataGridLength.Auto;
             }
             
             // 🔥 일반 컬럼 선택 시 글자색 검정 유지
