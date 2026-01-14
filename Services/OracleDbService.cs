@@ -130,8 +130,45 @@ namespace FACTOVA_QueryHelper.Services
             System.Diagnostics.Debug.WriteLine("🔌 Creating temporary connection...");
             var connection = new OracleConnection(_connectionString);
             await connection.OpenAsync();
+            
+            // 🔥 NLS 설정 통일 (OracleDatabase와 동일하게)
+            SetSessionNlsSettings(connection);
+            
             System.Diagnostics.Debug.WriteLine("✅ Temporary connection opened");
             return connection;
+        }
+
+        /// <summary>
+        /// 🔥 Oracle 세션의 NLS 설정을 통일 (OracleDatabase.cs와 동일)
+        /// </summary>
+        private void SetSessionNlsSettings(OracleConnection connection)
+        {
+            try
+            {
+                using var command = connection.CreateCommand();
+                
+                // 🔥 모든 세션에서 동일한 날짜 형식, 언어, 지역 설정 적용
+                command.CommandText = @"
+                    BEGIN
+                        EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_DATE_FORMAT = ''YYYY-MM-DD HH24:MI:SS''';
+                        EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_TIMESTAMP_FORMAT = ''YYYY-MM-DD HH24:MI:SS.FF''';
+                        EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_LANGUAGE = ''AMERICAN''';
+                        EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_TERRITORY = ''AMERICA''';
+                        EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ''.,''';
+                        EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_SORT = ''BINARY''';
+                        EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_COMP = ''BINARY''';
+                    END;
+                ";
+                
+                command.ExecuteNonQuery();
+                
+                System.Diagnostics.Debug.WriteLine("✅ NLS settings applied to session");
+            }
+            catch (Exception ex)
+            {
+                // NLS 설정 실패는 경고만 하고 계속 진행
+                System.Diagnostics.Debug.WriteLine($"⚠️ Failed to set NLS settings: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -374,6 +411,7 @@ namespace FACTOVA_QueryHelper.Services
             // 새로운 CancellationTokenSource 생성 (10초 타임아웃)
             _currentQueryCancellation?.Dispose();
             _currentQueryCancellation = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var cancellationToken = _currentQueryCancellation.Token; // 🔥 로컬 변수로 복사
             _currentCommand = null;
 
             OracleConnection? connection = null;
@@ -401,8 +439,8 @@ namespace FACTOVA_QueryHelper.Services
                     command.Parameters.Add(new OracleParameter(paramName, ""));
                 }
 
-                // 취소 토큰 등록
-                using var registration = _currentQueryCancellation.Token.Register(() =>
+                // 취소 토큰 등록 (🔥 로컬 변수 사용)
+                using var registration = cancellationToken.Register(() =>
                 {
                     System.Diagnostics.Debug.WriteLine("🛑 Cancellation requested - attempting to cancel command");
                     try
@@ -419,12 +457,12 @@ namespace FACTOVA_QueryHelper.Services
                 System.Diagnostics.Debug.WriteLine("⏳ Executing Oracle query...");
                 var adapter = new OracleDataAdapter(command);
                 
-                // 취소 가능한 쿼리 실행
+                // 취소 가능한 쿼리 실행 (🔥 로컬 변수 사용)
                 await Task.Run(() => 
                 {
-                    _currentQueryCancellation.Token.ThrowIfCancellationRequested();
+                    cancellationToken.ThrowIfCancellationRequested();
                     adapter.Fill(dataTable);
-                }, _currentQueryCancellation.Token);
+                }, cancellationToken);
 
                 // 🔥 중복 컬럼명 자동 해결
                 ResolveDuplicateColumnNames(dataTable);
@@ -507,6 +545,7 @@ namespace FACTOVA_QueryHelper.Services
             // 새로운 CancellationTokenSource 생성 (10초 타임아웃)
             _currentQueryCancellation?.Dispose();
             _currentQueryCancellation = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var cancellationToken = _currentQueryCancellation.Token; // 🔥 로컬 변수로 복사
             _currentCommand = null;
 
             OracleConnection? connection = null;
@@ -544,8 +583,8 @@ namespace FACTOVA_QueryHelper.Services
                     }
                 }
 
-                // 취소 토큰 등록
-                using var registration = _currentQueryCancellation.Token.Register(() =>
+                // 취소 토큰 등록 (🔥 로컬 변수 사용)
+                using var registration = cancellationToken.Register(() =>
                 {
                     System.Diagnostics.Debug.WriteLine("🛑 Cancellation requested - attempting to cancel command");
                     try
@@ -562,12 +601,12 @@ namespace FACTOVA_QueryHelper.Services
                 System.Diagnostics.Debug.WriteLine("⏳ Executing Oracle query...");
                 var adapter = new OracleDataAdapter(command);
                 
-                // 취소 가능한 쿼리 실행
+                // 취소 가능한 쿼리 실행 (🔥 로컬 변수 사용)
                 await Task.Run(() => 
                 {
-                    _currentQueryCancellation.Token.ThrowIfCancellationRequested();
+                    cancellationToken.ThrowIfCancellationRequested();
                     adapter.Fill(dataTable);
-                }, _currentQueryCancellation.Token);
+                }, cancellationToken);
 
                 // 🔥 중복 컬럼명 자동 해결
                 ResolveDuplicateColumnNames(dataTable);

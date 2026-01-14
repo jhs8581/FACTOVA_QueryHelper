@@ -90,6 +90,9 @@ namespace FACTOVA_QueryHelper.Controls
             
             // 🔥 캐시 빌드용 접속 정보 콤보박스 로드
             LoadCacheConnectionInfos();
+            
+            // 🔥 탭 설정 로드
+            LoadTabSettings();
         }
 
         /// <summary>
@@ -828,5 +831,170 @@ namespace FACTOVA_QueryHelper.Controls
                     "오류", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        #region 탭 설정
+
+        /// <summary>
+        /// 🔥 기본 탭 설정 목록 (MainWindow의 탭 순서와 일치)
+        /// </summary>
+        public static List<TabSetting> GetDefaultTabSettings()
+        {
+            return new List<TabSetting>
+            {
+                new TabSetting { TabId = "LogAnalysis", TabName = "실시간 모니터링", IsVisible = true, Order = 0 },
+                new TabSetting { TabId = "GmesInfo", TabName = "GMES 정보 조회", IsVisible = true, Order = 1 },
+                new TabSetting { TabId = "GmesInfoNew", TabName = "GMES 정보 조회 (New)", IsVisible = true, Order = 2 },
+                new TabSetting { TabId = "BizQuery", TabName = "비즈 쿼리 조회", IsVisible = true, Order = 3 },
+                new TabSetting { TabId = "QueryManagement", TabName = "쿼리 관리", IsVisible = true, Order = 4 },
+                new TabSetting { TabId = "QueryEditor", TabName = "쿼리 실행", IsVisible = true, Order = 5 },
+                new TabSetting { TabId = "NerpValidation", TabName = "🔍 NERP 검증", IsVisible = true, Order = 6 },
+                new TabSetting { TabId = "SfcMonitoring", TabName = "SFC 모니터링", IsVisible = true, Order = 7 },
+                new TabSetting { TabId = "BizTransform", TabName = "비즈 변환", IsVisible = true, Order = 8 },
+                new TabSetting { TabId = "InTransform", TabName = "IN 조건 변환", IsVisible = true, Order = 9 },
+                new TabSetting { TabId = "Settings", TabName = "설정", IsVisible = true, Order = 10 },
+                new TabSetting { TabId = "Help", TabName = "📖 도움말", IsVisible = true, Order = 11 }
+            };
+        }
+
+        /// <summary>
+        /// 🔥 탭 설정 로드
+        /// </summary>
+        public void LoadTabSettings()
+        {
+            if (_sharedData == null) return;
+
+            var tabSettings = _sharedData.Settings.TabSettings;
+            
+            // 설정이 없으면 기본값 사용
+            if (tabSettings == null || tabSettings.Count == 0)
+            {
+                tabSettings = GetDefaultTabSettings();
+            }
+            else
+            {
+                // 새로 추가된 탭이 있으면 추가
+                var defaultSettings = GetDefaultTabSettings();
+                foreach (var defaultTab in defaultSettings)
+                {
+                    if (!tabSettings.Any(t => t.TabId == defaultTab.TabId))
+                    {
+                        defaultTab.Order = tabSettings.Max(t => t.Order) + 1;
+                        tabSettings.Add(defaultTab);
+                    }
+                }
+            }
+
+            // Order 순서로 정렬
+            var sortedSettings = tabSettings.OrderBy(t => t.Order).ToList();
+            
+            TabSettingsListView.ItemsSource = new ObservableCollection<TabSetting>(sortedSettings);
+        }
+
+        /// <summary>
+        /// 🔥 탭 위로 이동
+        /// </summary>
+        private void MoveTabUp_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button || button.Tag is not TabSetting tabSetting) return;
+
+            var list = TabSettingsListView.ItemsSource as ObservableCollection<TabSetting>;
+            if (list == null) return;
+
+            int index = list.IndexOf(tabSetting);
+            if (index > 0)
+            {
+                list.Move(index, index - 1);
+                UpdateTabOrders(list);
+            }
+        }
+
+        /// <summary>
+        /// 🔥 탭 아래로 이동
+        /// </summary>
+        private void MoveTabDown_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button || button.Tag is not TabSetting tabSetting) return;
+
+            var list = TabSettingsListView.ItemsSource as ObservableCollection<TabSetting>;
+            if (list == null) return;
+
+            int index = list.IndexOf(tabSetting);
+            if (index < list.Count - 1)
+            {
+                list.Move(index, index + 1);
+                UpdateTabOrders(list);
+            }
+        }
+
+        /// <summary>
+        /// 🔥 탭 순서 업데이트
+        /// </summary>
+        private void UpdateTabOrders(ObservableCollection<TabSetting> list)
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                list[i].Order = i;
+            }
+        }
+
+        /// <summary>
+        /// 🔥 탭 설정 저장
+        /// </summary>
+        private void SaveTabSettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_sharedData == null) return;
+
+            try
+            {
+                var list = TabSettingsListView.ItemsSource as ObservableCollection<TabSetting>;
+                if (list == null) return;
+
+                // 설정에 저장
+                _sharedData.Settings.TabSettings = list.ToList();
+                _sharedData.SaveSettingsCallback?.Invoke();
+
+                // 결과 표시
+                TabSettingsResultPanel.Visibility = Visibility.Visible;
+                TabSettingsResultPanel.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D4EDDA"));
+                TabSettingsResultPanel.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#28A745"));
+                TabSettingsResultMessage.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#155724"));
+                TabSettingsResultMessage.Text = "✅ 탭 설정이 저장되었습니다.\n\n프로그램을 재시작하면 변경사항이 적용됩니다.";
+
+                UpdateStatus("탭 설정이 저장되었습니다. 재시작 후 적용됩니다.", Colors.Green);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"탭 설정 저장 실패:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// 🔥 탭 설정 초기화
+        /// </summary>
+        private void ResetTabSettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "탭 설정을 기본값으로 초기화하시겠습니까?\n\n모든 탭이 표시되고 기본 순서로 정렬됩니다.",
+                "초기화 확인",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes) return;
+
+            var defaultSettings = GetDefaultTabSettings();
+            TabSettingsListView.ItemsSource = new ObservableCollection<TabSetting>(defaultSettings);
+
+            // 결과 표시
+            TabSettingsResultPanel.Visibility = Visibility.Visible;
+            TabSettingsResultPanel.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFF3CD"));
+            TabSettingsResultPanel.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC107"));
+            TabSettingsResultMessage.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#856404"));
+            TabSettingsResultMessage.Text = "🔄 탭 설정이 기본값으로 초기화되었습니다.\n\n저장 버튼을 눌러 변경사항을 저장하세요.";
+
+            UpdateStatus("탭 설정이 기본값으로 초기화되었습니다.", Colors.Orange);
+        }
+
+        #endregion
     }
 }

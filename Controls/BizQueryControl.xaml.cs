@@ -272,12 +272,28 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 try
                 {
-                    // 쿼리 텍스트 편집 윈도우를 읽기 전용 모드로 표시
-                    var window = new QueryTextEditWindow(query.Query, isReadOnly: true)
+                    // 🔥 쿼리 RowNumber와 DB 경로를 포함하여 팝업 열기 (편집 및 저장 가능)
+                    var window = new QueryTextEditWindow(
+                        query.Query, 
+                        isReadOnly: true, 
+                        queryId: query.RowNumber, 
+                        databasePath: _sharedData?.Settings.DatabasePath ?? "")
                     {
                         Title = $"쿼리 보기 - {query.BizName}",
                         Owner = Window.GetWindow(this),
                         WindowStartupLocation = WindowStartupLocation.CenterOwner
+                    };
+                    
+                    // 🔥 저장 후 쿼리 목록 다시 로드
+                    window.QuerySaved += (s, args) =>
+                    {
+                        LoadQueries();
+                        
+                        // 현재 선택된 비즈명 유지
+                        if (BizNameComboBox.SelectedItem is string selectedBizName)
+                        {
+                            FilterQueriesByBizName(selectedBizName);
+                        }
                     };
                     
                     window.ShowDialog();

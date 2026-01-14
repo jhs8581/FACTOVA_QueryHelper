@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using FACTOVA_QueryHelper.Models;
+using FACTOVA_QueryHelper.Services; // 🔥 추가
 
 namespace FACTOVA_QueryHelper.Database
 {
@@ -21,6 +22,9 @@ namespace FACTOVA_QueryHelper.Database
         private readonly Action<QueryItem, DataTable?, double, string?> _createResultTabCallback;
         private List<TnsEntry> _tnsEntries;
         private AppSettings _settings;
+        
+        // 🔥 OracleDbService 추가
+        private OracleDbService _dbService;
 
         public QueryExecutionManager(
             Action<string, Color> updateStatusCallback,
@@ -34,6 +38,9 @@ namespace FACTOVA_QueryHelper.Database
             _tnsEntries = tnsEntries ?? throw new ArgumentNullException(nameof(tnsEntries));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _createResultTabCallback = createResultTabCallback ?? throw new ArgumentNullException(nameof(createResultTabCallback));
+            
+            // 🔥 OracleDbService 초기화
+            _dbService = new OracleDbService();
         }
 
         /// <summary>
@@ -205,9 +212,6 @@ namespace FACTOVA_QueryHelper.Database
         private async Task<SingleQueryResult> ExecuteSingleQueryAsync(QueryItem queryItem, StringBuilder logEntry)
         {
             var result = new SingleQueryResult();
-            string connectionString;
-            string userId;
-            string password;
 
             try
             {
@@ -235,12 +239,14 @@ namespace FACTOVA_QueryHelper.Database
                             throw new Exception($"TNS '{connectionInfo.TNS}'를 찾을 수 없습니다.");
                         }
 
-                        connectionString = selectedTns.GetConnectionString();
+                        // 🔥 OracleDbService 연결 설정
+                        await _dbService.ConfigureAsync(selectedTns, connectionInfo.UserId, connectionInfo.Password);
                         logEntry.AppendLine($"  접속 정보: {connectionInfo.DisplayName} (TNS: {connectionInfo.TNS})");
                     }
                     else if (!string.IsNullOrWhiteSpace(connectionInfo.Host))
                     {
-                        connectionString = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={connectionInfo.Host})(PORT={connectionInfo.Port}))(CONNECT_DATA=(SERVICE_NAME={connectionInfo.Service})));";
+                        var tnsString = $"(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={connectionInfo.Host})(PORT={connectionInfo.Port}))(CONNECT_DATA=(SERVICE_NAME={connectionInfo.Service})))";
+                        await _dbService.ConfigureAsync(tnsString, connectionInfo.UserId, connectionInfo.Password);
                         logEntry.AppendLine($"  접속 정보: {connectionInfo.DisplayName} ({connectionInfo.Host}:{connectionInfo.Port}/{connectionInfo.Service})");
                     }
                     else
@@ -248,19 +254,17 @@ namespace FACTOVA_QueryHelper.Database
                         throw new Exception($"접속 정보 '{connectionInfo.DisplayName}'에 TNS 또는 Host 정보가 없습니다.");
                     }
 
-                    userId = connectionInfo.UserId;
-                    password = connectionInfo.Password;
+                    logEntry.AppendLine($"  사용자: {connectionInfo.UserId}");
                 }
                 // 🔥 2순위: 직접 연결 정보 (Host/Port/ServiceName)
                 else if (!string.IsNullOrWhiteSpace(queryItem.Host) &&
                     !string.IsNullOrWhiteSpace(queryItem.Port) &&
                     !string.IsNullOrWhiteSpace(queryItem.ServiceName))
                 {
-                    connectionString = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={queryItem.Host})(PORT={queryItem.Port}))(CONNECT_DATA=(SERVICE_NAME={queryItem.ServiceName})));";
+                    var tnsString = $"(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={queryItem.Host})(PORT={queryItem.Port}))(CONNECT_DATA=(SERVICE_NAME={queryItem.ServiceName})))";
+                    await _dbService.ConfigureAsync(tnsString, queryItem.UserId, queryItem.Password);
                     logEntry.AppendLine($"  연결: {queryItem.Host}:{queryItem.Port}/{queryItem.ServiceName}");
-                    
-                    userId = queryItem.UserId;
-                    password = queryItem.Password;
+                    logEntry.AppendLine($"  사용자: {queryItem.UserId}");
                 }
                 // 🔥 3순위: TNS 이름으로 연결
                 else
@@ -281,30 +285,15 @@ namespace FACTOVA_QueryHelper.Database
                             $"tnsnames.ora 파일 경로:\n{_settings.TnsPath}");
                     }
 
-                    connectionString = selectedTns.GetConnectionString();
+                    await _dbService.ConfigureAsync(selectedTns, queryItem.UserId, queryItem.Password);
                     logEntry.AppendLine($"  TNS: {queryItem.TnsName}");
-                    
-                    userId = queryItem.UserId;
-                    password = queryItem.Password;
+                    logEntry.AppendLine($"  사용자: {queryItem.UserId}");
                 }
-
-                // User ID와 Password 검증
-                if (string.IsNullOrWhiteSpace(userId))
-                    throw new Exception("User ID가 지정되지 않았습니다.");
-
-                if (string.IsNullOrWhiteSpace(password))
-                    throw new Exception("Password가 지정되지 않았습니다.");
-
-                logEntry.AppendLine($"  사용자: {userId}");
 
                 var startTime = DateTime.Now;
 
-                // 쿼리 실행
-                result.Result = await OracleDatabase.ExecuteQueryAsync(
-                    connectionString,
-                    userId,
-                    password,
-                    queryItem.Query);
+                // 🔥 OracleDbService로 쿼리 실행
+                result.Result = await _dbService.ExecuteQueryAsync(queryItem.Query);
 
                 var endTime = DateTime.Now;
                 result.Duration = (endTime - startTime).TotalSeconds;
@@ -319,6 +308,11 @@ namespace FACTOVA_QueryHelper.Database
             {
                 result.IsSuccess = false;
                 result.ErrorMessage = ex.Message;
+            }
+            finally
+            {
+                // 🔥 연결 해제
+                _dbService?.Disconnect();
             }
 
             return result;

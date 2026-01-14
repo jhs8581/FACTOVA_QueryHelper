@@ -5,6 +5,17 @@ using System.Text.Json;
 
 namespace FACTOVA_QueryHelper
 {
+    /// <summary>
+    /// 탭 설정 정보
+    /// </summary>
+    public class TabSetting
+    {
+        public string TabId { get; set; } = string.Empty;
+        public string TabName { get; set; } = string.Empty;
+        public bool IsVisible { get; set; } = true;
+        public int Order { get; set; } = 0;
+    }
+
     public class AppSettings
     {
         public string TnsPath { get; set; } = string.Empty;
@@ -24,6 +35,9 @@ namespace FACTOVA_QueryHelper
         public bool CheckUpdateOnStartup { get; set; } = false; // 시작 시 업데이트 확인 (기본값: false로 변경!)
         public string UpdateSource { get; set; } = "GitHub"; // 업데이트 소스: "GitHub" 또는 "Network"
         public string NetworkUpdatePath { get; set; } = @"\\서버\FACTOVA_Apps\QueryHelper\latest"; // 네트워크 업데이트 경로
+        
+        // 🔥 탭 설정 (표시 여부 및 순서)
+        public List<TabSetting> TabSettings { get; set; } = new List<TabSetting>();
         
         // GMES 정보 조회 입력값
         public string GmesFactory { get; set; } = string.Empty; // 대표공장

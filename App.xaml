@@ -4,6 +4,62 @@
              xmlns:local="clr-namespace:FACTOVA_QueryHelper"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <!-- 🔥 NERP 스타일 공통 DataGrid 헤더 스타일 -->
+        <Style x:Key="NerpDataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#F0F8FF"/>
+            <Setter Property="Foreground" Value="#2C5AA0"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="BorderBrush" Value="#B0C4DE"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        
+        <!-- 🔥 NERP 스타일 공통 DataGrid 셀 스타일 -->
+        <Style x:Key="NerpDataGridCellStyle" TargetType="DataGridCell">
+            <Setter Property="Padding" Value="5,3"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="0,0,1,0"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#E3F2FD"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- 🔥 NERP 스타일 공통 DataGrid 행 스타일 -->
+        <Style x:Key="NerpDataGridRowStyle" TargetType="DataGridRow">
+            <Setter Property="Background" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="AlternationIndex" Value="1">
+                    <Setter Property="Background" Value="#F5F5F5"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- 🔥 NERP 스타일 전체 DataGrid 스타일 -->
+        <Style x:Key="NerpDataGridStyle" TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="True"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="CanUserDeleteRows" Value="False"/>
+            <Setter Property="CanUserReorderColumns" Value="True"/>
+            <Setter Property="CanUserResizeColumns" Value="True"/>
+            <Setter Property="CanUserSortColumns" Value="True"/>
+            <Setter Property="AlternatingRowBackground" Value="#F5F5F5"/>
+            <Setter Property="GridLinesVisibility" Value="All"/>
+            <Setter Property="SelectionMode" Value="Extended"/>
+            <Setter Property="SelectionUnit" Value="CellOrRowHeader"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="ColumnWidth" Value="Auto"/>
+            <Setter Property="MinColumnWidth" Value="80"/>
+            <Setter Property="RowStyle" Value="{StaticResource NerpDataGridRowStyle}"/>
+            <Setter Property="CellStyle" Value="{StaticResource NerpDataGridCellStyle}"/>
+        </Style>
     </Application.Resources>
 </Application>

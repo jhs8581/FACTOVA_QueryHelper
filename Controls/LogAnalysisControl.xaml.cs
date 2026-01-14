@@ -916,68 +916,82 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     AutoGenerateColumns = true,
                     IsReadOnly = true,
-                    AlternatingRowBackground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
-                    GridLinesVisibility = DataGridGridLinesVisibility.All,
-                    HeadersVisibility = DataGridHeadersVisibility.All,
-                    ItemsSource = result.DefaultView,
-                    CanUserSortColumns = true,
-                    CanUserResizeColumns = true,
+                    CanUserAddRows = false,
+                    CanUserDeleteRows = false,
                     CanUserReorderColumns = true,
+                    CanUserResizeColumns = true,
+                    AlternatingRowBackground = new SolidColorBrush(Color.FromRgb(245, 245, 245)),
+                    GridLinesVisibility = DataGridGridLinesVisibility.All,
                     SelectionMode = DataGridSelectionMode.Extended,
-                    SelectionUnit = DataGridSelectionUnit.Cell,
+                    SelectionUnit = DataGridSelectionUnit.CellOrRowHeader,
                     ClipboardCopyMode = DataGridClipboardCopyMode.IncludeHeader,
-                    FontSize = fontSize,
-                    BorderThickness = new Thickness(1),
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224)),
-                    ColumnWidth = DataGridLength.Auto,  // 자동 너비 조정
-                    MinColumnWidth = 80  // 최소 컬럼 너비
+                    ItemsSource = result.DefaultView,
+                    FontSize = fontSize
                 };
-
-                // AutoGeneratingColumn 이벤트 핸들러 추가 (언더스코어 표시 및 가독성 개선)
+                
+                // 🔥 NERP 스타일 헤더 (DataGrid.Resources에 추가)
+                var headerStyle = new Style(typeof(DataGridColumnHeader));
+                headerStyle.Setters.Add(new Setter(DataGridColumnHeader.BackgroundProperty, 
+                    new SolidColorBrush(Color.FromRgb(240, 248, 255)))); // #F0F8FF
+                headerStyle.Setters.Add(new Setter(DataGridColumnHeader.ForegroundProperty, 
+                    new SolidColorBrush(Color.FromRgb(44, 90, 160)))); // #2C5AA0
+                headerStyle.Setters.Add(new Setter(DataGridColumnHeader.FontWeightProperty, 
+                    FontWeights.Bold));
+                headerStyle.Setters.Add(new Setter(DataGridColumnHeader.PaddingProperty, 
+                    new Thickness(8, 5, 8, 5)));
+                headerStyle.Setters.Add(new Setter(DataGridColumnHeader.BorderBrushProperty, 
+                    new SolidColorBrush(Color.FromRgb(176, 196, 222)))); // #B0C4DE
+                headerStyle.Setters.Add(new Setter(DataGridColumnHeader.BorderThicknessProperty, 
+                    new Thickness(0, 0, 1, 1)));
+                headerStyle.Setters.Add(new Setter(DataGridColumnHeader.HorizontalContentAlignmentProperty, 
+                    HorizontalAlignment.Left));
+                headerStyle.Setters.Add(new Setter(DataGridColumnHeader.VerticalContentAlignmentProperty, 
+                    VerticalAlignment.Center));
+                dataGrid.ColumnHeaderStyle = headerStyle;
+                
+                // 🔥 NERP 스타일 셀 (선택 시 연한 파란색 + 검정 글자)
+                var cellStyle = new Style(typeof(DataGridCell));
+                cellStyle.Setters.Add(new Setter(DataGridCell.PaddingProperty, new Thickness(5, 3, 5, 3)));
+                
+                var selectedTrigger = new Trigger
+                {
+                    Property = DataGridCell.IsSelectedProperty,
+                    Value = true
+                };
+                selectedTrigger.Setters.Add(new Setter(DataGridCell.BackgroundProperty, 
+                    new SolidColorBrush(Color.FromRgb(227, 242, 253)))); // #E3F2FD
+                selectedTrigger.Setters.Add(new Setter(DataGridCell.ForegroundProperty, Brushes.Black));
+                cellStyle.Triggers.Add(selectedTrigger);
+                dataGrid.CellStyle = cellStyle;
+                
+                // AutoGeneratingColumn 이벤트 핸들러 추가 (숫자 포맷 등)
                 dataGrid.AutoGeneratingColumn += (s, e) =>
                 {
-                    // 컬럼 최소 너비 설정
-                    e.Column.MinWidth = 80;
+                    // 숫자 타입 컬럼 자동 인식
+                    bool isNumericColumn = e.PropertyType == typeof(int) || 
+                                           e.PropertyType == typeof(long) || 
+                                           e.PropertyType == typeof(decimal) || 
+                                           e.PropertyType == typeof(double) || 
+                                           e.PropertyType == typeof(float) ||
+                                           e.PropertyType == typeof(short);
                     
-                    if (e.Column is DataGridTextColumn textColumn)
+                    if (e.Column is DataGridTextColumn textColumn && isNumericColumn)
                     {
-                        // 텍스트 컬럼 스타일 설정
+                        // 숫자 컬럼 오른쪽 정렬 + 콤마 포맷
                         var elementStyle = new Style(typeof(TextBlock));
-                        elementStyle.Setters.Add(new Setter(TextBlock.PaddingProperty, new Thickness(8, 5, 8, 5)));
-                        elementStyle.Setters.Add(new Setter(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis));
+                        elementStyle.Setters.Add(new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Right));
+                        elementStyle.Setters.Add(new Setter(TextBlock.PaddingProperty, new Thickness(5, 3, 5, 3)));
                         textColumn.ElementStyle = elementStyle;
+                        
+                        textColumn.Binding = new System.Windows.Data.Binding(e.PropertyName)
+                        {
+                            StringFormat = "#,##0.######"
+                        };
                     }
                     
-                    // 헤더 스타일 설정
-                    var style = new Style(typeof(DataGridColumnHeader));
-                    style.Setters.Add(new Setter(DataGridColumnHeader.BackgroundProperty, new SolidColorBrush(Color.FromRgb(0, 120, 215))));
-                    style.Setters.Add(new Setter(DataGridColumnHeader.ForegroundProperty, new SolidColorBrush(Colors.White)));
-                    style.Setters.Add(new Setter(DataGridColumnHeader.FontWeightProperty, FontWeights.Bold));
-                    style.Setters.Add(new Setter(DataGridColumnHeader.HeightProperty, 40.0));  // 높이 증가
-                    style.Setters.Add(new Setter(DataGridColumnHeader.PaddingProperty, new Thickness(12, 8, 12, 8)));  // 패딩 증가
-                    style.Setters.Add(new Setter(DataGridColumnHeader.HorizontalContentAlignmentProperty, HorizontalAlignment.Center));
-                    style.Setters.Add(new Setter(DataGridColumnHeader.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(0, 86, 160))));
-                    style.Setters.Add(new Setter(DataGridColumnHeader.BorderThicknessProperty, new Thickness(0, 0, 1, 0)));
-                    
-                    // 헤더 템플릿 설정 (언더스코어 표시 및 텍스트 줄바꿈 지원)
-                    var headerTemplate = new DataTemplate();
-                    var factory = new FrameworkElementFactory(typeof(TextBlock));
-                    factory.SetValue(TextBlock.TextProperty, e.Column.Header.ToString().Replace("_", "__"));
-                    factory.SetValue(TextBlock.TextWrappingProperty, TextWrapping.Wrap);  // 텍스트 줄바꿈
-                    factory.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.Center);
-                    factory.SetValue(TextBlock.PaddingProperty, new Thickness(5));
-                    headerTemplate.VisualTree = factory;
-                    
-                    style.Setters.Add(new Setter(DataGridColumnHeader.ContentTemplateProperty, headerTemplate));
-                    e.Column.HeaderStyle = style;
+                    e.Column.MinWidth = 80;
+                    e.Column.Width = new DataGridLength(1, DataGridLengthUnitType.Auto);
                 };
-
-                // DataGrid 셀 스타일 적용 (SFC 모니터링과 동일)
-                var cellStyle = new Style(typeof(DataGridCell));
-                cellStyle.Setters.Add(new Setter(DataGridCell.BorderBrushProperty, new SolidColorBrush(Color.FromRgb(224, 224, 224))));
-                cellStyle.Setters.Add(new Setter(DataGridCell.BorderThicknessProperty, new Thickness(0, 0, 1, 0)));
-                cellStyle.Setters.Add(new Setter(DataGridCell.PaddingProperty, new Thickness(10, 5, 10, 5)));  // 셀 패딩 증가
-                dataGrid.CellStyle = cellStyle;
 
                 // 컨텍스트 메뉴 추가
                 var contextMenu = new ContextMenu();

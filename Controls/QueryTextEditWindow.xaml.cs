@@ -5,16 +5,35 @@ using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 using System.Xml;
 using System.IO;
+using FACTOVA_QueryHelper.Database;
+using System.Linq;
 
 namespace FACTOVA_QueryHelper.Controls
 {
     public partial class QueryTextEditWindow : Window
     {
         public string QueryText { get; private set; } = string.Empty;
+        private int? _queryId;
+        private string _databasePath;
+        private bool _isReadOnly;
+        
+        // 🔥 저장 후 콜백 이벤트
+        public event EventHandler? QuerySaved;
 
+        // 🔥 기존 생성자 (하위 호환성 유지)
         public QueryTextEditWindow(string initialQuery = "", bool isReadOnly = false)
+            : this(initialQuery, isReadOnly, null, string.Empty)
+        {
+        }
+
+        // 🔥 새 생성자 (쿼리 ID와 DB 경로 포함)
+        public QueryTextEditWindow(string initialQuery, bool isReadOnly, int? queryId, string databasePath)
         {
             InitializeComponent();
+            
+            _queryId = queryId;
+            _databasePath = databasePath;
+            _isReadOnly = isReadOnly;
             
             // SQL 구문 강조 정의 로드
             LoadSqlSyntaxHighlighting();
@@ -25,12 +44,28 @@ namespace FACTOVA_QueryHelper.Controls
                 QueryTextEditor.Text = initialQuery;
             }
             
-            // 읽기 전용 모드일 경우 Save 버튼 숨기기
-            if (isReadOnly)
+            // 🔥 읽기 전용 모드여도 쿼리 ID가 있으면 편집 및 저장 가능
+            if (isReadOnly && queryId == null)
             {
+                // 완전 읽기 전용 (쿼리 ID 없음)
                 SaveButton.Visibility = Visibility.Collapsed;
                 QueryTextEditor.IsReadOnly = true;
                 CancelButton.Content = "닫기";
+            }
+            else if (queryId.HasValue)
+            {
+                // 쿼리 ID가 있으면 편집 및 저장 가능
+                SaveButton.Visibility = Visibility.Visible;
+                SaveButton.Content = "💾 저장";
+                QueryTextEditor.IsReadOnly = false;
+                CancelButton.Content = "취소";
+            }
+            else
+            {
+                // 새 쿼리 작성 모드
+                SaveButton.Visibility = Visibility.Visible;
+                QueryTextEditor.IsReadOnly = false;
+                CancelButton.Content = "취소";
             }
             
             QueryTextEditor.Focus();
@@ -205,8 +240,48 @@ namespace FACTOVA_QueryHelper.Controls
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             QueryText = QueryTextEditor.Text;
-            DialogResult = true;
-            Close();
+            
+            // 🔥 쿼리 ID가 있으면 DB에 저장
+            if (_queryId.HasValue && !string.IsNullOrEmpty(_databasePath))
+            {
+                try
+                {
+                    var database = new QueryDatabase(_databasePath);
+                    var allQueries = database.GetAllQueries();
+                    var query = allQueries.FirstOrDefault(q => q.RowNumber == _queryId.Value);
+                    
+                    if (query != null)
+                    {
+                        query.Query = QueryText;
+                        database.UpdateQuery(query);
+                        
+                        MessageBox.Show("쿼리가 저장되었습니다.", "저장 완료",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
+                        
+                        // 🔥 저장 후 콜백 이벤트 발생
+                        QuerySaved?.Invoke(this, EventArgs.Empty);
+                        
+                        DialogResult = true;
+                        Close();
+                    }
+                    else
+                    {
+                        MessageBox.Show("쿼리를 찾을 수 없습니다.", "오류",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"쿼리 저장 실패:\n{ex.Message}", "오류",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            else
+            {
+                // 쿼리 ID가 없으면 단순히 텍스트만 반환
+                DialogResult = true;
+                Close();
+            }
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)

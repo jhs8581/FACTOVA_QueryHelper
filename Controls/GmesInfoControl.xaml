@@ -376,11 +376,7 @@
                               AutoGenerateColumns="True"
                               IsReadOnly="True"
                               CanUserAddRows="False"
-                              AlternatingRowBackground="#FFF8F9FA"
-                              GridLinesVisibility="All"
-                              HeadersVisibility="All"
-                              BorderThickness="1"
-                              BorderBrush="#FFE0E0E0"
+                              Style="{StaticResource NerpDataGridStyle}"
                               Margin="0,0,0,10"
                               FontSize="10"
                               HorizontalScrollBarVisibility="Auto"
@@ -389,19 +385,8 @@
                               ClipboardCopyMode="ExcludeHeader"
                               SelectionMode="Single"
                               SelectionUnit="FullRow"
-                              CanUserResizeColumns="True"
                               CanUserReorderColumns="False"
-                              CanUserSortColumns="True"
                               MouseDoubleClick="PlanInfoDataGrid_MouseDoubleClick">
-                        <DataGrid.ColumnHeaderStyle>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="#FF0078D7"/>
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                                <Setter Property="FontSize" Value="10"/>
-                            </Style>
-                        </DataGrid.ColumnHeaderStyle>
                     </DataGrid>
 
                     <!-- 전체 조회 버튼 -->

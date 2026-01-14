@@ -99,6 +99,105 @@ namespace FACTOVA_QueryHelper
             this.SettingsControl.TnsPathChanged += (s, args) => LoadTnsEntries();
             this.SettingsControl.ConnectionInfoChanged += OnConnectionInfoChanged;
             this.SettingsControl.ShortcutsChanged += OnShortcutsChanged;  // 🔥 단축어 변경 이벤트 구독
+            
+            // 🔥 탭 설정 적용 (순서 및 표시 여부)
+            ApplyTabSettings();
+        }
+
+        /// <summary>
+        /// 🔥 탭 설정을 적용합니다 (순서 및 표시 여부)
+        /// </summary>
+        private void ApplyTabSettings()
+        {
+            try
+            {
+                var tabSettings = _sharedData.Settings.TabSettings;
+                
+                // 설정이 없으면 기본값 사용
+                if (tabSettings == null || tabSettings.Count == 0)
+                {
+                    System.Diagnostics.Debug.WriteLine("ℹ️ Tab settings not found, using default order");
+                    return;
+                }
+
+                // TabId와 TabItem 매핑
+                var tabMap = new Dictionary<string, TabItem>
+                {
+                    { "LogAnalysis", GetTabItemByIndex(0) },
+                    { "GmesInfo", GetTabItemByIndex(1) },
+                    { "GmesInfoNew", GetTabItemByIndex(2) },
+                    { "BizQuery", GetTabItemByIndex(3) },
+                    { "QueryManagement", GetTabItemByIndex(4) },
+                    { "QueryEditor", GetTabItemByIndex(5) },
+                    { "NerpValidation", GetTabItemByIndex(6) },
+                    { "SfcMonitoring", GetTabItemByIndex(7) },
+                    { "BizTransform", GetTabItemByIndex(8) },
+                    { "InTransform", GetTabItemByIndex(9) },
+                    { "Settings", GetTabItemByIndex(10) },
+                    { "Help", GetTabItemByIndex(11) }
+                };
+
+                // 기존 탭 제거 (컬렉션에서만)
+                var tabsToReorder = new List<TabItem>();
+                foreach (TabItem tab in MainTabControl.Items)
+                {
+                    tabsToReorder.Add(tab);
+                }
+                MainTabControl.Items.Clear();
+
+                // 탭 설정에 따라 순서대로 추가
+                var sortedSettings = tabSettings.OrderBy(t => t.Order).ToList();
+                
+                foreach (var setting in sortedSettings)
+                {
+                    if (tabMap.TryGetValue(setting.TabId, out var tabItem) && tabItem != null)
+                    {
+                        // 표시 여부 설정
+                        tabItem.Visibility = setting.IsVisible ? Visibility.Visible : Visibility.Collapsed;
+                        MainTabControl.Items.Add(tabItem);
+                        
+                        System.Diagnostics.Debug.WriteLine($"📑 Tab '{setting.TabName}' - Order: {setting.Order}, Visible: {setting.IsVisible}");
+                    }
+                }
+
+                // 설정에 없는 탭이 있으면 끝에 추가 (새로 추가된 탭)
+                foreach (var kvp in tabMap)
+                {
+                    if (kvp.Value != null && !MainTabControl.Items.Contains(kvp.Value))
+                    {
+                        MainTabControl.Items.Add(kvp.Value);
+                        System.Diagnostics.Debug.WriteLine($"📑 Tab '{kvp.Key}' - Added (not in settings)");
+                    }
+                }
+
+                // 첫 번째 보이는 탭 선택
+                foreach (TabItem tab in MainTabControl.Items)
+                {
+                    if (tab.Visibility == Visibility.Visible)
+                    {
+                        MainTabControl.SelectedItem = tab;
+                        break;
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"✅ Tab settings applied: {sortedSettings.Count} tabs configured");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Failed to apply tab settings: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 🔥 인덱스로 TabItem 가져오기
+        /// </summary>
+        private TabItem? GetTabItemByIndex(int index)
+        {
+            if (MainTabControl.Items.Count > index && MainTabControl.Items[index] is TabItem tabItem)
+            {
+                return tabItem;
+            }
+            return null;
         }
 
         /// <summary>

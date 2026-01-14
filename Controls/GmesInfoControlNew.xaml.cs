@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using FACTOVA_QueryHelper.Database;
 using FACTOVA_QueryHelper.Models;
+using FACTOVA_QueryHelper.Services; // 🔥 추가
 using OfficeOpenXml;
 using System.IO;
 using Microsoft.Win32;
@@ -28,6 +29,9 @@ namespace FACTOVA_QueryHelper.Controls
         // 🔥 파라미터 관리
         private System.Collections.ObjectModel.ObservableCollection<ParameterInfo>? _parameters;
         private ParameterInfo? _selectedParameter;
+        
+        // 🔥 OracleDbService 추가
+        private OracleDbService? _dbService;
 
         private class DynamicGridInfo
         {
@@ -41,6 +45,9 @@ namespace FACTOVA_QueryHelper.Controls
         public GmesInfoControlNewNew()
         {
             InitializeComponent();
+            
+            // 🔥 OracleDbService 초기화
+            _dbService = new OracleDbService();
             
             QuerySelectComboBox.SelectionChanged += QueryComboBox_SelectionChanged;
             PlanInfoDataGrid.AutoGeneratingColumn += DataGrid_AutoGeneratingColumn;
@@ -775,19 +782,49 @@ namespace FACTOVA_QueryHelper.Controls
                 AutoGenerateColumns = true,
                 IsReadOnly = true,
                 CanUserAddRows = false,
-                AlternatingRowBackground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
-                GridLinesVisibility = DataGridGridLinesVisibility.All,
-                HeadersVisibility = DataGridHeadersVisibility.All,
-                FontSize = 10,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                ClipboardCopyMode = DataGridClipboardCopyMode.ExcludeHeader,
-                SelectionMode = DataGridSelectionMode.Extended,
-                SelectionUnit = DataGridSelectionUnit.CellOrRowHeader,
+                CanUserDeleteRows = false,
+                CanUserReorderColumns = true,
                 CanUserResizeColumns = true,
-                CanUserReorderColumns = false,
-                CanUserSortColumns = true
+                AlternatingRowBackground = new SolidColorBrush(Color.FromRgb(245, 245, 245)),
+                GridLinesVisibility = DataGridGridLinesVisibility.All,
+                SelectionMode = DataGridSelectionMode.Extended,
+                SelectionUnit = DataGridSelectionUnit.CellOrRowHeader
             };
+            
+            // 🔥 NERP 스타일 헤더 (DataGrid.Resources에 추가)
+            var headerStyle = new Style(typeof(System.Windows.Controls.Primitives.DataGridColumnHeader));
+            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BackgroundProperty, 
+                new SolidColorBrush(Color.FromRgb(240, 248, 255)))); // #F0F8FF
+            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.ForegroundProperty, 
+                new SolidColorBrush(Color.FromRgb(44, 90, 160)))); // #2C5AA0
+            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontWeightProperty, 
+                FontWeights.Bold));
+            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.PaddingProperty, 
+                new Thickness(8, 5, 8, 5)));
+            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BorderBrushProperty, 
+                new SolidColorBrush(Color.FromRgb(176, 196, 222)))); // #B0C4DE
+            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BorderThicknessProperty, 
+                new Thickness(0, 0, 1, 1)));
+            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.HorizontalContentAlignmentProperty, 
+                HorizontalAlignment.Left));
+            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.VerticalContentAlignmentProperty, 
+                VerticalAlignment.Center));
+            dataGrid.ColumnHeaderStyle = headerStyle;
+            
+            // 🔥 NERP 스타일 셀 (선택 시 연한 파란색 + 검정 글자)
+            var cellStyle = new Style(typeof(DataGridCell));
+            cellStyle.Setters.Add(new Setter(DataGridCell.PaddingProperty, new Thickness(5, 3, 5, 3)));
+            
+            var selectedTrigger = new System.Windows.Trigger
+            {
+                Property = DataGridCell.IsSelectedProperty,
+                Value = true
+            };
+            selectedTrigger.Setters.Add(new Setter(DataGridCell.BackgroundProperty, 
+                new SolidColorBrush(Color.FromRgb(227, 242, 253)))); // #E3F2FD
+            selectedTrigger.Setters.Add(new Setter(DataGridCell.ForegroundProperty, Brushes.Black));
+            cellStyle.Triggers.Add(selectedTrigger);
+            dataGrid.CellStyle = cellStyle;
             
             dataGrid.AutoGeneratingColumn += DataGrid_AutoGeneratingColumn;
             dataGrid.LoadingRow += DataGrid_LoadingRow;
@@ -836,20 +873,6 @@ namespace FACTOVA_QueryHelper.Controls
                 }
             };
 
-            var headerStyle = new Style(typeof(System.Windows.Controls.Primitives.DataGridColumnHeader));
-            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BackgroundProperty, 
-                new SolidColorBrush(Color.FromRgb(0, 120, 215))));
-            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.ForegroundProperty, 
-                Brushes.White));
-            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontWeightProperty, 
-                FontWeights.Bold));
-            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.HorizontalContentAlignmentProperty, 
-                HorizontalAlignment.Center));
-            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontSizeProperty, 
-                10.0));
-            
-            dataGrid.ColumnHeaderStyle = headerStyle;
-
             return new DynamicGridInfo
             {
                 Index = index,
@@ -895,6 +918,23 @@ namespace FACTOVA_QueryHelper.Controls
             };
             executeButton.Click += async (s, e) => await ExecuteDynamicGridQuery(gridInfo);
 
+            // 🔥 팝업 보기 버튼
+            var popupButton = new Button
+            {
+                Content = "🔍",
+                Width = 30,
+                Height = 28,
+                Background = new SolidColorBrush(Color.FromRgb(108, 117, 125)),
+                Foreground = Brushes.White,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand,
+                FontWeight = FontWeights.Bold,
+                FontSize = 14,
+                Margin = new Thickness(0, 0, 5, 0),
+                ToolTip = "팝업으로 보기"
+            };
+            popupButton.Click += (s, e) => ShowGridInPopup(gridInfo);
+
             // 쿼리 보기 버튼
             var viewQueryButton = new Button
             {
@@ -923,12 +963,38 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 if (gridInfo.QueryComboBox.SelectedItem is QueryItem query)
                 {
-                    var window = new QueryTextEditWindow(query.Query, isReadOnly: true)
+                    // 🔥 쿼리 RowNumber와 DB 경로를 포함하여 팝업 열기 (편집 및 저장 가능)
+                    var window = new QueryTextEditWindow(
+                        query.Query, 
+                        isReadOnly: true, 
+                        queryId: query.RowNumber, 
+                        databasePath: _sharedData?.Settings.DatabasePath ?? "")
                     {
                         Title = $"쿼리 보기 - {query.QueryName}",
                         Owner = Window.GetWindow(this),
                         WindowStartupLocation = WindowStartupLocation.CenterOwner
                     };
+                    
+                    // 🔥 저장 후 쿼리 목록 다시 로드
+                    window.QuerySaved += (sender, args) =>
+                    {
+                        LoadInfoQueries();
+                        UpdateAllGridComboBoxes();
+                        
+                        // 현재 선택된 쿼리 유지
+                        var selectedQueryId = query.RowNumber;
+                        var queriesWithBizName = _infoQueries
+                            .Where(q => !string.IsNullOrWhiteSpace(q.BizName) && 
+                                       !string.Equals(q.ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase))
+                            .ToList();
+                        
+                        var updatedQuery = queriesWithBizName.FirstOrDefault(q => q.RowNumber == selectedQueryId);
+                        if (updatedQuery != null)
+                        {
+                            gridInfo.QueryComboBox.SelectedItem = updatedQuery;
+                        }
+                    };
+                    
                     window.ShowDialog();
                 }
                 else
@@ -965,9 +1031,10 @@ namespace FACTOVA_QueryHelper.Controls
             validateParamsButton.Click += (s, e) => ValidateGridParameters(gridInfo);
 
             headerPanel.Children.Add(titleBlock);
-            headerPanel.Children.Add(gridInfo.QueryComboBox);  // 쿼리 선택 콤보박스
+            headerPanel.Children.Add(gridInfo.QueryComboBox);  // 쿼리 선택 콜백박스
             headerPanel.Children.Add(gridInfo.ClearButton);     // 취소 버튼
             headerPanel.Children.Add(executeButton);            // 실행 버튼
+            headerPanel.Children.Add(popupButton);              // 🔥 팝업 보기 버튼
             headerPanel.Children.Add(viewQueryButton);          // 쿼리 보기 버튼
             headerPanel.Children.Add(validateParamsButton);     // 파라미터 확인 버튼
             headerPanel.Children.Add(gridInfo.ResultInfoTextBlock); // 결과 정보
@@ -979,6 +1046,52 @@ namespace FACTOVA_QueryHelper.Controls
             grid.Children.Add(gridInfo.DataGrid);
 
             return grid;
+        }
+
+        // 🔥 그리드 팝업으로 표시하는 메서드
+        private void ShowGridInPopup(DynamicGridInfo gridInfo)
+        {
+            if (gridInfo.DataGrid.ItemsSource == null)
+            {
+                MessageBox.Show("조회된 데이터가 없습니다.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var dataView = gridInfo.DataGrid.ItemsSource as DataView;
+            if (dataView == null || dataView.Count == 0)
+            {
+                MessageBox.Show("조회된 데이터가 없습니다.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                var popupWindow = new Windows.GridPopupWindow
+                {
+                    Owner = Window.GetWindow(this),
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+                };
+
+                // 제목 설정
+                var queryName = (gridInfo.QueryComboBox.SelectedItem as QueryItem)?.BizName ?? $"그리드 {gridInfo.Index}";
+                popupWindow.SetTitle(queryName);
+
+                // 정보 설정
+                var info = gridInfo.ResultInfoTextBlock.Text;
+                popupWindow.SetInfo(info);
+
+                // 데이터 설정
+                popupWindow.SetDataSource(dataView);
+
+                popupWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"팝업 표시 실패:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         #endregion
@@ -1086,8 +1199,8 @@ namespace FACTOVA_QueryHelper.Controls
 
                 await System.Threading.Tasks.Task.WhenAll(tasks);
                 
-                MessageBox.Show($"{tasks.Count}개의 쿼리 조회가 완료되었습니다.", "완료",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                // 🔥 조회 완료 팝업 제거 - 각 그리드에 결과 표시됨
+                System.Diagnostics.Debug.WriteLine($"✅ {tasks.Count}개의 쿼리 조회 완료");
             }
             catch (Exception ex)
             {
@@ -1116,8 +1229,6 @@ namespace FACTOVA_QueryHelper.Controls
 
             try
             {
-                string connectionString;
-
                 if (!string.IsNullOrWhiteSpace(queryItem.Version) && SiteComboBox.SelectedItem is SiteInfo selectedSite)
                 {
                     var tnsName = selectedSite.GetTnsForVersion(queryItem.Version);
@@ -1150,9 +1261,8 @@ namespace FACTOVA_QueryHelper.Controls
                         return;
                     }
 
-                    connectionString = selectedTns.GetConnectionString();
-                    queryItem.UserId = connectionInfo.UserId;
-                    queryItem.Password = connectionInfo.Password;
+                    // 🔥 OracleDbService 연결 설정
+                    await _dbService!.ConfigureAsync(selectedTns, connectionInfo.UserId, connectionInfo.Password);
                 }
                 else if (queryItem.ConnectionInfoId.HasValue)
                 {
@@ -1177,15 +1287,15 @@ namespace FACTOVA_QueryHelper.Controls
                         return;
                     }
                     
-                    connectionString = selectedTns.GetConnectionString();
-                    queryItem.UserId = connectionInfo.UserId;
-                    queryItem.Password = connectionInfo.Password;
+                    // 🔥 OracleDbService 연결 설정
+                    await _dbService!.ConfigureAsync(selectedTns, connectionInfo.UserId, connectionInfo.Password);
                 }
                 else if (!string.IsNullOrWhiteSpace(queryItem.Host) &&
                     !string.IsNullOrWhiteSpace(queryItem.Port) &&
                     !string.IsNullOrWhiteSpace(queryItem.ServiceName))
                 {
-                    connectionString = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={queryItem.Host})(PORT={queryItem.Port}))(CONNECT_DATA=(SERVICE_NAME={queryItem.ServiceName})));";
+                    var tnsString = $"(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={queryItem.Host})(PORT={queryItem.Port}))(CONNECT_DATA=(SERVICE_NAME={queryItem.ServiceName})))";
+                    await _dbService!.ConfigureAsync(tnsString, queryItem.UserId, queryItem.Password);
                 }
                 else if (!string.IsNullOrWhiteSpace(queryItem.TnsName))
                 {
@@ -1199,7 +1309,8 @@ namespace FACTOVA_QueryHelper.Controls
                         return;
                     }
 
-                    connectionString = selectedTns.GetConnectionString();
+                    // 🔥 OracleDbService 연결 설정
+                    await _dbService!.ConfigureAsync(selectedTns, queryItem.UserId, queryItem.Password);
                 }
                 else
                 {
@@ -1210,23 +1321,36 @@ namespace FACTOVA_QueryHelper.Controls
 
                 string processedQuery = ReplaceQueryParameters(queryItem.Query);
 
-                var result = await OracleDatabase.ExecuteQueryAsync(
-                    connectionString,
-                    queryItem.UserId,
-                    queryItem.Password,
-                    processedQuery);
+                // 🔥 OracleDbService로 쿼리 실행
+                var result = await _dbService!.ExecuteQueryAsync(processedQuery);
 
+                // 🔥 ItemsSource와 Columns을 모두 초기화 후 바인딩
                 targetGrid.ItemsSource = null;
                 targetGrid.Columns.Clear();
-                targetGrid.ItemsSource = result.DefaultView;
                 
-                ApplyFontSizeToGrid(targetGrid);
+                // 🔥 데이터가 있을 때만 바인딩
+                if (result != null && result.Rows.Count > 0)
+                {
+                    targetGrid.ItemsSource = result.DefaultView;
+                    ApplyFontSizeToGrid(targetGrid);
+                }
+                else
+                {
+                    // 🔥 데이터가 없으면 그리드를 비워둠
+                    System.Diagnostics.Debug.WriteLine($"⚠️ 조회 결과 0건 - 그리드 초기화됨");
+                }
             }
             catch (Exception ex)
             {
+                // 🔥 오류 발생 시에도 그리드 초기화
+                targetGrid.ItemsSource = null;
+                targetGrid.Columns.Clear();
+                
                 MessageBox.Show($"쿼리 실행 실패:\n{ex.Message}", "오류",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
+            // 🔥 Disconnect() 제거 - ExecuteQueryAsync 내부에서 연결 관리하므로 불필요
+            // 병렬 실행 시 다른 쿼리의 연결을 끊는 문제 해결
         }
 
         private async System.Threading.Tasks.Task ExecuteQueryToGridWithRowData(
@@ -1251,12 +1375,13 @@ namespace FACTOVA_QueryHelper.Controls
             string equipLineId = selectedSite?.EquipLineId ?? _sharedData?.Settings.GmesEquipLineId ?? "";
             string division = selectedSite?.Division ?? "";
 
-            result = result.Replace("@REPRESENTATIVE_FACTORY_CODE", $"'{factory}'");
-            result = result.Replace("@ORGANIZATION_ID", $"'{org}'");
-            result = result.Replace("@FACILITY_CODE", $"'{facility}'");
-            result = result.Replace("@WIP_LINE_ID", $"'{wipLineId}'");
-            result = result.Replace("@LINE_ID", $"'{equipLineId}'");
-            result = result.Replace("@DIVISION", $"'{division}'");
+            // 🔥 DB Link 보호: 파라미터만 치환 (TABLE@DBLINK 형식은 치환하지 않음)
+            result = SafeReplaceParameter(result, "@REPRESENTATIVE_FACTORY_CODE", $"'{factory}'");
+            result = SafeReplaceParameter(result, "@ORGANIZATION_ID", $"'{org}'");
+            result = SafeReplaceParameter(result, "@FACILITY_CODE", $"'{facility}'");
+            result = SafeReplaceParameter(result, "@WIP_LINE_ID", $"'{wipLineId}'");
+            result = SafeReplaceParameter(result, "@LINE_ID", $"'{equipLineId}'");
+            result = SafeReplaceParameter(result, "@DIVISION", $"'{division}'");
 
             if (_parameters != null)
             {
@@ -1267,12 +1392,60 @@ namespace FACTOVA_QueryHelper.Controls
                         string parameterName = param.Parameter.StartsWith("@") ? param.Parameter : $"@{param.Parameter}";
                         string parameterValue = param.Value ?? "";
                         
-                        result = result.Replace(parameterName, $"'{parameterValue}'");
+                        // 🔥 DB Link 보호
+                        result = SafeReplaceParameter(result, parameterName, $"'{parameterValue}'");
                     }
                 }
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 🔥 DB Link를 보호하면서 파라미터만 안전하게 치환
+        /// DB Link: TABLE@DBLINK (@ 앞에 영문자/숫자가 붙음)
+        /// 파라미터: @PARAM_NAME (@ 앞에 공백, 연산자, 괄호 등이 있음)
+        /// </summary>
+        private string SafeReplaceParameter(string query, string paramName, string value)
+        {
+            if (string.IsNullOrEmpty(query) || string.IsNullOrEmpty(paramName))
+                return query;
+
+            // 파라미터가 존재하는지 먼저 확인
+            int index = 0;
+            while ((index = query.IndexOf(paramName, index, StringComparison.OrdinalIgnoreCase)) >= 0)
+            {
+                // @ 바로 앞 문자 확인
+                if (index > 0)
+                {
+                    char prevChar = query[index - 1];
+                    
+                    // @ 앞에 영문자/숫자가 있으면 DB Link이므로 건너뜀
+                    if (char.IsLetterOrDigit(prevChar) || prevChar == '_')
+                    {
+                        index += paramName.Length;
+                        continue;
+                    }
+                }
+
+                // @ 바로 뒤 문자 확인 (파라미터명 뒤에 영문자/숫자가 더 있으면 건너뜀)
+                int endIndex = index + paramName.Length;
+                if (endIndex < query.Length)
+                {
+                    char nextChar = query[endIndex];
+                    if (char.IsLetterOrDigit(nextChar) || nextChar == '_')
+                    {
+                        index += paramName.Length;
+                        continue;
+                    }
+                }
+
+                // 파라미터 치환
+                query = query.Substring(0, index) + value + query.Substring(endIndex);
+                index += value.Length;
+            }
+
+            return query;
         }
 
         #endregion
@@ -1288,6 +1461,63 @@ namespace FACTOVA_QueryHelper.Controls
                 e.Column.Header = header.Replace("_", "__");
             }
             
+            // 🔥 NERP 스타일: 정렬 활성화
+            e.Column.CanUserSort = true;
+            
+            // 🔥 NERP 스타일: 숫자 타입 컬럼 자동 인식
+            bool isNumericColumn = e.PropertyType == typeof(int) || 
+                                   e.PropertyType == typeof(long) || 
+                                   e.PropertyType == typeof(decimal) || 
+                                   e.PropertyType == typeof(double) || 
+                                   e.PropertyType == typeof(float) ||
+                                   e.PropertyType == typeof(short) ||
+                                   e.PropertyType == typeof(Int16) ||
+                                   e.PropertyType == typeof(Int32) ||
+                                   e.PropertyType == typeof(Int64);
+            
+            if (e.Column is DataGridTextColumn textColumn)
+            {
+                var displayStyle = new Style(typeof(TextBlock));
+                displayStyle.Setters.Add(new Setter(TextBlock.TextWrappingProperty, TextWrapping.Wrap));
+                displayStyle.Setters.Add(new Setter(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center));
+                displayStyle.Setters.Add(new Setter(TextBlock.PaddingProperty, new Thickness(5, 3, 5, 3)));
+                
+                // 🔥 숫자 컬럼은 오른쪽 정렬 + 콤마 포맷
+                if (isNumericColumn)
+                {
+                    displayStyle.Setters.Add(new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Right));
+                    displayStyle.Setters.Add(new Setter(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Right));
+                    
+                    // 🔥 숫자 3자리 콤마 포맷 적용
+                    textColumn.Binding = new System.Windows.Data.Binding(e.PropertyName)
+                    {
+                        StringFormat = "#,##0.######" // 소수점 있는 경우도 처리
+                    };
+                }
+                
+                textColumn.ElementStyle = displayStyle;
+                
+                // 🔥 NERP 스타일: 자동 너비 + 최소 너비
+                e.Column.MinWidth = 80;
+                e.Column.Width = new DataGridLength(1, DataGridLengthUnitType.Auto);
+            }
+            
+            // 🔥 일반 컬럼 선택 시 글자색 검정 유지
+            var cellStyle = new Style(typeof(DataGridCell));
+            cellStyle.Setters.Add(new Setter(DataGridCell.ForegroundProperty, Brushes.Black));
+            
+            var selectedTrigger = new System.Windows.Trigger
+            {
+                Property = DataGridCell.IsSelectedProperty,
+                Value = true
+            };
+            selectedTrigger.Setters.Add(new Setter(DataGridCell.ForegroundProperty, Brushes.Black));
+            selectedTrigger.Setters.Add(new Setter(DataGridCell.BackgroundProperty, new SolidColorBrush(Color.FromRgb(173, 216, 230)))); // 연한 파란색
+            cellStyle.Triggers.Add(selectedTrigger);
+            
+            e.Column.CellStyle = cellStyle;
+            
+            // 🔥 CLOB 컬럼 처리 (기존 로직 유지)
             if (e.PropertyType == typeof(string) && e.PropertyDescriptor != null)
             {
                 var dataGrid = sender as DataGrid;
@@ -1632,15 +1862,22 @@ namespace FACTOVA_QueryHelper.Controls
 
             dataGrid.FontSize = fontSize;
 
+            // 🔥 NERP 스타일 헤더 (연한 하늘색 배경 + 진한 파란색 글자)
             var headerStyle = new Style(typeof(System.Windows.Controls.Primitives.DataGridColumnHeader));
             headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BackgroundProperty, 
-                new SolidColorBrush(Color.FromRgb(0, 120, 215))));
+                new SolidColorBrush(Color.FromRgb(240, 248, 255)))); // #F0F8FF
             headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.ForegroundProperty, 
-                Brushes.White));
+                new SolidColorBrush(Color.FromRgb(44, 90, 160)))); // #2C5AA0
             headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontWeightProperty, 
                 FontWeights.Bold));
+            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.PaddingProperty, 
+                new Thickness(8, 5, 8, 5)));
+            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BorderBrushProperty, 
+                new SolidColorBrush(Color.FromRgb(176, 196, 222)))); // #B0C4DE
+            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BorderThicknessProperty, 
+                new Thickness(0, 0, 1, 1)));
             headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.HorizontalContentAlignmentProperty, 
-                HorizontalAlignment.Center));
+                HorizontalAlignment.Left));
             headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontSizeProperty, 
                 (double)fontSize));
             
@@ -1741,7 +1978,7 @@ namespace FACTOVA_QueryHelper.Controls
                 }
                 else
                 {
-                    // 사용되는 파라미터 행을 하이라이트
+                    // 사용되는 파라미터 행의 하이라이트
                     foreach (var param in _parameters)
                     {
                         var paramName = param.Parameter.StartsWith("@") ? param.Parameter : $"@{param.Parameter}";
@@ -1754,36 +1991,46 @@ namespace FACTOVA_QueryHelper.Controls
                     ParameterStatusTextBlock.Text = $"✅ {userDefinedParams.Count}개 파라미터 확인 완료 (LightCoral 색상 표시)";
                     ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Green);
                 }
-
-                PlanInfoDataGrid.Items.Refresh();
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"파라미터 확인 중 오류가 발생했습니다:\n{ex.Message}", "오류",
                     MessageBoxButton.OK, MessageBoxImage.Error);
-                ParameterStatusTextBlock.Text = "파라미터 확인 실패";
-                ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Red);
             }
         }
 
-        /// <summary>
-        /// 쿼리에서 파라미터 추출 (@로 시작하는 문자열)
-        /// </summary>
         private List<string> ExtractParametersFromQuery(string query)
         {
             var parameters = new List<string>();
-            if (string.IsNullOrWhiteSpace(query)) return parameters;
 
-            // 정규식으로 @로 시작하는 파라미터 추출
-            var regex = new System.Text.RegularExpressions.Regex(@"@[A-Za-z0-9_]+");
-            var matches = regex.Matches(query);
-
-            foreach (System.Text.RegularExpressions.Match match in matches)
+            try
             {
-                if (!parameters.Contains(match.Value))
+                // 단순 공백 및 개행 문자 기준으로 파라미터 분리
+                var tokens = query.Split(new[] { ' ', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (var token in tokens)
                 {
-                    parameters.Add(match.Value);
+                    // '@'로 시작하고 그 다음이 영문자 또는 '_'인 경우에만 파라미터로 인식
+                    if (token.StartsWith("@") && 
+                        token.Length > 1 && 
+                        (char.IsLetter(token[1]) || token[1] == '_'))
+                    {
+                        // 특수문자 제거 후 파라미터만 추출
+                        var cleaned = new string(token.Skip(1).TakeWhile(c => char.IsLetterOrDigit(c) || c == '_').ToArray());
+                        if (!string.IsNullOrEmpty(cleaned))
+                        {
+                            var param = "@" + cleaned;
+                            if (!parameters.Contains(param))
+                            {
+                                parameters.Add(param);
+                            }
+                        }
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"파라미터 추출 오류: {ex.Message}");
             }
 
             return parameters;

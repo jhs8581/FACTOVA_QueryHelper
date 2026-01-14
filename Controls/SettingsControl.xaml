@@ -729,6 +729,173 @@
                     <local:TableShortcutManagementControl x:Name="TableShortcutManagement"/>
                 </Grid>
             </TabItem>
+            
+            <!-- 🔥 탭 설정 탭 (NEW) -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="📑" FontSize="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="탭 설정"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+                    <StackPanel MaxWidth="700">
+                        <!-- 안내 메시지 -->
+                        <Border Background="#FFF0F8FF" 
+                                BorderBrush="#FF0078D7" 
+                                BorderThickness="2" 
+                                CornerRadius="8"
+                                Padding="20"
+                                Margin="0,0,0,20">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                    <TextBlock Text="📑" 
+                                               FontSize="24"
+                                               Margin="0,0,12,0"/>
+                                    <TextBlock Text="탭 표시 및 순서 설정" 
+                                               FontSize="18" 
+                                               FontWeight="Bold"
+                                               Foreground="#FF0078D7"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="#FF495057" LineHeight="24">
+                                    <Run FontWeight="SemiBold">메인 화면에 표시할 탭</Run>과 <Run FontWeight="SemiBold">순서</Run>를 설정합니다.<LineBreak/>
+                                    <LineBreak/>
+                                    <Run FontWeight="Bold">• 체크박스:</Run> 체크된 탭만 메인 화면에 표시됩니다.<LineBreak/>
+                                    <Run FontWeight="Bold">• ▲/▼ 버튼:</Run> 탭의 순서를 변경합니다.<LineBreak/>
+                                    <Run FontWeight="Bold">• 저장:</Run> 변경사항은 저장 버튼을 눌러야 적용됩니다.<LineBreak/>
+                                    <LineBreak/>
+                                    <Run FontWeight="Bold" Foreground="#FFDC3545">※ 변경사항은 프로그램 재시작 후 적용됩니다.</Run>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- 탭 목록 -->
+                        <Border BorderBrush="#FFE0E0E0" BorderThickness="1" CornerRadius="8" Padding="10">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                
+                                <!-- 헤더 -->
+                                <Grid Grid.Row="0" Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="50"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="100"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="표시" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="탭 이름" FontWeight="Bold" Margin="10,0,0,0"/>
+                                    <TextBlock Grid.Column="2" Text="순서 변경" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                </Grid>
+                                
+                                <!-- 탭 목록 ListView -->
+                                <ListView x:Name="TabSettingsListView" 
+                                          Grid.Row="1"
+                                          BorderThickness="0"
+                                          MaxHeight="400"
+                                          SelectionMode="Single">
+                                    <ListView.ItemContainerStyle>
+                                        <Style TargetType="ListViewItem">
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                            <Setter Property="Padding" Value="5"/>
+                                        </Style>
+                                    </ListView.ItemContainerStyle>
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Height="36">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="50"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                </Grid.ColumnDefinitions>
+                                                <CheckBox Grid.Column="0" 
+                                                          IsChecked="{Binding IsVisible, Mode=TwoWay}"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding TabName}" 
+                                                           VerticalAlignment="Center"
+                                                           FontSize="13"
+                                                           Margin="10,0,0,0"/>
+                                                <StackPanel Grid.Column="2" 
+                                                            Orientation="Horizontal" 
+                                                            HorizontalAlignment="Center">
+                                                    <Button Content="▲" 
+                                                            Width="36" Height="28"
+                                                            Click="MoveTabUp_Click"
+                                                            Tag="{Binding}"
+                                                            Background="#FF6C757D"
+                                                            Foreground="White"
+                                                            BorderThickness="0"
+                                                            Margin="0,0,5,0"
+                                                            Cursor="Hand"/>
+                                                    <Button Content="▼" 
+                                                            Width="36" Height="28"
+                                                            Click="MoveTabDown_Click"
+                                                            Tag="{Binding}"
+                                                            Background="#FF6C757D"
+                                                            Foreground="White"
+                                                            BorderThickness="0"
+                                                            Cursor="Hand"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Grid>
+                        </Border>
+                        
+                        <!-- 저장/초기화 버튼 -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                            <Button x:Name="SaveTabSettingsButton" 
+                                    Width="150" Height="44"
+                                    Click="SaveTabSettingsButton_Click"
+                                    Background="#FF28A745" 
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    FontWeight="Bold"
+                                    FontSize="14"
+                                    Margin="0,0,10,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="💾" FontSize="16" Margin="0,0,8,0"/>
+                                    <TextBlock Text="저장"/>
+                                </StackPanel>
+                            </Button>
+                            <Button x:Name="ResetTabSettingsButton" 
+                                    Width="150" Height="44"
+                                    Click="ResetTabSettingsButton_Click"
+                                    Background="#FF6C757D" 
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    FontWeight="Bold"
+                                    FontSize="14">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="🔄" FontSize="16" Margin="0,0,8,0"/>
+                                    <TextBlock Text="기본값으로 초기화"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        
+                        <!-- 결과 메시지 -->
+                        <Border x:Name="TabSettingsResultPanel"
+                                Margin="0,20,0,0"
+                                Padding="15"
+                                Background="#FFD4EDDA"
+                                BorderBrush="#FF28A745"
+                                BorderThickness="2"
+                                CornerRadius="8"
+                                Visibility="Collapsed">
+                            <TextBlock x:Name="TabSettingsResultMessage"
+                                       TextWrapping="Wrap"
+                                       FontSize="13"/>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
         </TabControl>
     </Grid>
 </UserControl>
