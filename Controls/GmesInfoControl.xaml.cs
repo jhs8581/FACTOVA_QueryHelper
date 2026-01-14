@@ -1664,39 +1664,80 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         /// <summary>
-        /// DataGrid 행 로드 시 CHK 컬럼 값에 따라 배경색 설정
+        /// DataGrid 행 로드 시 색상 컬럼 값에 따라 배경색/글자색 설정
+        /// BACKGROUND_COLOR, FOREGROUND_COLOR 컬럼 또는 CHK 컬럼 지원
         /// </summary>
         private void DataGrid_LoadingRow(object? sender, DataGridRowEventArgs e)
         {
             if (e.Row.Item is DataRowView rowView)
             {
                 var row = rowView.Row;
+                var table = row.Table;
                 
-                // CHK 컬럼이 존재하는지 확인
-                if (row.Table.Columns.Contains("CHK"))
+                // 🔥 기본값 초기화
+                e.Row.ClearValue(System.Windows.Controls.Control.BackgroundProperty);
+                e.Row.ClearValue(System.Windows.Controls.Control.ForegroundProperty);
+                
+                // 🔥 BACKGROUND_COLOR 컬럼 확인 (원본 또는 이스케이프된 이름)
+                string? bgColor = GetColumnValue(row, table, "BACKGROUND_COLOR");
+                if (!string.IsNullOrWhiteSpace(bgColor))
                 {
-                    var chkValue = row["CHK"]?.ToString()?.Trim();
-                    
-                    // CHK 값이 'E'면 빨간 배경
+                    try
+                    {
+                        var color = (Color)ColorConverter.ConvertFromString(bgColor);
+                        e.Row.Background = new SolidColorBrush(color);
+                    }
+                    catch
+                    {
+                        System.Diagnostics.Debug.WriteLine($"⚠️ Invalid BACKGROUND_COLOR: {bgColor}");
+                    }
+                }
+                
+                // 🔥 FOREGROUND_COLOR 컬럼 확인 (원본 또는 이스케이프된 이름)
+                string? fgColor = GetColumnValue(row, table, "FOREGROUND_COLOR");
+                if (!string.IsNullOrWhiteSpace(fgColor))
+                {
+                    try
+                    {
+                        var color = (Color)ColorConverter.ConvertFromString(fgColor);
+                        e.Row.Foreground = new SolidColorBrush(color);
+                    }
+                    catch
+                    {
+                        System.Diagnostics.Debug.WriteLine($"⚠️ Invalid FOREGROUND_COLOR: {fgColor}");
+                    }
+                }
+                
+                // 🔥 CHK 컬럼 처리 (기존 로직 - BACKGROUND/FOREGROUND가 없을 때만)
+                if (string.IsNullOrWhiteSpace(bgColor) && string.IsNullOrWhiteSpace(fgColor))
+                {
+                    string? chkValue = GetColumnValue(row, table, "CHK");
                     if (chkValue == "E")
                     {
-                        e.Row.Background = new SolidColorBrush(Color.FromRgb(255, 200, 200)); // 연한 빨강
-                        e.Row.Foreground = new SolidColorBrush(Color.FromRgb(139, 0, 0)); // 진한 빨강 텍스트
+                        e.Row.Background = new SolidColorBrush(Color.FromRgb(255, 200, 200));
+                        e.Row.Foreground = new SolidColorBrush(Color.FromRgb(139, 0, 0));
                     }
-                    else
-                    {
-                        // 🔥 CHK 값이 'E'가 아니면 기본 배경색으로 초기화
-                        e.Row.ClearValue(System.Windows.Controls.Control.BackgroundProperty);
-                        e.Row.ClearValue(System.Windows.Controls.Control.ForegroundProperty);
-                    }
-                }
-                else
-                {
-                    // 🔥 CHK 컬럼이 없으면 기본 배경색으로 초기화
-                    e.Row.ClearValue(System.Windows.Controls.Control.BackgroundProperty);
-                    e.Row.ClearValue(System.Windows.Controls.Control.ForegroundProperty);
                 }
             }
+        }
+
+        /// <summary>
+        /// 🔥 컬럼 값 가져오기 (원본 이름 또는 이스케이프된 이름 지원)
+        /// </summary>
+        private string? GetColumnValue(DataRow row, DataTable table, string columnName)
+        {
+            // 원본 컬럼명으로 먼저 시도
+            if (table.Columns.Contains(columnName))
+            {
+                return row[columnName]?.ToString()?.Trim();
+            }
+            // 이스케이프된 컬럼명으로 시도 (_를 __로)
+            var escapedName = columnName.Replace("_", "__");
+            if (table.Columns.Contains(escapedName))
+            {
+                return row[escapedName]?.ToString()?.Trim();
+            }
+            return null;
         }
 
         private void DecreaseFontButton_Click(object sender, RoutedEventArgs e)

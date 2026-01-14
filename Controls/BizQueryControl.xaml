@@ -374,10 +374,10 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         
-                        <DataGridTemplateColumn Header="비즈 실행" Width="120">
+                        <DataGridTemplateColumn Header="쿼리 실행" Width="120">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button Content="▶️ 비즈 실행" 
+                                    <Button Content="▶️ 쿼리 실행" 
                                             Click="ExecuteBizButton_Click"
                                             Tag="{Binding}"
                                             Background="#FFDC3545"
