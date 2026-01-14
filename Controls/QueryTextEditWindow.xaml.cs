@@ -265,25 +265,7 @@ namespace FACTOVA_QueryHelper.Controls
                     
                     System.Diagnostics.Debug.WriteLine("✅ Database file exists");
                     
-                    // 🔥 DB 파일 접근 권한 확인
-                    try
-                    {
-                        using (var fs = System.IO.File.Open(_databasePath, System.IO.FileMode.Open, System.IO.FileAccess.ReadWrite, System.IO.FileShare.None))
-                        {
-                            System.Diagnostics.Debug.WriteLine("✅ Database file is accessible and not locked");
-                        }
-                    }
-                    catch (System.IO.IOException ioEx)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"❌ Database file is locked or inaccessible: {ioEx.Message}");
-                        MessageBox.Show($"데이터베이스 파일이 다른 프로세스에서 사용 중이거나 접근할 수 없습니다.\n\n" +
-                            $"파일: {_databasePath}\n\n" +
-                            $"다른 프로그램을 닫고 다시 시도해주세요.\n\n" +
-                            $"오류: {ioEx.Message}", 
-                            "파일 접근 오류", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return; // 🔥 창을 닫지 않고 리턴
-                    }
-                    
+                    // 🔥 QueryDatabase 인스턴스 생성 및 DB 작업
                     var database = new QueryDatabase(_databasePath);
                     System.Diagnostics.Debug.WriteLine("✅ QueryDatabase instance created");
                     

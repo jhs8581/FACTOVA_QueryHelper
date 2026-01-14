@@ -1007,7 +1007,37 @@ namespace FACTOVA_QueryHelper.Controls
                     window.QuerySaved += (sender, args) =>
                     {
                         System.Diagnostics.Debug.WriteLine("🔥 QuerySaved event received in GmesInfoControlNew");
+                        
+                        // 🔥 현재 선택된 기준정보 쿼리 저장
+                        var currentSelectedPlanQuery = QuerySelectComboBox.SelectedItem as QueryItem;
+                        var currentSelectedQueryName = currentSelectedPlanQuery?.QueryName;
+                        
+                        System.Diagnostics.Debug.WriteLine($"Current selected plan query: {currentSelectedQueryName ?? "(none)"}");
+                        
+                        // 쿼리 목록 다시 로드
                         LoadInfoQueries();
+                        
+                        // 🔥 기준정보 선택 복원
+                        if (!string.IsNullOrEmpty(currentSelectedQueryName) && 
+                            currentSelectedQueryName != "-- 쿼리를 선택하세요 --")
+                        {
+                            var planQueryList = QuerySelectComboBox.ItemsSource as List<QueryItem>;
+                            if (planQueryList != null)
+                            {
+                                var restoredQuery = planQueryList.FirstOrDefault(q => q.QueryName == currentSelectedQueryName);
+                                if (restoredQuery != null)
+                                {
+                                    QuerySelectComboBox.SelectedItem = restoredQuery;
+                                    System.Diagnostics.Debug.WriteLine($"✅ Restored plan query selection: {currentSelectedQueryName}");
+                                }
+                                else
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"⚠️ Could not find plan query: {currentSelectedQueryName}");
+                                }
+                            }
+                        }
+                        
+                        // 변경된 개별 그리드 쿼리 콤보박스만 업데이트
                         UpdateAllGridComboBoxes();
                         
                         // 현재 선택된 쿼리 유지
@@ -1021,6 +1051,7 @@ namespace FACTOVA_QueryHelper.Controls
                         if (updatedQuery != null)
                         {
                             gridInfo.QueryComboBox.SelectedItem = updatedQuery;
+                            System.Diagnostics.Debug.WriteLine($"✅ Restored grid query selection: {updatedQuery.BizName}");
                         }
                     };
                     
