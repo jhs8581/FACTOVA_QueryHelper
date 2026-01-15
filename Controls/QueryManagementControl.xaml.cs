@@ -1414,7 +1414,9 @@ namespace FACTOVA_QueryHelper.Controls
 
                     if (query.RowNumber == 0)
                     {
-                        _database?.AddQuery(query);
+                        // 🔥 신규 추가: ID를 받아서 메모리 객체 업데이트
+                        var newId = _database?.InsertQuery(query) ?? 0;
+                        query.RowNumber = newId;
                         newCount++;
                     }
                     else
@@ -1435,10 +1437,7 @@ namespace FACTOVA_QueryHelper.Controls
                 MessageBox.Show($"저장 완료!\n\n신규: {newCount}개\n수정: {updateCount}개", "성공", 
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 
-                // 현재 탭만 새로고침
-                var currentTabIndex = QueryTypeTabControl.SelectedIndex;
-                LoadQueriesFromDatabase();
-                QueryTypeTabControl.SelectedIndex = currentTabIndex;
+                // 🔥 재조회 없이 필터 유지! (ObservableCollection이 자동 업데이트)
                 
                 UpdateStatus($"변경사항이 저장되었습니다. (신규: {newCount}, 수정: {updateCount})", Colors.Green);
             }
@@ -1515,11 +1514,16 @@ namespace FACTOVA_QueryHelper.Controls
                 window.Owner = Window.GetWindow(this);
                 window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 
-                // 🔥 저장 후 쿼리 목록 다시 로드
+                // 🔥 저장 후 메모리 객체만 업데이트 (재조회 없이 필터 유지)
                 window.QuerySaved += (s, args) =>
                 {
-                    LoadQueriesFromDatabase();
-                    UpdateCurrentTabDataGrid();
+                    // DB에서 해당 쿼리의 Query 필드만 다시 읽어옴
+                    var updatedQuery = _database?.GetAllQueries().FirstOrDefault(q => q.RowNumber == query.RowNumber);
+                    if (updatedQuery != null)
+                    {
+                        query.Query = updatedQuery.Query;
+                    }
+                    
                     UpdateStatus($"'{query.QueryName}' 쿼리가 저장되었습니다.", Colors.Green);
                 };
                 

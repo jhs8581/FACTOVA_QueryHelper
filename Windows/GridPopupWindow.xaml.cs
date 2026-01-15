@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Data;
 
 namespace FACTOVA_QueryHelper.Windows
 {
@@ -46,6 +47,58 @@ namespace FACTOVA_QueryHelper.Windows
             {
                 e.Column.Header = header.Replace("_", "__");
             }
+            
+            // CLOB 컬럼 처리
+            string columnName = e.PropertyName;
+            if (columnName.Contains("CLOB", StringComparison.OrdinalIgnoreCase) ||
+                columnName.EndsWith("_TEXT", StringComparison.OrdinalIgnoreCase) ||
+                columnName.Contains("MEMO", StringComparison.OrdinalIgnoreCase) ||
+                columnName.Contains("DESCRIPTION", StringComparison.OrdinalIgnoreCase) ||
+                columnName.Contains("CONTENT", StringComparison.OrdinalIgnoreCase))
+            {
+                var dataGrid = sender as DataGrid;
+                if (dataGrid != null)
+                {
+                    e.Column.Width = new DataGridLength(200);
+                    
+                    var templateColumn = new DataGridTemplateColumn
+                    {
+                        Header = e.Column.Header,
+                        HeaderStyle = e.Column.HeaderStyle,
+                        Width = new DataGridLength(200),
+                        CellTemplate = CreateClobCellTemplate(columnName)
+                    };
+                    
+                    e.Column = templateColumn;
+                }
+            }
+        }
+        
+        private DataTemplate CreateClobCellTemplate(string columnName)
+        {
+            var factory = new FrameworkElementFactory(typeof(TextBox));
+            
+            factory.SetBinding(TextBox.TextProperty, new Binding(columnName)
+            {
+                Mode = BindingMode.OneWay
+            });
+            
+            factory.SetValue(TextBox.IsReadOnlyProperty, true);
+            factory.SetValue(TextBox.TextWrappingProperty, TextWrapping.Wrap);
+            factory.SetValue(TextBox.AcceptsReturnProperty, true);
+            factory.SetValue(TextBox.VerticalScrollBarVisibilityProperty, ScrollBarVisibility.Auto);
+            factory.SetValue(TextBox.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Auto);
+            factory.SetValue(TextBox.MaxHeightProperty, 100.0);
+            factory.SetValue(TextBox.BorderThicknessProperty, new Thickness(0));
+            factory.SetValue(TextBox.BackgroundProperty, Brushes.Transparent);
+            factory.SetValue(TextBox.PaddingProperty, new Thickness(5));
+            
+            var dataTemplate = new DataTemplate
+            {
+                VisualTree = factory
+            };
+            
+            return dataTemplate;
         }
 
         private void DataGrid_LoadingRow(object? sender, DataGridRowEventArgs e)

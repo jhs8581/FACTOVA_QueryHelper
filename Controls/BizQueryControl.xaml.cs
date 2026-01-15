@@ -287,13 +287,28 @@ namespace FACTOVA_QueryHelper.Controls
                     // 🔥 저장 후 쿼리 목록 다시 로드
                     window.QuerySaved += (s, args) =>
                     {
+                        // 🔥 현재 필터 상태 저장
+                        string? currentBizName = BizNameComboBox.SelectedItem as string;
+                        string groupFilter = GroupNameFilterTextBox.Text;
+                        string bizFilter = BizNameFilterTextBox.Text;
+                        string queryBizFilter = QueryBizNameFilterTextBox.Text;
+                        
                         LoadQueries();
                         
-                        // 현재 선택된 비즈명 유지
-                        if (BizNameComboBox.SelectedItem is string selectedBizName)
+                        // 🔥 텍스트 필터 복원
+                        GroupNameFilterTextBox.Text = groupFilter;
+                        BizNameFilterTextBox.Text = bizFilter;
+                        QueryBizNameFilterTextBox.Text = queryBizFilter;
+                        
+                        // 🔥 비즈명 선택 복원 및 필터링
+                        if (!string.IsNullOrEmpty(currentBizName))
                         {
-                            FilterQueriesByBizName(selectedBizName);
+                            BizNameComboBox.SelectedItem = currentBizName;
+                            FilterQueriesByBizName(currentBizName);
                         }
+                        
+                        // 🔥 텍스트 필터 적용
+                        ApplyTextFilters();
                     };
                     
                     window.ShowDialog();

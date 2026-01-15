@@ -67,22 +67,13 @@
                   FontSize="12"
                   HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Auto"
-                  ClipboardCopyMode="ExcludeHeader"
+                  ClipboardCopyMode="IncludeHeader"
                   SelectionMode="Extended"
-                  SelectionUnit="CellOrRowHeader"
+                  SelectionUnit="Cell"
                   CanUserResizeColumns="True"
-                  CanUserReorderColumns="False"
-                  CanUserSortColumns="True">
-            <DataGrid.ColumnHeaderStyle>
-                <Style TargetType="DataGridColumnHeader">
-                    <Setter Property="Background" Value="#FF0078D7"/>
-                    <Setter Property="Foreground" Value="White"/>
-                    <Setter Property="FontWeight" Value="Bold"/>
-                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                    <Setter Property="FontSize" Value="12"/>
-                    <Setter Property="Padding" Value="10,8"/>
-                </Style>
-            </DataGrid.ColumnHeaderStyle>
-        </DataGrid>
+                  CanUserReorderColumns="True"
+                  CanUserSortColumns="True"
+                  ColumnHeaderStyle="{StaticResource NerpDataGridColumnHeaderStyle}"
+                  CellStyle="{StaticResource NerpDataGridCellStyle}"/>
     </Grid>
 </Window>

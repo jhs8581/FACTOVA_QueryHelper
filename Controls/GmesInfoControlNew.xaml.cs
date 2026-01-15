@@ -1435,6 +1435,9 @@ namespace FACTOVA_QueryHelper.Controls
         {
             string result = query;
 
+            // 🔥 1단계: AS 뒤의 파라미터는 알리아스로 처리 (@ 기호만 제거)
+            result = ReplaceAliasParameters(result);
+
             // 사업장 선택 정보 가져오기
             var selectedSite = SiteComboBox.SelectedItem as SiteInfo;
             
@@ -1445,7 +1448,7 @@ namespace FACTOVA_QueryHelper.Controls
             string equipLineId = selectedSite?.EquipLineId ?? _sharedData?.Settings.GmesEquipLineId ?? "";
             string division = selectedSite?.Division ?? "";
 
-            // 🔥 DB Link 보호: 파라미터만 치환 (TABLE@DBLINK 형식은 치환하지 않음)
+            // 🔥 2단계: DB Link 보호: 파라미터만 치환 (TABLE@DBLINK 형식은 치환하지 않음)
             result = SafeReplaceParameter(result, "@REPRESENTATIVE_FACTORY_CODE", $"'{factory}'");
             result = SafeReplaceParameter(result, "@ORGANIZATION_ID", $"'{org}'");
             result = SafeReplaceParameter(result, "@FACILITY_CODE", $"'{facility}'");
@@ -1462,11 +1465,96 @@ namespace FACTOVA_QueryHelper.Controls
                         string parameterName = param.Parameter.StartsWith("@") ? param.Parameter : $"@{param.Parameter}";
                         string parameterValue = param.Value ?? "";
                         
+                        // 항상 따옴표 붙여서 치환
+                        string replacementValue = $"'{parameterValue}'";
+                        
                         // 🔥 DB Link 보호
-                        result = SafeReplaceParameter(result, parameterName, $"'{parameterValue}'");
+                        result = SafeReplaceParameter(result, parameterName, replacementValue);
                     }
                 }
             }
+
+            return result;
+        }
+
+        /// <summary>
+        /// AS 뒤의 파라미터를 알리아스로 처리 (파라미터 값을 컬럼명으로 사용)
+        /// 예: 'value' AS @WORK_ORDER_NAME → 'value' AS A11 (파라미터 값이 A11일 때)
+        /// </summary>
+        private string ReplaceAliasParameters(string query)
+        {
+            if (string.IsNullOrEmpty(query))
+                return query;
+
+            // AS 패턴 찾기: AS @PARAMETER_NAME
+            // 정규식: AS\s+@[A-Za-z_][A-Za-z0-9_]*
+            var pattern = @"\bAS\s+(@[A-Za-z_][A-Za-z0-9_]*)";
+            var regex = new System.Text.RegularExpressions.Regex(pattern, 
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+            var result = regex.Replace(query, match =>
+            {
+                var paramWithAt = match.Groups[1].Value;
+                
+                // 🔥 파라미터 목록에서 해당 파라미터 찾기
+                string aliasValue = null;
+                
+                // 표준 파라미터 확인
+                if (paramWithAt.Equals("@REPRESENTATIVE_FACTORY_CODE", StringComparison.OrdinalIgnoreCase))
+                {
+                    var selectedSite = SiteComboBox.SelectedItem as SiteInfo;
+                    aliasValue = selectedSite?.RepresentativeFactory ?? _sharedData?.Settings.GmesFactory ?? "";
+                }
+                else if (paramWithAt.Equals("@ORGANIZATION_ID", StringComparison.OrdinalIgnoreCase))
+                {
+                    var selectedSite = SiteComboBox.SelectedItem as SiteInfo;
+                    aliasValue = selectedSite?.Organization ?? _sharedData?.Settings.GmesOrg ?? "";
+                }
+                else if (paramWithAt.Equals("@FACILITY_CODE", StringComparison.OrdinalIgnoreCase))
+                {
+                    var selectedSite = SiteComboBox.SelectedItem as SiteInfo;
+                    aliasValue = selectedSite?.Facility ?? _sharedData?.Settings.GmesFacility ?? "";
+                }
+                else if (paramWithAt.Equals("@WIP_LINE_ID", StringComparison.OrdinalIgnoreCase))
+                {
+                    var selectedSite = SiteComboBox.SelectedItem as SiteInfo;
+                    aliasValue = selectedSite?.WipLineId ?? _sharedData?.Settings.GmesWipLineId ?? "";
+                }
+                else if (paramWithAt.Equals("@LINE_ID", StringComparison.OrdinalIgnoreCase))
+                {
+                    var selectedSite = SiteComboBox.SelectedItem as SiteInfo;
+                    aliasValue = selectedSite?.EquipLineId ?? _sharedData?.Settings.GmesEquipLineId ?? "";
+                }
+                else if (paramWithAt.Equals("@DIVISION", StringComparison.OrdinalIgnoreCase))
+                {
+                    var selectedSite = SiteComboBox.SelectedItem as SiteInfo;
+                    aliasValue = selectedSite?.Division ?? "";
+                }
+                else if (_parameters != null)
+                {
+                    // 사용자 정의 파라미터에서 찾기
+                    var param = _parameters.FirstOrDefault(p => 
+                        p.Parameter.Equals(paramWithAt, StringComparison.OrdinalIgnoreCase) ||
+                        ("@" + p.Parameter).Equals(paramWithAt, StringComparison.OrdinalIgnoreCase));
+                    
+                    if (param != null)
+                    {
+                        aliasValue = param.Value;
+                    }
+                }
+                
+                // 파라미터 값을 찾았으면 그 값을 알리아스로 사용, 못 찾았으면 @ 제거
+                if (!string.IsNullOrEmpty(aliasValue))
+                {
+                    return "AS " + aliasValue;
+                }
+                else
+                {
+                    // 파라미터를 못 찾은 경우 @ 제거
+                    var paramWithoutAt = paramWithAt.Substring(1);
+                    return "AS " + paramWithoutAt;
+                }
+            });
 
             return result;
         }
@@ -1823,8 +1911,19 @@ namespace FACTOVA_QueryHelper.Controls
                             var dataView = gridInfo.DataGrid.ItemsSource as DataView;
                             if (dataView != null && dataView.Count > 0)
                             {
-                                var queryName = (gridInfo.QueryComboBox.SelectedItem as QueryItem)?.QueryName ?? $"그리드{gridInfo.Index}";
-                                string sheetName = SanitizeSheetName(queryName, gridInfo.Index);
+                                // 🔥 콤보박스의 BizName을 탭 명칭으로 사용
+                                var selectedQuery = gridInfo.QueryComboBox.SelectedItem as QueryItem;
+                                string sheetName;
+                                
+                                if (selectedQuery != null && !string.IsNullOrWhiteSpace(selectedQuery.BizName))
+                                {
+                                    sheetName = SanitizeSheetName(selectedQuery.BizName, gridInfo.Index);
+                                }
+                                else
+                                {
+                                    sheetName = SanitizeSheetName($"그리드{gridInfo.Index}", gridInfo.Index);
+                                }
+                                
                                 AddDataGridToExcel(package, sheetName, dataView.ToTable());
                             }
                         }

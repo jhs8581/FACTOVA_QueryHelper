@@ -279,6 +279,18 @@ namespace FACTOVA_QueryHelper.Database
                     ModifiedDate TEXT DEFAULT CURRENT_TIMESTAMP
                 )";
             paramCommand.ExecuteNonQuery();
+            
+            // 🔥 NoQuotes 컬럼 추가 (파라미터 치환 시 따옴표 제외 여부)
+            try
+            {
+                var alterParamCommand = connection.CreateCommand();
+                alterParamCommand.CommandText = "ALTER TABLE Parameters ADD COLUMN NoQuotes INTEGER DEFAULT 0";
+                alterParamCommand.ExecuteNonQuery();
+            }
+            catch
+            {
+                // 컬럼이 이미 존재하면 무시
+            }
         }
 
         /// <summary>
@@ -340,9 +352,9 @@ namespace FACTOVA_QueryHelper.Database
         }
 
         /// <summary>
-        /// 쿼리를 추가합니다.
+        /// 쿼리를 추가하고 생성된 ID를 반환합니다.
         /// </summary>
-        public void InsertQuery(QueryItem query)
+        public int InsertQuery(QueryItem query)
         {
             using var connection = new SqliteConnection(_connectionString);
             connection.Open();
@@ -359,10 +371,12 @@ namespace FACTOVA_QueryHelper.Database
                     $bizName, $description2, $orderNumber, $queryBizName, $version, $rowColor,
                     $enabledFlag, $notifyFlag, $countGreaterThan, $countEquals, $countLessThan,
                     $columnNames, $columnValues, $excludeFlag, $defaultFlag
-                )";
+                );
+                SELECT last_insert_rowid();";
 
             AddQueryParameters(command, query);
-            command.ExecuteNonQuery();
+            var newId = Convert.ToInt32(command.ExecuteScalar());
+            return newId;
         }
 
         /// <summary>

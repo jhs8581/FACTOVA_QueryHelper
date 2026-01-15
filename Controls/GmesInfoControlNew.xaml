@@ -225,7 +225,7 @@
                             <!-- 파라미터 컬럼 (편집 가능) -->
                             <DataGridTextColumn Header="파라미터" 
                                                 Binding="{Binding Parameter, UpdateSourceTrigger=PropertyChanged}" 
-                                                Width="180"
+                                                Width="130"
                                                 IsReadOnly="False">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
@@ -259,7 +259,7 @@
                             <!-- 값 컬럼 (편집 가능) -->
                             <DataGridTextColumn Header="값" 
                                                 Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}" 
-                                                Width="180"
+                                                Width="130"
                                                 IsReadOnly="False">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
@@ -325,7 +325,7 @@
                         Padding="10"
                         Margin="5,0,5,10">
                     <StackPanel Orientation="Vertical">
-                        <!-- 첫 번째 줄: 폰트 크기 조절 + Excel 다운로드 -->
+                        <!-- 첫 번째 줄: 폰트 크기 조절 + 쿼리 로드 + Excel 다운로드 -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,10">
                             <!-- 폰트 크기 조절 -->
                             <Border BorderBrush="#FF0078D7" 
@@ -370,6 +370,24 @@
                                 </StackPanel>
                             </Border>
 
+                            <!-- 쿼리 로드 버튼 -->
+                            <Button x:Name="LoadQueriesButton" 
+                                    Width="120"
+                                    Height="42"
+                                    Click="LoadQueriesButton_Click"
+                                    Background="#FF28A745" 
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    FontWeight="Bold"
+                                    FontSize="12"
+                                    Margin="0,0,10,0">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <TextBlock Text="🔄" FontSize="14" Margin="0,0,5,0"/>
+                                    <TextBlock Text="쿼리 로드"/>
+                                </StackPanel>
+                            </Button>
+
                             <!-- Excel 다운로드 버튼 -->
                             <Button x:Name="ExportToExcelButton" 
                                     Height="42"
@@ -388,7 +406,7 @@
                             </Button>
                         </StackPanel>
 
-                        <!-- 두 번째 줄: 기준정보 쿼리 선택 + 전체 조회 버튼 + 쿼리 로드 버튼 + 파라미터 확인 버튼 -->
+                        <!-- 두 번째 줄: 기준정보 쿼리 선택 + 파라미터 확인 + 전체 조회 -->
                         <Border BorderBrush="#FF28A745" 
                                 BorderThickness="2" 
                                 CornerRadius="8" 
@@ -397,7 +415,7 @@
                                 <TextBlock Text="기준정보:" 
                                            VerticalAlignment="Center" 
                                            FontWeight="Bold"
-                                           Margin="0,0,10,0"/>
+                                            Margin="0,0,10,0"/>
                                 <ComboBox x:Name="QuerySelectComboBox" 
                                           Width="300"
                                           Height="32"
@@ -417,6 +435,26 @@
                                         ToolTip="선택 취소"
                                         Margin="0,0,10,0"/>
                                 
+                                <!-- 파라미터 확인 버튼 (전체 조회 왼쪽으로 이동) -->
+                                <Button x:Name="ValidateParametersButton" 
+                                        Width="140"
+                                        Height="32"
+                                        Click="ValidateParametersButton_Click"
+                                        Background="#FF0078D7" 
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        Cursor="Hand"
+                                        FontWeight="Bold"
+                                        FontSize="12"
+                                        ToolTip="선택된 쿼리의 파라미터를 검증합니다"
+                                        Margin="0,0,10,0">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <TextBlock Text="✔️" FontSize="14" Margin="0,0,5,0"/>
+                                        <TextBlock Text="파라미터 확인"/>
+                                
+                                    </StackPanel>
+                                </Button>
+                                
                                 <!-- 전체 조회 버튼 -->
                                 <Button x:Name="ExecuteAllGridsButton" 
                                         Width="120"
@@ -428,50 +466,16 @@
                                         FontWeight="Bold"
                                         FontSize="12"
                                         Click="ExecuteAllGridsButton_Click"
-                                        Margin="0,0,10,0">
+                                        Margin="0,0,0,0">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                         <TextBlock Text="⚡" FontSize="14" Margin="0,0,5,0"/>
                                         <TextBlock Text="전체 조회"/>
                                     </StackPanel>
                                 </Button>
-                                
-                                <!-- 쿼리 로드 버튼 -->
-                                <Button x:Name="LoadQueriesButton" 
-                                        Width="120"
-                                        Height="32"
-                                        Click="LoadQueriesButton_Click"
-                                        Background="#FF28A745" 
-                                        Foreground="White"
-                                        BorderThickness="0"
-                                        Cursor="Hand"
-                                        FontWeight="Bold"
-                                        FontSize="12"
-                                        Margin="0,0,10,0">
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                        <TextBlock Text="🔄" FontSize="14" Margin="0,0,5,0"/>
-                                        <TextBlock Text="쿼리 로드"/>
-                                    </StackPanel>
-                                </Button>
-                                
-                                <!-- 파라미터 확인 버튼 -->
-                                <Button x:Name="ValidateParametersButton" 
-                                        Width="140"
-                                        Height="32"
-                                        Click="ValidateParametersButton_Click"
-                                        Background="#FF0078D7" 
-                                        Foreground="White"
-                                        BorderThickness="0"
-                                        Cursor="Hand"
-                                        FontWeight="Bold"
-                                        FontSize="12"
-                                        ToolTip="선택된 쿼리의 파라미터를 검증합니다">
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                        <TextBlock Text="✔️" FontSize="14" Margin="0,0,5,0"/>
-                                        <TextBlock Text="파라미터 확인"/>
-                                    </StackPanel>
-                                </Button>
                             </StackPanel>
                         </Border>
+
+                        <!-- Excel 다운로드 버튼 (첫 번째 줄로 이동됨) -->
                     </StackPanel>
                 </Border>
 
