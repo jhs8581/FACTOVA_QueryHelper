@@ -139,6 +139,10 @@ namespace FACTOVA_QueryHelper.Controls
                 
                 // 🔥 편집 모드 Border 숨김
                 EditModeBorder.Visibility = Visibility.Collapsed;
+                
+                // 🔥 DataGrid 강제 새로고침 (ComboBox 바인딩 문제 해결)
+                SiteDataGrid.Items.Refresh();
+                System.Diagnostics.Debug.WriteLine($"✅ 사업장 로드 완료: {_sites.Count}개, DataGrid 새로고침 완료");
             }
             catch (Exception ex)
             {

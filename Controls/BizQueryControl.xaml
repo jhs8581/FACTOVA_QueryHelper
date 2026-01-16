@@ -209,27 +209,16 @@
                           Grid.Row="1"
                           AutoGenerateColumns="False"
                           SelectionMode="Single"
-                          CanUserSortColumns="True"
-                          CanUserResizeColumns="True"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          IsReadOnly="True"
-                          AlternationCount="2"
-                          GridLinesVisibility="All"
-                          HeadersVisibility="All"
-                          FontSize="11"
-                          BorderThickness="1"
-                          BorderBrush="#FFE0E0E0"
-                          Background="White"
                           SelectionChanged="QueriesDataGrid_SelectionChanged">
                     
+                    <!-- 🔥 RowColor 바인딩을 위한 커스텀 RowStyle -->
                     <DataGrid.RowStyle>
                         <Style TargetType="DataGridRow">
                             <!-- 🔥 RowColor를 Background에 바인딩 (Converter 사용) -->
                             <Setter Property="Background" Value="{Binding RowColor, Converter={StaticResource RowColorConverter}}"/>
                             
                             <Style.Triggers>
-                                <!-- 🔥 RowColor가 비어있을 때 AlternatingRowBackground 사용 -->
+                                <!-- 🔥 RowColor가 비어있을 때 Transparent -->
                                 <DataTrigger Binding="{Binding RowColor}" Value="">
                                     <Setter Property="Background" Value="Transparent"/>
                                 </DataTrigger>
@@ -238,33 +227,15 @@
                                 </DataTrigger>
                                 
                                 <!-- 마우스 오버 시 커서 변경 -->
+                                <Trigger Property="AlternationIndex" Value="1">
+                                    <Setter Property="Background" Value="#F5F5F5"/>
+                                </Trigger>
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter Property="Cursor" Value="Hand"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
                     </DataGrid.RowStyle>
-                    
-                    <DataGrid.ColumnHeaderStyle>
-                        <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="Background" Value="#FF0078D7"/>
-                            <Setter Property="Foreground" Value="White"/>
-                            <Setter Property="FontWeight" Value="Bold"/>
-                            <Setter Property="Height" Value="40"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                            <Setter Property="BorderBrush" Value="#FF0056A0"/>
-                            <Setter Property="BorderThickness" Value="0,0,1,0"/>
-                            <Setter Property="Padding" Value="10,8"/>
-                        </Style>
-                    </DataGrid.ColumnHeaderStyle>
-                    
-                    <DataGrid.CellStyle>
-                        <Style TargetType="DataGridCell">
-                            <Setter Property="BorderBrush" Value="#FFE0E0E0"/>
-                            <Setter Property="BorderThickness" Value="0,0,1,0"/>
-                            <Setter Property="Padding" Value="10,8"/>
-                        </Style>
-                    </DataGrid.CellStyle>
                     
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="순번" Binding="{Binding OrderNumber}" Width="80">

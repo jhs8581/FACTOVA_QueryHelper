@@ -9,6 +9,7 @@ using System.Windows.Media;
 using FACTOVA_QueryHelper.Database;
 using FACTOVA_QueryHelper.Models;
 using FACTOVA_QueryHelper.Services; // 🔥 추가
+using FACTOVA_QueryHelper.Utilities; // 🔥 DataGridHelper 추가
 using OfficeOpenXml;
 using System.IO;
 using Microsoft.Win32;
@@ -53,6 +54,9 @@ namespace FACTOVA_QueryHelper.Controls
             PlanInfoDataGrid.AutoGeneratingColumn += DataGrid_AutoGeneratingColumn;
             PlanInfoDataGrid.LoadingRow += DataGrid_LoadingRow;
             PlanInfoDataGrid.SelectionChanged += PlanInfoDataGrid_SelectionChanged;
+            
+            // 🔥 행 번호 표시 활성화 (NERP 스타일)
+            DataGridHelper.EnableRowNumbersWithNerpStyle(PlanInfoDataGrid);
             
             // 🔥 Ctrl+C 키보드 이벤트 핸들러 추가
             PlanInfoDataGrid.PreviewKeyDown += (s, e) =>
@@ -784,50 +788,17 @@ namespace FACTOVA_QueryHelper.Controls
                 CanUserAddRows = false,
                 CanUserDeleteRows = false,
                 CanUserReorderColumns = true,
-                CanUserResizeColumns = true,
-                AlternatingRowBackground = new SolidColorBrush(Color.FromRgb(245, 245, 245)),
-                GridLinesVisibility = DataGridGridLinesVisibility.All,
-                SelectionMode = DataGridSelectionMode.Extended,
-                SelectionUnit = DataGridSelectionUnit.CellOrRowHeader
+                CanUserResizeColumns = true
+                // 🔥 나머지 스타일은 App.xaml의 암묵적 스타일 자동 적용
             };
             
-            // 🔥 NERP 스타일 헤더 (DataGrid.Resources에 추가)
-            var headerStyle = new Style(typeof(System.Windows.Controls.Primitives.DataGridColumnHeader));
-            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BackgroundProperty, 
-                new SolidColorBrush(Color.FromRgb(240, 248, 255)))); // #F0F8FF
-            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.ForegroundProperty, 
-                new SolidColorBrush(Color.FromRgb(44, 90, 160)))); // #2C5AA0
-            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.FontWeightProperty, 
-                FontWeights.Bold));
-            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.PaddingProperty, 
-                new Thickness(8, 5, 8, 5)));
-            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BorderBrushProperty, 
-                new SolidColorBrush(Color.FromRgb(176, 196, 222)))); // #B0C4DE
-            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.BorderThicknessProperty, 
-                new Thickness(0, 0, 1, 1)));
-            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.HorizontalContentAlignmentProperty, 
-                HorizontalAlignment.Left));
-            headerStyle.Setters.Add(new Setter(System.Windows.Controls.Primitives.DataGridColumnHeader.VerticalContentAlignmentProperty, 
-                VerticalAlignment.Center));
-            dataGrid.ColumnHeaderStyle = headerStyle;
-            
-            // 🔥 NERP 스타일 셀 (선택 시 연한 파란색 + 검정 글자)
-            var cellStyle = new Style(typeof(DataGridCell));
-            cellStyle.Setters.Add(new Setter(DataGridCell.PaddingProperty, new Thickness(5, 3, 5, 3)));
-            
-            var selectedTrigger = new System.Windows.Trigger
-            {
-                Property = DataGridCell.IsSelectedProperty,
-                Value = true
-            };
-            selectedTrigger.Setters.Add(new Setter(DataGridCell.BackgroundProperty, 
-                new SolidColorBrush(Color.FromRgb(227, 242, 253)))); // #E3F2FD
-            selectedTrigger.Setters.Add(new Setter(DataGridCell.ForegroundProperty, Brushes.Black));
-            cellStyle.Triggers.Add(selectedTrigger);
-            dataGrid.CellStyle = cellStyle;
+            // 🔥 App.xaml 스타일 자동 적용 (헤더, 셀, 행 스타일 코드 삭제)
             
             dataGrid.AutoGeneratingColumn += DataGrid_AutoGeneratingColumn;
             dataGrid.LoadingRow += DataGrid_LoadingRow;
+            
+            // 🔥 행 번호 표시 활성화 (FACTOVA Grid 스타일)
+            DataGridHelper.EnableRowNumbers(dataGrid);
             
             dataGrid.PreviewKeyDown += (s, e) =>
             {

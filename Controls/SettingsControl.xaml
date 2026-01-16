@@ -236,8 +236,8 @@
                 </ScrollViewer>
             </TabItem>
 
-            <!-- 업데이트 설정 탭 -->
-            <TabItem>
+            <!-- 업데이트 설정 탭 (숨김) -->
+            <TabItem Visibility="Collapsed">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="🔄" FontSize="16" Margin="0,0,8,0"/>

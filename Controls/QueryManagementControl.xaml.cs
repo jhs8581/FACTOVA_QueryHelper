@@ -13,6 +13,7 @@ using System.Windows.Shapes;
 using FACTOVA_QueryHelper.Database;
 using FACTOVA_QueryHelper.Converters;
 using FACTOVA_QueryHelper.Models;
+using FACTOVA_QueryHelper.Utilities; // 🔥 DataGridHelper 추가
 
 namespace FACTOVA_QueryHelper.Controls
 {
@@ -741,6 +742,7 @@ namespace FACTOVA_QueryHelper.Controls
             var dataGrid = new DataGrid
             {
                 AutoGenerateColumns = false,
+                IsReadOnly = false, // 🔥 편집 가능 (App.xaml 기본값 덮어쓰기)
                 SelectionMode = DataGridSelectionMode.Single,
                 CanUserSortColumns = true,
                 CanUserResizeColumns = true,
@@ -762,28 +764,10 @@ namespace FACTOVA_QueryHelper.Controls
             dataGrid.CellEditEnding += QueriesDataGrid_CellEditEnding;
             dataGrid.LoadingRow += QueriesDataGrid_LoadingRow; // 🔥 행 색상 적용
 
-            // 헤더 스타일
-            var headerStyle = new Style(typeof(DataGridColumnHeader));
-            headerStyle.Setters.Add(new Setter(DataGridColumnHeader.BackgroundProperty, 
-                new SolidColorBrush(Color.FromRgb(0, 120, 215))));
-            headerStyle.Setters.Add(new Setter(DataGridColumnHeader.ForegroundProperty, Brushes.White));
-            headerStyle.Setters.Add(new Setter(DataGridColumnHeader.FontWeightProperty, FontWeights.Bold));
-            headerStyle.Setters.Add(new Setter(DataGridColumnHeader.HeightProperty, 35.0));
-            headerStyle.Setters.Add(new Setter(DataGridColumnHeader.HorizontalContentAlignmentProperty, 
-                HorizontalAlignment.Center));
-            headerStyle.Setters.Add(new Setter(DataGridColumnHeader.BorderBrushProperty, 
-                new SolidColorBrush(Color.FromRgb(0, 86, 160))));
-            headerStyle.Setters.Add(new Setter(DataGridColumnHeader.BorderThicknessProperty, 
-                new Thickness(0, 0, 1, 0)));
-            dataGrid.ColumnHeaderStyle = headerStyle;
+            // 🔥 행 번호 표시 활성화 (FACTOVA Grid 스타일 자동 적용)
+            DataGridHelper.EnableRowNumbers(dataGrid);
 
-            // 셀 스타일
-            var cellStyle = new Style(typeof(DataGridCell));
-            cellStyle.Setters.Add(new Setter(DataGridCell.BorderBrushProperty, 
-                new SolidColorBrush(Color.FromRgb(224, 224, 224))));
-            cellStyle.Setters.Add(new Setter(DataGridCell.BorderThicknessProperty, new Thickness(0, 0, 1, 0)));
-            cellStyle.Setters.Add(new Setter(DataGridCell.PaddingProperty, new Thickness(8, 5, 8, 5)));
-            dataGrid.CellStyle = cellStyle;
+            // 🔥 스타일은 App.xaml의 암묵적 스타일 자동 적용 (코드 삭제)
 
             // 컬럼 정의 - tabIndex 전달
             AddDataGridColumns(dataGrid, queryType, tabIndex);

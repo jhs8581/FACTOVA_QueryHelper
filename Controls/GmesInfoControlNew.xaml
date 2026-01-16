@@ -218,14 +218,13 @@
                               CanUserResizeColumns="True"
                               CanUserReorderColumns="False"
                               CanUserSortColumns="False"
-                              SelectionChanged="PlanInfoDataGrid_SelectionChanged"
-                              ColumnHeaderStyle="{StaticResource NerpDataGridColumnHeaderStyle}"
-                              CellStyle="{StaticResource NerpDataGridCellStyle}">
+                              SelectionChanged="PlanInfoDataGrid_SelectionChanged">
+                        <!-- 🔥 FACTOVA Grid 스타일 자동 적용 (ColumnHeaderStyle, CellStyle 제거) -->
                         <DataGrid.Columns>
                             <!-- 파라미터 컬럼 (편집 가능) -->
                             <DataGridTextColumn Header="파라미터" 
                                                 Binding="{Binding Parameter, UpdateSourceTrigger=PropertyChanged}" 
-                                                Width="130"
+                                                Width="190"
                                                 IsReadOnly="False">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
@@ -259,7 +258,7 @@
                             <!-- 값 컬럼 (편집 가능) -->
                             <DataGridTextColumn Header="값" 
                                                 Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}" 
-                                                Width="130"
+                                                Width="140"
                                                 IsReadOnly="False">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">

@@ -85,6 +85,7 @@
         <Border Grid.Row="2" BorderThickness="1" BorderBrush="#FFCCCCCC" CornerRadius="5">
             <DataGrid x:Name="SiteDataGrid" 
                       AutoGenerateColumns="False"
+                      IsReadOnly="False"
                       CanUserAddRows="False"
                       CanUserDeleteRows="False"
                       SelectionMode="Single"
@@ -95,20 +96,10 @@
                       FontSize="11"
                       CellEditEnding="SiteDataGrid_CellEditEnding"
                       SelectionChanged="SiteDataGrid_SelectionChanged">
-                
+                <!-- 🔥 FACTOVA Grid 스타일 자동 적용 + IsReadOnly="False"로 편집 가능 -->
                 <DataGrid.Columns>
                     <!-- ID -->
                     <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60" IsReadOnly="True">
-                        <DataGridTextColumn.HeaderStyle>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="#FF2196F3"/>
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="FontSize" Value="11"/>
-                                <Setter Property="Padding" Value="10,5"/>
-                                <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                            </Style>
-                        </DataGridTextColumn.HeaderStyle>
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -120,111 +111,31 @@
                     </DataGridTextColumn>
 
                     <!-- 사업장명 (편집 가능) -->
-                    <DataGridTextColumn Header="사업장명" Binding="{Binding SiteName, UpdateSourceTrigger=PropertyChanged}" Width="120" IsReadOnly="False">
-                        <DataGridTextColumn.HeaderStyle>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="#FF2196F3"/>
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="FontSize" Value="11"/>
-                                <Setter Property="Padding" Value="10,5"/>
-                            </Style>
-                        </DataGridTextColumn.HeaderStyle>
-                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="사업장명" Binding="{Binding SiteName, UpdateSourceTrigger=PropertyChanged}" Width="120" IsReadOnly="False"/>
 
                     <!-- 대표공장 (편집 가능) -->
-                    <DataGridTextColumn Header="대표공장" Binding="{Binding RepresentativeFactory, UpdateSourceTrigger=PropertyChanged}" Width="*" IsReadOnly="False">
-                        <DataGridTextColumn.HeaderStyle>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="#FF2196F3"/>
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="FontSize" Value="11"/>
-                                <Setter Property="Padding" Value="10,5"/>
-                            </Style>
-                        </DataGridTextColumn.HeaderStyle>
-                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="대표공장" Binding="{Binding RepresentativeFactory, UpdateSourceTrigger=PropertyChanged}" Width="*" IsReadOnly="False"/>
 
                     <!-- ORG (편집 가능) -->
-                    <DataGridTextColumn Header="ORG" Binding="{Binding Organization, UpdateSourceTrigger=PropertyChanged}" Width="*" IsReadOnly="False">
-                        <DataGridTextColumn.HeaderStyle>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="#FF2196F3"/>
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="FontSize" Value="11"/>
-                                <Setter Property="Padding" Value="10,5"/>
-                            </Style>
-                        </DataGridTextColumn.HeaderStyle>
-                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="ORG" Binding="{Binding Organization, UpdateSourceTrigger=PropertyChanged}" Width="*" IsReadOnly="False"/>
 
                     <!-- FACILITY (편집 가능) -->
-                    <DataGridTextColumn Header="FACILITY" Binding="{Binding Facility, UpdateSourceTrigger=PropertyChanged}" Width="*" IsReadOnly="False">
-                        <DataGridTextColumn.HeaderStyle>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="#FF2196F3"/>
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="FontSize" Value="11"/>
-                                <Setter Property="Padding" Value="10,5"/>
-                            </Style>
-                        </DataGridTextColumn.HeaderStyle>
-                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="FACILITY" Binding="{Binding Facility, UpdateSourceTrigger=PropertyChanged}" Width="*" IsReadOnly="False"/>
 
                     <!-- 윕라인 ID (편집 가능) -->
-                    <DataGridTextColumn Header="윕라인 ID" Binding="{Binding WipLineId, UpdateSourceTrigger=PropertyChanged}" Width="*" IsReadOnly="False">
-                        <DataGridTextColumn.HeaderStyle>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="#FF2196F3"/>
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="FontSize" Value="11"/>
-                                <Setter Property="Padding" Value="10,5"/>
-                            </Style>
-                        </DataGridTextColumn.HeaderStyle>
-                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="윕라인 ID" Binding="{Binding WipLineId, UpdateSourceTrigger=PropertyChanged}" Width="*" IsReadOnly="False"/>
 
                     <!-- 설비라인 ID (편집 가능) -->
-                    <DataGridTextColumn Header="설비라인 ID" Binding="{Binding EquipLineId, UpdateSourceTrigger=PropertyChanged}" Width="*" IsReadOnly="False">
-                        <DataGridTextColumn.HeaderStyle>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="#FF2196F3"/>
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="FontSize" Value="11"/>
-                                <Setter Property="Padding" Value="10,5"/>
-                            </Style>
-                        </DataGridTextColumn.HeaderStyle>
-                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="설비라인 ID" Binding="{Binding EquipLineId, UpdateSourceTrigger=PropertyChanged}" Width="*" IsReadOnly="False"/>
 
                     <!-- DIVISION (편집 가능) -->
-                    <DataGridTextColumn Header="DIVISION" Binding="{Binding Division, UpdateSourceTrigger=PropertyChanged}" Width="*" IsReadOnly="False">
-                        <DataGridTextColumn.HeaderStyle>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="#FF2196F3"/>
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="FontSize" Value="11"/>
-                                <Setter Property="Padding" Value="10,5"/>
-                            </Style>
-                        </DataGridTextColumn.HeaderStyle>
-                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="DIVISION" Binding="{Binding Division, UpdateSourceTrigger=PropertyChanged}" Width="*" IsReadOnly="False"/>
 
                     <!-- 🔥 TNS (1.0) - 접속 정보 ComboBox -->
                     <DataGridComboBoxColumn Header="TNS (1.0)" 
                                             SelectedItemBinding="{Binding Tns10ConnectionInfo, UpdateSourceTrigger=PropertyChanged}" 
                                             DisplayMemberPath="DisplayName"
                                             Width="250">
-                        <DataGridComboBoxColumn.HeaderStyle>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="#FFFF9800"/>
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="FontSize" Value="11"/>
-                                <Setter Property="Padding" Value="10,5"/>
-                                <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                            </Style>
-                        </DataGridComboBoxColumn.HeaderStyle>
                         <DataGridComboBoxColumn.ElementStyle>
                             <Style TargetType="ComboBox">
                                 <Setter Property="IsEditable" Value="False"/>
@@ -242,16 +153,6 @@
                                             SelectedItemBinding="{Binding Tns20ConnectionInfo, UpdateSourceTrigger=PropertyChanged}" 
                                             DisplayMemberPath="DisplayName"
                                             Width="250">
-                        <DataGridComboBoxColumn.HeaderStyle>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="#FF4CAF50"/>
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="FontSize" Value="11"/>
-                                <Setter Property="Padding" Value="10,5"/>
-                                <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                            </Style>
-                        </DataGridComboBoxColumn.HeaderStyle>
                         <DataGridComboBoxColumn.ElementStyle>
                             <Style TargetType="ComboBox">
                                 <Setter Property="IsEditable" Value="False"/>
@@ -266,16 +167,6 @@
 
                     <!-- 🔥 표시순번 (기존 IsDefault를 숫자로 재사용) -->
                     <DataGridTextColumn Header="표시순번" Binding="{Binding IsDefault, UpdateSourceTrigger=PropertyChanged}" Width="80" IsReadOnly="False">
-                        <DataGridTextColumn.HeaderStyle>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="#FF2196F3"/>
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="FontSize" Value="11"/>
-                                <Setter Property="Padding" Value="10,5"/>
-                                <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                            </Style>
-                        </DataGridTextColumn.HeaderStyle>
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="HorizontalAlignment" Value="Center"/>

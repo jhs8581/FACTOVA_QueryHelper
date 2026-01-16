@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using FACTOVA_QueryHelper.Database;
+using FACTOVA_QueryHelper.Utilities; // 🔥 DataGridHelper 추가
 
 namespace FACTOVA_QueryHelper.Controls
 {
@@ -23,6 +24,9 @@ namespace FACTOVA_QueryHelper.Controls
         public BizQueryControl()
         {
             InitializeComponent();
+            
+            // 🔥 행 번호 표시 활성화
+            DataGridHelper.EnableRowNumbers(QueriesDataGrid);
         }
 
         /// <summary>

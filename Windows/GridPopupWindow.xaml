@@ -57,23 +57,8 @@
         <DataGrid x:Name="PopupDataGrid" 
                   Grid.Row="1"
                   AutoGenerateColumns="True"
-                  IsReadOnly="True"
-                  CanUserAddRows="False"
-                  AlternatingRowBackground="#FFF8F9FA"
-                  GridLinesVisibility="All"
-                  HeadersVisibility="All"
-                  BorderThickness="1"
-                  BorderBrush="#FFE0E0E0"
-                  FontSize="12"
-                  HorizontalScrollBarVisibility="Auto"
-                  VerticalScrollBarVisibility="Auto"
                   ClipboardCopyMode="IncludeHeader"
                   SelectionMode="Extended"
-                  SelectionUnit="Cell"
-                  CanUserResizeColumns="True"
-                  CanUserReorderColumns="True"
-                  CanUserSortColumns="True"
-                  ColumnHeaderStyle="{StaticResource NerpDataGridColumnHeaderStyle}"
-                  CellStyle="{StaticResource NerpDataGridCellStyle}"/>
+                  SelectionUnit="Cell"/>
     </Grid>
 </Window>

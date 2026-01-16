@@ -4,45 +4,12 @@
              xmlns:local="clr-namespace:FACTOVA_QueryHelper"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <!-- 🔥 NERP 스타일 공통 DataGrid 헤더 스타일 -->
-        <Style x:Key="NerpDataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#F0F8FF"/>
-            <Setter Property="Foreground" Value="#2C5AA0"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Padding" Value="8,5"/>
-            <Setter Property="BorderBrush" Value="#B0C4DE"/>
-            <Setter Property="BorderThickness" Value="0,0,1,1"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
+        <!-- ========================================
+             🎨 FACTOVA Grid 스타일 (전체 기본 스타일)
+             ======================================== -->
         
-        <!-- 🔥 NERP 스타일 공통 DataGrid 셀 스타일 -->
-        <Style x:Key="NerpDataGridCellStyle" TargetType="DataGridCell">
-            <Setter Property="Padding" Value="5,3"/>
-            <Setter Property="BorderBrush" Value="#E0E0E0"/>
-            <Setter Property="BorderThickness" Value="0,0,1,0"/>
-            <Setter Property="Foreground" Value="Black"/>
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="#E3F2FD"/>
-                    <Setter Property="Foreground" Value="Black"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-        
-        <!-- 🔥 NERP 스타일 공통 DataGrid 행 스타일 -->
-        <Style x:Key="NerpDataGridRowStyle" TargetType="DataGridRow">
-            <Setter Property="Background" Value="White"/>
-            <Style.Triggers>
-                <Trigger Property="AlternationIndex" Value="1">
-                    <Setter Property="Background" Value="#F5F5F5"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-        
-        <!-- 🔥 NERP 스타일 전체 DataGrid 스타일 -->
-        <Style x:Key="NerpDataGridStyle" TargetType="DataGrid">
+        <!-- 🔥 기본 DataGrid 스타일 (암묵적 스타일 - 모든 DataGrid에 자동 적용) -->
+        <Style TargetType="DataGrid">
             <Setter Property="AutoGenerateColumns" Value="True"/>
             <Setter Property="IsReadOnly" Value="True"/>
             <Setter Property="CanUserAddRows" Value="False"/>
@@ -56,10 +23,102 @@
             <Setter Property="SelectionUnit" Value="CellOrRowHeader"/>
             <Setter Property="BorderBrush" Value="#E0E0E0"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="ColumnWidth" Value="Auto"/>
-            <Setter Property="MinColumnWidth" Value="80"/>
-            <Setter Property="RowStyle" Value="{StaticResource NerpDataGridRowStyle}"/>
-            <Setter Property="CellStyle" Value="{StaticResource NerpDataGridCellStyle}"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="HeadersVisibility" Value="All"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="RowHeight" Value="30"/>
+        </Style>
+        
+        <!-- 🔥 기본 DataGrid 헤더 스타일 (암묵적) -->
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#F0F8FF"/>
+            <Setter Property="Foreground" Value="#2C5AA0"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="8,8"/>
+            <Setter Property="BorderBrush" Value="#B0C4DE"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Height" Value="35"/>
+        </Style>
+        
+        <!-- 🔥 기본 DataGrid 셀 스타일 (암묵적) -->
+        <Style TargetType="DataGridCell">
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="0,0,1,0"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#E3F2FD"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- 🔥 기본 DataGrid 행 스타일 (암묵적) -->
+        <Style TargetType="DataGridRow">
+            <Setter Property="Background" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="AlternationIndex" Value="1">
+                    <Setter Property="Background" Value="#F5F5F5"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Cursor" Value="Hand"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- 🔥 기본 DataGrid 행 헤더 스타일 (암묵적 - 행 번호용) -->
+        <Style TargetType="DataGridRowHeader">
+            <Setter Property="Background" Value="#F0F8FF"/>
+            <Setter Property="Foreground" Value="#2C5AA0"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Width" Value="45"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="BorderBrush" Value="#B0C4DE"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+            <Setter Property="Padding" Value="5,3"/>
+        </Style>
+        
+        <!-- ========================================
+             🔧 Named 스타일 (특수한 경우에만 사용)
+             ======================================== -->
+        
+        <!-- 🔥 NERP 스타일 (기존 호환성 유지용) -->
+        <Style x:Key="NerpDataGridColumnHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}"/>
+        <Style x:Key="NerpDataGridCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}"/>
+        <Style x:Key="NerpDataGridRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}"/>
+        <Style x:Key="NerpDataGridStyle" TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}"/>
+        
+        <!-- 🔥 BizQuery 스타일 (진한 파란색 - 특수한 경우에만) -->
+        <Style x:Key="BizQueryDataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#FF0078D7"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="BorderBrush" Value="#FF0056A0"/>
+            <Setter Property="BorderThickness" Value="0,0,1,0"/>
+            <Setter Property="Padding" Value="10,8"/>
+        </Style>
+        
+        <Style x:Key="BizQueryDataGridCellStyle" TargetType="DataGridCell">
+            <Setter Property="BorderBrush" Value="#FFE0E0E0"/>
+            <Setter Property="BorderThickness" Value="0,0,1,0"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        
+        <Style x:Key="BizQueryDataGridRowStyle" TargetType="DataGridRow">
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Cursor" Value="Hand"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
     </Application.Resources>
 </Application>

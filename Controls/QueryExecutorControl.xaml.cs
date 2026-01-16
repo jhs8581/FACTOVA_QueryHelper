@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using FACTOVA_QueryHelper.Models;
 using FACTOVA_QueryHelper.Services;
+using FACTOVA_QueryHelper.Utilities; // 🔥 DataGridHelper 추가
 
 namespace FACTOVA_QueryHelper.Controls
 {
@@ -41,6 +42,10 @@ namespace FACTOVA_QueryHelper.Controls
             
             BindVariablesDataGrid.ItemsSource = _bindVariables;
             ConnectionComboBox.ItemsSource = _connectionInfos;
+            
+            // 🔥 행 번호 표시 활성화
+            DataGridHelper.EnableRowNumbers(QueryResultDataGrid);
+            DataGridHelper.EnableRowNumbers(BindVariablesDataGrid);
             
             // 🔥 ConnectionInfo 로드는 SetSharedDataContext 이후로 이동
             // LoadConnectionInfos();

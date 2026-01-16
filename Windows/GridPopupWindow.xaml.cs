@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Data;
+using FACTOVA_QueryHelper.Utilities; // 🔥 DataGridHelper 추가
 
 namespace FACTOVA_QueryHelper.Windows
 {
@@ -14,8 +15,12 @@ namespace FACTOVA_QueryHelper.Windows
             InitializeComponent();
             
             PopupDataGrid.AutoGeneratingColumn += DataGrid_AutoGeneratingColumn;
-            PopupDataGrid.LoadingRow += DataGrid_LoadingRow;
             PopupDataGrid.PreviewKeyDown += DataGrid_PreviewKeyDown;
+            
+            // 🔥 LoadingRow 이벤트 등록 (CHK 컬럼 처리용)
+            PopupDataGrid.LoadingRow += DataGrid_LoadingRow;
+            
+            // 🔥 행 번호는 SetDataSource에서 데이터 바인딩 후 설정
         }
 
         public void SetTitle(string title)
@@ -32,6 +37,9 @@ namespace FACTOVA_QueryHelper.Windows
         public void SetDataSource(DataView dataView)
         {
             PopupDataGrid.ItemsSource = dataView;
+            
+            // 🔥 데이터 바인딩 후 행 번호 활성화 (FACTOVA Grid 스타일)
+            DataGridHelper.EnableRowNumbers(PopupDataGrid);
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
@@ -103,6 +111,9 @@ namespace FACTOVA_QueryHelper.Windows
 
         private void DataGrid_LoadingRow(object? sender, DataGridRowEventArgs e)
         {
+            // 🔥 행 번호는 DataGridHelper가 이미 설정했으므로 유지
+            // CHK 컬럼의 값에 따라 배경색만 변경
+            
             if (e.Row.Item is DataRowView rowView)
             {
                 var row = rowView.Row;
@@ -128,6 +139,8 @@ namespace FACTOVA_QueryHelper.Windows
                     e.Row.ClearValue(Control.ForegroundProperty);
                 }
             }
+            
+            // 🔥 행 번호는 Header에 이미 설정되어 있으므로 건드리지 않음!
         }
 
         private void DataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
