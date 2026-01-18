@@ -39,6 +39,7 @@
                     <ComboBox x:Name="ConnectionComboBox" 
                               Grid.Column="1"
                               DisplayMemberPath="DisplayName"
+                              VerticalContentAlignment="Center"
                               VerticalAlignment="Center"/>
                 </Grid>
             </Border>

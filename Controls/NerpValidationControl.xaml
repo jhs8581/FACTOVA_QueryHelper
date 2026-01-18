@@ -39,6 +39,7 @@
                     <ComboBox x:Name="QueryGroupComboBox" 
                               Grid.Column="1"
                               VerticalAlignment="Center"
+                              VerticalContentAlignment="Center"
                               FontSize="11"
                               SelectionChanged="QueryGroupComboBox_SelectionChanged"/>
                     
@@ -82,6 +83,7 @@
                               IsEditable="True"
                               IsReadOnly="True"
                               VerticalAlignment="Center"
+                              VerticalContentAlignment="Center"
                               FontSize="11"
                               DropDownClosed="ConnectionMultiComboBox_DropDownClosed">
                         <ComboBox.ItemTemplate>

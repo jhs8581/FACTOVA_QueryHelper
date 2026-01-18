@@ -790,7 +790,8 @@ namespace FACTOVA_QueryHelper.Controls
                 Height = 28,
                 DisplayMemberPath = "BizName", // 🔥 QueryName → BizName으로 변경
                 Margin = new Thickness(10, 0, 5, 0),
-                VerticalAlignment = VerticalAlignment.Center
+                VerticalAlignment = VerticalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center
             };
             // SelectionChanged 이벤트 제거 - 저장 불필요
 

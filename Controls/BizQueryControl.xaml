@@ -204,12 +204,11 @@
                     </StackPanel>
                 </Grid>
                 
-                <!-- DataGrid -->
+                <!-- DataGrid - DataGridHelper 스타일 적용 -->
                 <DataGrid x:Name="QueriesDataGrid" 
                           Grid.Row="1"
                           AutoGenerateColumns="False"
                           SelectionMode="Single"
-                          FontFamily="Malgun Gothic, Segoe UI, sans-serif"
                           SelectionChanged="QueriesDataGrid_SelectionChanged">
                     
                     <!-- 🔥 RowColor 바인딩을 위한 커스텀 RowStyle -->
@@ -245,6 +244,7 @@
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontSize" Value="11"/>
                                     <Setter Property="FontWeight" Value="Bold"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
@@ -255,21 +255,61 @@
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontSize" Value="11"/>
                                     <Setter Property="FontWeight" Value="SemiBold"/>
                                     <Setter Property="Foreground" Value="#FF0078D7"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="비즈명" Binding="{Binding BizName}" Width="Auto"/>
-                        
-                        <DataGridTextColumn Header="쿼리비즈명" Binding="{Binding QueryBizName}" Width="Auto"/>
-                        
-                        <DataGridTextColumn Header="설명" Binding="{Binding Description2}" Width="*"/>
+                        <DataGridTextColumn Header="비즈명" Binding="{Binding BizName}" Width="Auto">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontSize" Value="11"/>
 
-                        <DataGridTextColumn Header="TNS" Binding="{Binding TnsName}" Width="120" Visibility="Collapsed"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        
+                        <DataGridTextColumn Header="쿼리비즈명" Binding="{Binding QueryBizName}" Width="Auto">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontSize" Value="11"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        
+                        <DataGridTextColumn Header="설명" Binding="{Binding Description2}" Width="*">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontSize" Value="11"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="User ID" Binding="{Binding UserId}" Width="100" Visibility="Collapsed"/>
+                        <DataGridTextColumn Header="TNS" Binding="{Binding TnsName}" Width="120" Visibility="Collapsed">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontSize" Value="11"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="User ID" Binding="{Binding UserId}" Width="100" Visibility="Collapsed">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontSize" Value="11"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
 
                         <DataGridTextColumn Header="Password" Binding="{Binding Password}" Width="100" Visibility="Collapsed">
                             <DataGridTextColumn.ElementStyle>
@@ -277,6 +317,7 @@
                                     <Setter Property="Text" Value="••••••••"/>
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontSize" Value="11"/>
                                     <Setter Property="Foreground" Value="#FF6C757D"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>

@@ -60,6 +60,7 @@
                               Grid.Column="1" 
                               Height="32"
                               VerticalAlignment="Center"
+                              VerticalContentAlignment="Center"
                               Margin="0,0,15,0"/>
 
                     <TextBlock Text="조회 날짜:" 
@@ -308,6 +309,7 @@
                               Width="220" 
                               Height="32"
                               VerticalAlignment="Center"
+                              VerticalContentAlignment="Center"
                               IsEditable="True"
                               IsReadOnly="True"
                               DropDownClosed="ApplyFilter"
@@ -331,6 +333,7 @@
                               Width="220" 
                               Height="32"
                               VerticalAlignment="Center"
+                              VerticalContentAlignment="Center"
                               IsEditable="True"
                               IsReadOnly="True"
                               DropDownClosed="ApplyFilter"
@@ -391,18 +394,10 @@
                            Foreground="#FF0078D7"
                            Margin="0,0,0,10"/>
 
-                <!-- DataGrid - DataGridHelper가 스타일 적용 -->
+                <!-- DataGrid - 전역 스타일 자동 적용 -->
                 <DataGrid x:Name="SfcMonitorDataGrid" 
                           Grid.Row="1"
-                          AutoGenerateColumns="False" 
-                          IsReadOnly="True"
-                          GridLinesVisibility="All"
-                          AlternatingRowBackground="#FFF8F9FA"
-                          CanUserAddRows="False"
-                          HeadersVisibility="All"
-                          FontSize="11"
-                          BorderThickness="1"
-                          BorderBrush="#FFE0E0E0">
+                          AutoGenerateColumns="False">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="IP 주소" Binding="{Binding IpAddress}" Width="150"/>
                         <DataGridTextColumn Header="설비 ID" Binding="{Binding EquipmentId}" Width="150"/>

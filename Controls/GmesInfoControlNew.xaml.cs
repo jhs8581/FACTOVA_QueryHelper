@@ -754,7 +754,8 @@ namespace FACTOVA_QueryHelper.Controls
                 Height = 28,
                 DisplayMemberPath = "BizName",
                 Margin = new Thickness(10, 0, 5, 0),
-                VerticalAlignment = VerticalAlignment.Center
+                VerticalAlignment = VerticalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center
             };
 
             var clearButton = new Button

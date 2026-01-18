@@ -12,6 +12,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using FACTOVA_QueryHelper.Database;
+using FACTOVA_QueryHelper.Utilities;
 
 namespace FACTOVA_QueryHelper.Controls
 {
@@ -925,33 +926,14 @@ namespace FACTOVA_QueryHelper.Controls
                     SelectionMode = DataGridSelectionMode.Extended,
                     SelectionUnit = DataGridSelectionUnit.CellOrRowHeader,
                     ClipboardCopyMode = DataGridClipboardCopyMode.IncludeHeader,
-                    ItemsSource = result.DefaultView,
-                    FontFamily = new FontFamily("Malgun Gothic, Segoe UI, sans-serif"), // 🔥 폰트 통일
-                    FontSize = fontSize
+                    ItemsSource = result.DefaultView
                 };
                 
-                // 🔥 NERP 스타일 헤더 (DataGrid.Resources에 추가)
-                var headerStyle = new Style(typeof(DataGridColumnHeader));
-                headerStyle.Setters.Add(new Setter(DataGridColumnHeader.BackgroundProperty, 
-                    new SolidColorBrush(Color.FromRgb(240, 248, 255)))); // #F0F8FF
-                headerStyle.Setters.Add(new Setter(DataGridColumnHeader.ForegroundProperty, 
-                    new SolidColorBrush(Color.FromRgb(44, 90, 160)))); // #2C5AA0
-                headerStyle.Setters.Add(new Setter(DataGridColumnHeader.FontWeightProperty, 
-                    FontWeights.Bold));
-                headerStyle.Setters.Add(new Setter(DataGridColumnHeader.PaddingProperty, 
-                    new Thickness(8, 5, 8, 5)));
-                headerStyle.Setters.Add(new Setter(DataGridColumnHeader.BorderBrushProperty, 
-                    new SolidColorBrush(Color.FromRgb(176, 196, 222)))); // #B0C4DE
-                headerStyle.Setters.Add(new Setter(DataGridColumnHeader.BorderThicknessProperty, 
-                    new Thickness(0, 0, 1, 1)));
-                headerStyle.Setters.Add(new Setter(DataGridColumnHeader.HorizontalContentAlignmentProperty, 
-                    HorizontalAlignment.Left));
-                headerStyle.Setters.Add(new Setter(DataGridColumnHeader.VerticalContentAlignmentProperty, 
-                    VerticalAlignment.Center));
-                dataGrid.ColumnHeaderStyle = headerStyle;
+                // 🔥 DataGridHelper로 통일된 스타일 적용 (FontFamily, FontSize, ColumnHeaderStyle 포함)
+                DataGridHelper.EnableRowNumbers(dataGrid);
                 
-                // 🔥 CellStyle은 App.xaml 전역 스타일 사용 (ControlTemplate으로 세로 중앙 정렬)
-                // 직접 CellStyle을 설정하면 App.xaml의 암묵적 스타일이 무시되므로 제거
+                // 🔥 사용자 설정 FontSize 적용 (DataGridHelper 이후)
+                dataGrid.FontSize = fontSize;
                 
                 // AutoGeneratingColumn 이벤트 핸들러 추가 (숫자 포맷, DateTime 포맷 등)
                 dataGrid.AutoGeneratingColumn += (s, e) =>
