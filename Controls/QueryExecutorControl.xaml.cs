@@ -179,6 +179,34 @@ namespace FACTOVA_QueryHelper.Controls
         {
             return QueryTextBox.Text;
         }
+
+        /// <summary>
+        /// 🔥 현재 쿼리 텍스트 가져오기 (별칭)
+        /// </summary>
+        public string GetCurrentQuery()
+        {
+            return GetQuery();
+        }
+
+        /// <summary>
+        /// 🔥 접속 정보 ID로 ComboBox 선택
+        /// </summary>
+        public void SetConnectionInfoId(int connectionInfoId)
+        {
+            try
+            {
+                var item = _connectionInfos.FirstOrDefault(c => c.Id == connectionInfoId);
+                if (item != null)
+                {
+                    ConnectionComboBox.SelectedItem = item;
+                    System.Diagnostics.Debug.WriteLine($"✅ ConnectionInfo set to ID: {connectionInfoId}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Failed to set ConnectionInfoId: {ex.Message}");
+            }
+        }
         
         public void SetTabHeader(string header)
         {

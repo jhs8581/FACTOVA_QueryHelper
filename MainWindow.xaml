@@ -11,7 +11,7 @@
     <Grid>
         <TabControl x:Name="MainTabControl" Margin="10">
             <!-- 실시간 모니터링 탭 (구 쿼리 실행) -->
-            <TabItem Header="실시간 모니터링">
+            <TabItem Header="📊 실시간 모니터링">
                 <controls:LogAnalysisControl x:Name="LogAnalysisControl"/>
             </TabItem>
 
@@ -20,23 +20,23 @@
                 <controls:GmesInfoControl x:Name="GmesInfoControl"/>
             </TabItem>
             
-            <!-- GMES 정보 조회 (New) 탭 -->
-            <TabItem Header="GMES 정보 조회 (New)">
+            <!-- 🏭 생산 정보 조회 탭 -->
+            <TabItem Header="🏭 생산 정보 조회">
                 <controls:GmesInfoControlNewNew x:Name="GmesInfoControlNew"/>
             </TabItem>
             
             <!-- 비즈 쿼리 조회 탭 -->
-            <TabItem Header="비즈 쿼리 조회">
+            <TabItem Header="📂 비즈 쿼리 조회">
                 <controls:BizQueryControl x:Name="BizQueryControl"/>
             </TabItem>
 
             <!-- 쿼리 관리 탭 -->
-            <TabItem Header="쿼리 관리">
+            <TabItem Header="📝 쿼리 관리">
                 <controls:QueryManagementControl x:Name="QueryManagementControl"/>
             </TabItem>
 
             <!-- 쿼리 실행 탭 (구 SQL Window) -->
-            <TabItem Header="쿼리 실행">
+            <TabItem Header="▶️ 쿼리 실행">
                 <controls:QueryEditorView x:Name="QueryEditorView"/>
             </TabItem>
 
@@ -46,22 +46,22 @@
             </TabItem>
 
             <!-- SFC 모니터링 탭 -->
-            <TabItem Header="SFC 모니터링">
+            <TabItem Header="📡 SFC 모니터링">
                 <controls:SfcMonitoringControl x:Name="SfcMonitoringControl"/>
             </TabItem>
 
             <!-- 비즈 변환 탭 -->
-            <TabItem Header="비즈 변환">
+            <TabItem Header="🔄 비즈 변환">
                 <controls:QueryBizTransformView x:Name="QueryBizTransformView"/>
             </TabItem>
 
             <!-- IN 조건 변환 탭 -->
-            <TabItem Header="IN 조건 변환">
+            <TabItem Header="📋 IN 조건 변환">
                 <controls:QueryInTransformView x:Name="QueryInTransformView"/>
             </TabItem>
 
             <!-- 설정 탭 -->
-            <TabItem Header="설정">
+            <TabItem Header="⚙️ 설정">
                 <controls:SettingsControl x:Name="SettingsControl"/>
             </TabItem>
 

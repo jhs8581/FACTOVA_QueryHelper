@@ -37,6 +37,7 @@ namespace FACTOVA_QueryHelper.Controls
         private class DynamicGridInfo
         {
             public int Index { get; set; }
+            public TabItem TabItem { get; set; } = null!;
             public ComboBox QueryComboBox { get; set; } = null!;
             public DataGrid DataGrid { get; set; } = null!;
             public Button ClearButton { get; set; } = null!;
@@ -196,6 +197,36 @@ namespace FACTOVA_QueryHelper.Controls
             LoadSiteInfos();
             MessageBox.Show("사업장 정보가 새로고침되었습니다.", "완료",
                 MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        /// <summary>
+        /// 파라미터 패널 토글 버튼 클릭
+        /// </summary>
+        private bool _isParameterPanelVisible = true;
+        private GridLength _savedParameterColumnWidth = new GridLength(400);
+        
+        private void ToggleParameterPanelButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isParameterPanelVisible)
+            {
+                // 숨기기
+                _savedParameterColumnWidth = ParameterColumn.Width;
+                ParameterPanel.Visibility = Visibility.Collapsed;
+                ParameterColumn.Width = new GridLength(0);
+                ParameterColumn.MinWidth = 0;
+                ToggleParameterPanelButton.Content = "📋 파라미터 보이기";
+                ToggleParameterPanelButton.Background = new SolidColorBrush(Color.FromRgb(40, 167, 69)); // Green
+            }
+            else
+            {
+                // 보이기
+                ParameterPanel.Visibility = Visibility.Visible;
+                ParameterColumn.Width = _savedParameterColumnWidth;
+                ParameterColumn.MinWidth = 300;
+                ToggleParameterPanelButton.Content = "📋 파라미터 숨기기";
+                ToggleParameterPanelButton.Background = new SolidColorBrush(Color.FromRgb(111, 66, 193)); // Purple
+            }
+            _isParameterPanelVisible = !_isParameterPanelVisible;
         }
 
         #endregion
@@ -585,53 +616,270 @@ namespace FACTOVA_QueryHelper.Controls
 
         private void GenerateDynamicGridsWithQueries(List<QueryItem> queries)
         {
-            CreateDynamicGridsCore(20, queries);
+            // 쿼리 개수만큼만 탭 생성
+            CreateDynamicGridsCore(queries.Count, queries);
         }
 
         private void CreateDynamicGridsCore(int count, List<QueryItem>? queriesToBind)
         {
             _isInitializing = true;
 
-            DynamicGridsContainer.Children.Clear();
-            DynamicGridsContainer.RowDefinitions.Clear();
+            DynamicGridsTabControl.Items.Clear();
             _dynamicGrids.Clear();
 
-            const int gridCount = 20;
+            // 쿼리가 있으면 쿼리 개수만큼, 없으면 기본 5개 탭 생성
+            int tabCount = queriesToBind?.Count ?? Math.Min(count, 5);
 
-            for (int i = 0; i < gridCount; i++)
-            {
-                DynamicGridsContainer.RowDefinitions.Add(new RowDefinition
-                {
-                    Height = new GridLength(350, GridUnitType.Pixel)
-                });
-            }
-
-            for (int i = 0; i < gridCount; i++)
+            for (int i = 0; i < tabCount; i++)
             {
                 int gridIndex = i + 1;
                 var gridInfo = CreateDynamicGrid(gridIndex);
-                _dynamicGrids.Add(gridInfo);
-
-                var border = new Border
+                
+                // 탭 헤더 설정
+                string headerText = $"탭 {gridIndex}";
+                if (queriesToBind != null && i < queriesToBind.Count)
                 {
-                    Background = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224)),
-                    BorderThickness = new Thickness(1),
-                    CornerRadius = new CornerRadius(8),
-                    Padding = new Thickness(10),
-                    Margin = new Thickness(5),
-                    Child = CreateGridContainer(gridInfo)
+                    headerText = $"{gridIndex}. {queriesToBind[i].BizName ?? $"탭 {gridIndex}"}";
+                }
+
+                var tabItem = new TabItem
+                {
+                    Header = headerText,
+                    Content = CreateTabContent(gridInfo),
+                    Padding = new Thickness(10, 5, 10, 5)
                 };
 
-                Grid.SetRow(border, i);
-                Grid.SetColumn(border, 0);
-
-                DynamicGridsContainer.Children.Add(border);
+                gridInfo.TabItem = tabItem;
+                _dynamicGrids.Add(gridInfo);
+                DynamicGridsTabControl.Items.Add(tabItem);
             }
 
             BindGridComboBoxes(queriesToBind);
             
+            // 🔥 탭 선택 변경 시 컬럼 너비 재계산
+            DynamicGridsTabControl.SelectionChanged += (s, e) =>
+            {
+                if (e.Source == DynamicGridsTabControl && DynamicGridsTabControl.SelectedIndex >= 0)
+                {
+                    var selectedGridInfo = _dynamicGrids.ElementAtOrDefault(DynamicGridsTabControl.SelectedIndex);
+                    if (selectedGridInfo != null)
+                    {
+                        // Dispatcher로 지연 실행하여 탭이 완전히 로드된 후 실행
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            RefreshDataGridColumnWidths(selectedGridInfo.DataGrid);
+                        }), System.Windows.Threading.DispatcherPriority.Loaded);
+                    }
+                }
+            };
+            
+            // 첫 번째 탭 선택
+            if (DynamicGridsTabControl.Items.Count > 0)
+            {
+                DynamicGridsTabControl.SelectedIndex = 0;
+            }
+            
             _isInitializing = false;
+        }
+
+        /// <summary>
+        /// 탭 내용을 생성합니다.
+        /// </summary>
+        private UIElement CreateTabContent(DynamicGridInfo gridInfo)
+        {
+            var grid = new Grid();
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+            // 헤더 패널 (쿼리 선택, 버튼들)
+            var headerPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Margin = new Thickness(0, 0, 0, 10)
+            };
+
+            // 쿼리 선택 콤보박스
+            headerPanel.Children.Add(new TextBlock
+            {
+                Text = "쿼리:",
+                FontWeight = FontWeights.Bold,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 5, 0)
+            });
+            headerPanel.Children.Add(gridInfo.QueryComboBox);
+            headerPanel.Children.Add(gridInfo.ClearButton);
+
+            // 실행 버튼
+            var executeButton = new Button
+            {
+                Content = "▶ 조회",
+                Height = 28,
+                Padding = new Thickness(10, 0, 10, 0),
+                Background = new SolidColorBrush(Color.FromRgb(0, 120, 215)),
+                Foreground = Brushes.White,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand,
+                FontWeight = FontWeights.Bold,
+                Margin = new Thickness(5, 0, 5, 0)
+            };
+            executeButton.Click += async (s, e) => await ExecuteDynamicGridQuery(gridInfo);
+            headerPanel.Children.Add(executeButton);
+
+            // 팝업 보기 버튼
+            var popupButton = new Button
+            {
+                Content = "🔍 팝업",
+                Height = 28,
+                Padding = new Thickness(8, 0, 8, 0),
+                Background = new SolidColorBrush(Color.FromRgb(108, 117, 125)),
+                Foreground = Brushes.White,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand,
+                FontWeight = FontWeights.Bold,
+                Margin = new Thickness(0, 0, 5, 0),
+                ToolTip = "팝업으로 보기"
+            };
+            popupButton.Click += (s, e) => ShowGridInPopup(gridInfo);
+            headerPanel.Children.Add(popupButton);
+
+            // 셀 상세 보기 버튼
+            var cellDetailButton = new Button
+            {
+                Content = "↕️ 세로보기",
+                Height = 28,
+                Padding = new Thickness(8, 0, 8, 0),
+                Background = new SolidColorBrush(Color.FromRgb(111, 66, 193)),
+                Foreground = Brushes.White,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand,
+                FontWeight = FontWeights.Bold,
+                Margin = new Thickness(0, 0, 5, 0),
+                ToolTip = "선택 행을 세로로 보기 (컬럼→행 전환)"
+            };
+            cellDetailButton.Click += (s, e) => ShowCellDetailPopup(gridInfo);
+            headerPanel.Children.Add(cellDetailButton);
+
+            // 쿼리 보기 버튼
+            var viewQueryButton = new Button
+            {
+                Content = "📝 쿼리",
+                Height = 28,
+                Padding = new Thickness(8, 0, 8, 0),
+                Background = new SolidColorBrush(Color.FromRgb(40, 167, 69)),
+                Foreground = Brushes.White,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand,
+                FontWeight = FontWeights.SemiBold,
+                Margin = new Thickness(0, 0, 5, 0),
+                ToolTip = "쿼리 보기"
+            };
+            viewQueryButton.Click += (s, e) => ShowQueryEditWindow(gridInfo);
+            headerPanel.Children.Add(viewQueryButton);
+
+            // 파라미터 확인 버튼
+            var validateParamsButton = new Button
+            {
+                Content = "✔️ 파라미터",
+                Height = 28,
+                Padding = new Thickness(8, 0, 8, 0),
+                Background = new SolidColorBrush(Color.FromRgb(0, 120, 215)),
+                Foreground = Brushes.White,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand,
+                FontWeight = FontWeights.SemiBold,
+                Margin = new Thickness(0, 0, 10, 0),
+                ToolTip = "이 쿼리의 파라미터 확인"
+            };
+            validateParamsButton.Click += (s, e) => ValidateGridParameters(gridInfo);
+            headerPanel.Children.Add(validateParamsButton);
+
+            // 결과 정보
+            headerPanel.Children.Add(gridInfo.ResultInfoTextBlock);
+
+            Grid.SetRow(headerPanel, 0);
+            Grid.SetRow(gridInfo.DataGrid, 1);
+
+            grid.Children.Add(headerPanel);
+            grid.Children.Add(gridInfo.DataGrid);
+
+            // Border로 감싸서 반환
+            return new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(255, 255, 255)),
+                Padding = new Thickness(10),
+                Child = grid
+            };
+        }
+
+        /// <summary>
+        /// 쿼리 편집 창을 엽니다.
+        /// </summary>
+        private void ShowQueryEditWindow(DynamicGridInfo gridInfo)
+        {
+            if (gridInfo.QueryComboBox.SelectedItem is QueryItem query)
+            {
+                var dbPath = _sharedData?.Settings.DatabasePath ?? "";
+                
+                if (string.IsNullOrEmpty(dbPath))
+                {
+                    MessageBox.Show("데이터베이스 경로가 설정되지 않았습니다.\n설정 탭에서 DB 파일 경로를 확인해 주세요.", 
+                        "경고", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                
+                // 🔥 파라미터 치환된 쿼리 생성
+                string replacedQuery = ReplaceQueryParameters(query.Query);
+                
+                var window = new QueryTextEditWindow(
+                    query.Query, 
+                    isReadOnly: true, 
+                    queryId: query.RowNumber, 
+                    databasePath: dbPath,
+                    replacedQuery: replacedQuery)  // 🔥 치환된 쿼리 전달
+                {
+                    Title = $"쿼리 보기 - {query.QueryName}",
+                    Owner = Window.GetWindow(this),
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+                };
+                
+                window.QuerySaved += (sender, args) =>
+                {
+                    var currentSelectedPlanQuery = QuerySelectComboBox.SelectedItem as QueryItem;
+                    var currentSelectedQueryName = currentSelectedPlanQuery?.QueryName;
+                    
+                    LoadInfoQueries();
+                    
+                    if (!string.IsNullOrEmpty(currentSelectedQueryName) && 
+                        currentSelectedQueryName != "-- 쿼리를 선택하세요 --")
+                    {
+                        var planQueryList = QuerySelectComboBox.ItemsSource as List<QueryItem>;
+                        var restoredQuery = planQueryList?.FirstOrDefault(q => q.QueryName == currentSelectedQueryName);
+                        if (restoredQuery != null)
+                        {
+                            QuerySelectComboBox.SelectedItem = restoredQuery;
+                        }
+                    }
+                    
+                    UpdateAllGridComboBoxes();
+                    
+                    var queriesWithBizName = _infoQueries
+                        .Where(q => !string.IsNullOrWhiteSpace(q.BizName) && 
+                                   !string.Equals(q.ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                    
+                    var updatedQuery = queriesWithBizName.FirstOrDefault(q => q.RowNumber == query.RowNumber);
+                    if (updatedQuery != null)
+                    {
+                        gridInfo.QueryComboBox.SelectedItem = updatedQuery;
+                    }
+                };
+                
+                window.ShowDialog();
+            }
+            else
+            {
+                MessageBox.Show("먼저 쿼리를 선택하세요.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
 
         private void BindGridComboBoxes(List<QueryItem>? queriesToBind)
@@ -646,6 +894,19 @@ namespace FACTOVA_QueryHelper.Controls
                 gridInfo.QueryComboBox.ItemsSource = queriesWithBizName;
                 gridInfo.QueryComboBox.IsEnabled = true;
                 gridInfo.ClearButton.IsEnabled = true;
+                
+                // 콤보박스 선택 변경 시 탭 헤더 업데이트
+                gridInfo.QueryComboBox.SelectionChanged += (s, e) =>
+                {
+                    if (gridInfo.QueryComboBox.SelectedItem is QueryItem selectedQuery)
+                    {
+                        gridInfo.TabItem.Header = $"{gridInfo.Index}. {selectedQuery.BizName}";
+                    }
+                    else
+                    {
+                        gridInfo.TabItem.Header = $"탭 {gridInfo.Index}";
+                    }
+                };
             }
 
             if (queriesToBind != null && queriesToBind.Count > 0)
@@ -665,6 +926,8 @@ namespace FACTOVA_QueryHelper.Controls
                     if (matchingQuery != null)
                     {
                         gridInfo.QueryComboBox.SelectedItem = matchingQuery;
+                        // 탭 헤더도 업데이트
+                        gridInfo.TabItem.Header = $"{gridInfo.Index}. {matchingQuery.BizName}";
                     }
                 }
             }
@@ -855,251 +1118,6 @@ namespace FACTOVA_QueryHelper.Controls
             };
         }
 
-        private Grid CreateGridContainer(DynamicGridInfo gridInfo)
-        {
-            var grid = new Grid();
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-
-            var headerPanel = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(0, 0, 0, 10)
-            };
-
-            var titleBlock = new TextBlock
-            {
-                Text = $"그리드 {gridInfo.Index}",
-                FontSize = 13,
-                FontWeight = FontWeights.Bold,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-
-            // 쿼리 실행 버튼
-            var executeButton = new Button
-            {
-                Content = "▶",
-                Width = 30,
-                Height = 28,
-                Background = new SolidColorBrush(Color.FromRgb(0, 120, 215)),
-                Foreground = Brushes.White,
-                BorderThickness = new Thickness(0),
-                Cursor = Cursors.Hand,
-                FontWeight = FontWeights.Bold,
-                Margin = new Thickness(0, 0, 5, 0)
-            };
-            executeButton.Click += async (s, e) => await ExecuteDynamicGridQuery(gridInfo);
-
-            // 🔥 팝업 보기 버튼
-            var popupButton = new Button
-            {
-                Content = "🔍",
-                Width = 30,
-                Height = 28,
-                Background = new SolidColorBrush(Color.FromRgb(108, 117, 125)),
-                Foreground = Brushes.White,
-                BorderThickness = new Thickness(0),
-                Cursor = Cursors.Hand,
-                FontWeight = FontWeights.Bold,
-                FontSize = 14,
-                Margin = new Thickness(0, 0, 5, 0),
-                ToolTip = "팝업으로 보기"
-            };
-            popupButton.Click += (s, e) => ShowGridInPopup(gridInfo);
-
-            // 🔥 셀 상세 보기 버튼 (피벗)
-            var cellDetailButton = new Button
-            {
-                Content = "📊",
-                Width = 30,
-                Height = 28,
-                Background = new SolidColorBrush(Color.FromRgb(111, 66, 193)), // #6F42C1 보라색
-                Foreground = Brushes.White,
-                BorderThickness = new Thickness(0),
-                Cursor = Cursors.Hand,
-                FontWeight = FontWeights.Bold,
-                FontSize = 14,
-                Margin = new Thickness(0, 0, 5, 0),
-                ToolTip = "선택 행 상세 보기 (피벗)"
-            };
-            cellDetailButton.Click += (s, e) => ShowCellDetailPopup(gridInfo);
-
-            // 쿼리 보기 버튼
-            var viewQueryButton = new Button
-            {
-                Content = "📝 쿼리 보기",
-                Width = 90,
-                Height = 28,
-                Background = new SolidColorBrush(Color.FromRgb(40, 167, 69)), // #FF28A745
-                Foreground = Brushes.White,
-                BorderThickness = new Thickness(0),
-                Cursor = Cursors.Hand,
-                FontSize = 11,
-                FontWeight = FontWeights.SemiBold,
-                Margin = new Thickness(0, 0, 5, 0),
-                ToolTip = "쿼리 보기"
-            };
-            
-            // 마우스 오버 스타일 추가
-            var viewButtonStyle = new Style(typeof(Button));
-            viewButtonStyle.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(40, 167, 69))));
-            var viewTrigger = new System.Windows.Trigger { Property = Button.IsMouseOverProperty, Value = true };
-            viewTrigger.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(33, 136, 56)))); // #FF218838
-            viewButtonStyle.Triggers.Add(viewTrigger);
-            viewQueryButton.Style = viewButtonStyle;
-            
-            viewQueryButton.Click += (s, e) =>
-            {
-                if (gridInfo.QueryComboBox.SelectedItem is QueryItem query)
-                {
-                    // 🔥 전달할 파라미터 로깅
-                    var dbPath = _sharedData?.Settings.DatabasePath ?? "";
-                    System.Diagnostics.Debug.WriteLine("=== GmesInfoControlNew: Opening QueryTextEditWindow ===");
-                    System.Diagnostics.Debug.WriteLine($"Query.RowNumber: {query.RowNumber}");
-                    System.Diagnostics.Debug.WriteLine($"Query.QueryName: {query.QueryName}");
-                    System.Diagnostics.Debug.WriteLine($"Query.Query Length: {query.Query?.Length ?? 0}");
-                    System.Diagnostics.Debug.WriteLine($"DatabasePath: {(string.IsNullOrEmpty(dbPath) ? "(empty)" : dbPath)}");
-                    System.Diagnostics.Debug.WriteLine($"_sharedData is null: {_sharedData == null}");
-                    
-                    if (_sharedData != null)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"_sharedData.Settings is null: {_sharedData.Settings == null}");
-                        if (_sharedData.Settings != null)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"_sharedData.Settings.DatabasePath: {_sharedData.Settings.DatabasePath ?? "(null)"}");
-                        }
-                    }
-                    
-                    // 🔥 DB 경로가 비어있으면 경고
-                    if (string.IsNullOrEmpty(dbPath))
-                    {
-                        System.Diagnostics.Debug.WriteLine("❌ DatabasePath is empty!");
-                        MessageBox.Show("데이터베이스 경로가 설정되지 않았습니다.\n\n" +
-                            "설정 탭에서 DB 파일 경로를 확인해 주세요.\n\n" +
-                            "쿼리를 보기만 할 수 있으며 저장은 불가능합니다.", 
-                            "경고", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    }
-                    
-                    // 🔥 쿼리 RowNumber와 DB 경로를 포함하여 팝업 열기 (편집 및 저장 가능)
-                    var window = new QueryTextEditWindow(
-                        query.Query, 
-                        isReadOnly: true, 
-                        queryId: query.RowNumber, 
-                        databasePath: dbPath)
-                    {
-                        Title = $"쿼리 보기 - {query.QueryName}",
-                        Owner = Window.GetWindow(this),
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner
-                    };
-                    
-                    // 🔥 저장 후 쿼리 목록 다시 로드
-                    window.QuerySaved += (sender, args) =>
-                    {
-                        System.Diagnostics.Debug.WriteLine("🔥 QuerySaved event received in GmesInfoControlNew");
-                        
-                        // 🔥 현재 선택된 기준정보 쿼리 저장
-                        var currentSelectedPlanQuery = QuerySelectComboBox.SelectedItem as QueryItem;
-                        var currentSelectedQueryName = currentSelectedPlanQuery?.QueryName;
-                        
-                        System.Diagnostics.Debug.WriteLine($"Current selected plan query: {currentSelectedQueryName ?? "(none)"}");
-                        
-                        // 쿼리 목록 다시 로드
-                        LoadInfoQueries();
-                        
-                        // 🔥 기준정보 선택 복원
-                        if (!string.IsNullOrEmpty(currentSelectedQueryName) && 
-                            currentSelectedQueryName != "-- 쿼리를 선택하세요 --")
-                        {
-                            var planQueryList = QuerySelectComboBox.ItemsSource as List<QueryItem>;
-                            if (planQueryList != null)
-                            {
-                                var restoredQuery = planQueryList.FirstOrDefault(q => q.QueryName == currentSelectedQueryName);
-                                if (restoredQuery != null)
-                                {
-                                    QuerySelectComboBox.SelectedItem = restoredQuery;
-                                    System.Diagnostics.Debug.WriteLine($"✅ Restored plan query selection: {currentSelectedQueryName}");
-                                }
-                                else
-                                {
-                                    System.Diagnostics.Debug.WriteLine($"⚠️ Could not find plan query: {currentSelectedQueryName}");
-                                }
-                            }
-                        }
-                        
-                        // 변경된 개별 그리드 쿼리 콤보박스만 업데이트
-                        UpdateAllGridComboBoxes();
-                        
-                        // 현재 선택된 쿼리 유지
-                        var selectedQueryId = query.RowNumber;
-                        var queriesWithBizName = _infoQueries
-                            .Where(q => !string.IsNullOrWhiteSpace(q.BizName) && 
-                                       !string.Equals(q.ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase))
-                            .ToList();
-                        
-                        var updatedQuery = queriesWithBizName.FirstOrDefault(q => q.RowNumber == selectedQueryId);
-                        if (updatedQuery != null)
-                        {
-                            gridInfo.QueryComboBox.SelectedItem = updatedQuery;
-                            System.Diagnostics.Debug.WriteLine($"✅ Restored grid query selection: {updatedQuery.BizName}");
-                        }
-                    };
-                    
-                    System.Diagnostics.Debug.WriteLine("🔥 Showing QueryTextEditWindow dialog...");
-                    window.ShowDialog();
-                    System.Diagnostics.Debug.WriteLine("🔥 QueryTextEditWindow dialog closed");
-                }
-                else
-                {
-                    MessageBox.Show("먼저 쿼리를 선택하세요.", "알림",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-            };
-
-            // 파라미터 확인 버튼
-            var validateParamsButton = new Button
-            {
-                Content = "✔️ 파라미터",
-                Width = 100,
-                Height = 28,
-                Background = new SolidColorBrush(Color.FromRgb(0, 120, 215)), // Blue
-                Foreground = Brushes.White,
-                BorderThickness = new Thickness(0),
-                Cursor = Cursors.Hand,
-                FontSize = 11,
-                FontWeight = FontWeights.SemiBold,
-                Margin = new Thickness(0, 0, 10, 0),
-                ToolTip = "이 쿼리의 파라미터 확인"
-            };
-
-            // 마우스 오버 스타일
-            var validateButtonStyle = new Style(typeof(Button));
-            validateButtonStyle.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(0, 120, 215))));
-            var validateTrigger = new System.Windows.Trigger { Property = Button.IsMouseOverProperty, Value = true };
-            validateTrigger.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(0, 86, 160))));
-            validateButtonStyle.Triggers.Add(validateTrigger);
-            validateParamsButton.Style = validateButtonStyle;
-
-            validateParamsButton.Click += (s, e) => ValidateGridParameters(gridInfo);
-
-            headerPanel.Children.Add(titleBlock);
-            headerPanel.Children.Add(gridInfo.QueryComboBox);  // 쿼리 선택 콜백박스
-            headerPanel.Children.Add(gridInfo.ClearButton);     // 취소 버튼
-            headerPanel.Children.Add(executeButton);            // 실행 버튼
-            headerPanel.Children.Add(popupButton);              // 🔥 팝업 보기 버튼
-            headerPanel.Children.Add(cellDetailButton);         // 🔥 셀 상세 보기 버튼 (피벗)
-            headerPanel.Children.Add(viewQueryButton);          // 쿼리 보기 버튼
-            headerPanel.Children.Add(validateParamsButton);     // 파라미터 확인 버튼
-            headerPanel.Children.Add(gridInfo.ResultInfoTextBlock); // 결과 정보
-
-            Grid.SetRow(headerPanel, 0);
-            Grid.SetRow(gridInfo.DataGrid, 1);
-
-            grid.Children.Add(headerPanel);
-            grid.Children.Add(gridInfo.DataGrid);
-
-            return grid;
-        }
-
         // 🔥 그리드 팝업으로 표시하는 메서드
         private void ShowGridInPopup(DynamicGridInfo gridInfo)
         {
@@ -1211,6 +1229,9 @@ namespace FACTOVA_QueryHelper.Controls
                 double seconds = stopwatch.Elapsed.TotalSeconds;
                 gridInfo.ResultInfoTextBlock.Text = $"📊 {rowCount}건 | ⏱️ {seconds:F2}초";
                 gridInfo.ResultInfoTextBlock.Foreground = new SolidColorBrush(Color.FromRgb(40, 167, 69));
+                
+                // 🔥 탭 헤더에 건수 표시
+                UpdateTabHeaderWithResult(gridInfo, rowCount, true);
             }
             catch (Exception ex)
             {
@@ -1218,8 +1239,33 @@ namespace FACTOVA_QueryHelper.Controls
                 gridInfo.ResultInfoTextBlock.Text = $"❌ 오류";
                 gridInfo.ResultInfoTextBlock.Foreground = new SolidColorBrush(Color.FromRgb(220, 53, 69));
                 
+                // 🔥 탭 헤더에 오류 표시
+                UpdateTabHeaderWithResult(gridInfo, 0, false);
+                
                 MessageBox.Show($"쿼리 실행 실패:\n{ex.Message}", "오류",
                     MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// 탭 헤더에 조회 결과를 반영합니다.
+        /// </summary>
+        private void UpdateTabHeaderWithResult(DynamicGridInfo gridInfo, int rowCount, bool isSuccess)
+        {
+            if (gridInfo.TabItem == null) return;
+            
+            var query = gridInfo.QueryComboBox.SelectedItem as QueryItem;
+            string bizName = query?.BizName ?? $"탭 {gridInfo.Index}";
+            
+            if (isSuccess)
+            {
+                // 성공: "1. BizName (123건)" 형태로 표시
+                gridInfo.TabItem.Header = $"{gridInfo.Index}. {bizName} ({rowCount}건)";
+            }
+            else
+            {
+                // 실패: "1. BizName ❌" 형태로 표시
+                gridInfo.TabItem.Header = $"{gridInfo.Index}. {bizName} ❌";
             }
         }
 
@@ -1242,6 +1288,9 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     gridInfo.ResultInfoTextBlock.Text = $"📊 {rowCount}건 | ⏱️ {seconds:F2}초";
                     gridInfo.ResultInfoTextBlock.Foreground = new SolidColorBrush(Color.FromRgb(40, 167, 69));
+                    
+                    // 🔥 탭 헤더에 건수 표시
+                    UpdateTabHeaderWithResult(gridInfo, rowCount, true);
                 });
             }
             catch (Exception ex)
@@ -1252,9 +1301,40 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     gridInfo.ResultInfoTextBlock.Text = $"❌ 오류";
                     gridInfo.ResultInfoTextBlock.Foreground = new SolidColorBrush(Color.FromRgb(220, 53, 69));
+                    
+                    // 🔥 탭 헤더에 오류 표시
+                    UpdateTabHeaderWithResult(gridInfo, 0, false);
                 });
                 
                 throw new Exception($"[{queryItem.QueryName}] {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// DataGrid 컬럼 너비를 데이터에 맞게 재계산합니다.
+        /// </summary>
+        private void RefreshDataGridColumnWidths(DataGrid dataGrid)
+        {
+            if (dataGrid == null || dataGrid.ItemsSource == null) return;
+
+            try
+            {
+                // 각 컬럼을 Auto로 설정하여 내용에 맞게 조정
+                foreach (var column in dataGrid.Columns)
+                {
+                    // 현재 너비 저장
+                    var currentWidth = column.ActualWidth;
+                    
+                    // SizeToCells와 SizeToHeader 중 더 큰 값 사용
+                    column.Width = new DataGridLength(1, DataGridLengthUnitType.Auto);
+                }
+                
+                // 레이아웃 업데이트
+                dataGrid.UpdateLayout();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"컬럼 너비 재계산 오류: {ex.Message}");
             }
         }
 

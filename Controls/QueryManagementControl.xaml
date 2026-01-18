@@ -69,8 +69,8 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="📊" FontSize="16" Margin="0,0,8,0"/>
-                        <TextBlock Text="정보 조회"/>
+                        <TextBlock Text="🏭" FontSize="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="생산 정보 조회"/>
                     </StackPanel>
                 </TabItem.Header>
                 <Grid x:Name="InfoQueryGrid" Margin="15"/>
@@ -80,8 +80,8 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="🔍" FontSize="16" Margin="0,0,8,0"/>
-                        <TextBlock Text="비즈 조회"/>
+                        <TextBlock Text="📂" FontSize="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="비즈 쿼리 조회"/>
                     </StackPanel>
                 </TabItem.Header>
                 <Grid x:Name="BizQueryGrid" Margin="15"/>

@@ -16,24 +16,32 @@ namespace FACTOVA_QueryHelper.Controls
         private int? _queryId;
         private string _databasePath;
         private bool _isReadOnly;
+        private string? _replacedQuery; // 🔥 치환된 쿼리
         
         // 🔥 저장 후 콜백 이벤트
         public event EventHandler? QuerySaved;
 
         // 🔥 기존 생성자 (하위 호환성 유지)
         public QueryTextEditWindow(string initialQuery = "", bool isReadOnly = false)
-            : this(initialQuery, isReadOnly, null, string.Empty)
+            : this(initialQuery, isReadOnly, null, string.Empty, null)
         {
         }
 
         // 🔥 새 생성자 (쿼리 ID와 DB 경로 포함)
         public QueryTextEditWindow(string initialQuery, bool isReadOnly, int? queryId, string databasePath)
+            : this(initialQuery, isReadOnly, queryId, databasePath, null)
+        {
+        }
+
+        // 🔥 치환된 쿼리도 받는 생성자
+        public QueryTextEditWindow(string initialQuery, bool isReadOnly, int? queryId, string databasePath, string? replacedQuery)
         {
             InitializeComponent();
             
             _queryId = queryId;
             _databasePath = databasePath;
             _isReadOnly = isReadOnly;
+            _replacedQuery = replacedQuery;
             
             // SQL 구문 강조 정의 로드
             LoadSqlSyntaxHighlighting();
@@ -42,6 +50,12 @@ namespace FACTOVA_QueryHelper.Controls
             if (!string.IsNullOrEmpty(initialQuery))
             {
                 QueryTextEditor.Text = initialQuery;
+            }
+            
+            // 🔥 치환된 쿼리가 있으면 복사 버튼 표시
+            if (!string.IsNullOrEmpty(replacedQuery))
+            {
+                CopyReplacedQueryButton.Visibility = Visibility.Visible;
             }
             
             // 🔥 읽기 전용 모드여도 쿼리 ID가 있으면 편집 및 저장 가능
@@ -385,6 +399,43 @@ namespace FACTOVA_QueryHelper.Controls
         {
             DialogResult = false;
             Close();
+        }
+
+        /// <summary>
+        /// 치환된 쿼리를 클립보드에 복사합니다.
+        /// </summary>
+        private void CopyReplacedQueryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_replacedQuery))
+            {
+                MessageBox.Show("치환된 쿼리가 없습니다.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                Clipboard.SetText(_replacedQuery);
+                // 🔥 메시지박스 없이 버튼 텍스트로 피드백
+                CopyReplacedQueryButton.Content = "✅ 복사됨!";
+                
+                // 2초 후 원래 텍스트로 복원
+                var timer = new System.Windows.Threading.DispatcherTimer
+                {
+                    Interval = TimeSpan.FromSeconds(2)
+                };
+                timer.Tick += (s, args) =>
+                {
+                    CopyReplacedQueryButton.Content = "📋 치환 쿼리 복사";
+                    timer.Stop();
+                };
+                timer.Start();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"클립보드 복사 실패:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

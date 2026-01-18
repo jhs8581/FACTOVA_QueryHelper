@@ -27,6 +27,15 @@
                                BorderThickness="1"/>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <!-- 🔥 치환 쿼리 복사 버튼 -->
+            <Button x:Name="CopyReplacedQueryButton" Content="📋 치환 쿼리 복사" 
+                    Width="140" Height="35" Margin="0,0,10,0"
+                    Click="CopyReplacedQueryButton_Click"
+                    Background="#FF6F42C1" 
+                    Foreground="White"
+                    FontWeight="Bold"
+                    ToolTip="파라미터가 치환된 쿼리를 클립보드에 복사합니다"
+                    Visibility="Collapsed"/>
             <Button x:Name="SaveButton" Content="Save" 
                     Width="100" Height="35" Margin="0,0,10,0"
                     Click="SaveButton_Click"

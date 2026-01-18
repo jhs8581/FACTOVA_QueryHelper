@@ -804,6 +804,27 @@ namespace FACTOVA_QueryHelper.Controls
             idColumn.ElementStyle = idStyle;
             dataGrid.Columns.Add(idColumn);
 
+            // 🔥 SQL 쿼리 편집 버튼 (ID 오른쪽으로 이동)
+            var queryTemplate = new DataTemplate();
+            var factory = new FrameworkElementFactory(typeof(Button));
+            factory.SetValue(Button.ContentProperty, "📝 편집");
+            factory.SetValue(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(108, 117, 125)));
+            factory.SetValue(Button.ForegroundProperty, Brushes.White);
+            factory.SetValue(Button.BorderThicknessProperty, new Thickness(0));
+            factory.SetValue(Button.HeightProperty, 24.0);
+            factory.SetValue(Button.FontSizeProperty, 10.0);
+            factory.SetValue(Button.CursorProperty, Cursors.Hand);
+            factory.SetValue(Button.MarginProperty, new Thickness(2));
+            factory.SetBinding(Button.TagProperty, new System.Windows.Data.Binding());
+            factory.AddHandler(Button.ClickEvent, new RoutedEventHandler(EditQueryButton_InGrid_Click));
+            queryTemplate.VisualTree = factory;
+
+            dataGrid.Columns.Add(new DataGridTemplateColumn
+            {
+                Header = "SQL 쿼리",
+                CellTemplate = queryTemplate,
+                Width = 80
+            });
 
             // 🔥 그룹명 (기존 쿼리명 컬럼의 헤더만 변경)
             dataGrid.Columns.Add(new DataGridTextColumn
@@ -1022,28 +1043,6 @@ namespace FACTOVA_QueryHelper.Controls
                 CellTemplate = connectionDisplayTemplate,
                 CellEditingTemplate = connectionTemplate,
                 Width = 250  // 🔥 너비 200 → 250으로 증가
-            });
-
-            // SQL 쿼리
-            var queryTemplate = new DataTemplate();
-            var factory = new FrameworkElementFactory(typeof(Button));
-            factory.SetValue(Button.ContentProperty, "📝 편집");
-            factory.SetValue(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(108, 117, 125)));
-            factory.SetValue(Button.ForegroundProperty, Brushes.White);
-            factory.SetValue(Button.BorderThicknessProperty, new Thickness(0));
-            factory.SetValue(Button.HeightProperty, 24.0);
-            factory.SetValue(Button.FontSizeProperty, 10.0);
-            factory.SetValue(Button.CursorProperty, Cursors.Hand);
-            factory.SetValue(Button.MarginProperty, new Thickness(2));
-            factory.SetBinding(Button.TagProperty, new System.Windows.Data.Binding());
-            factory.AddHandler(Button.ClickEvent, new RoutedEventHandler(EditQueryButton_InGrid_Click));
-            queryTemplate.VisualTree = factory;
-
-            dataGrid.Columns.Add(new DataGridTemplateColumn
-            {
-                Header = "SQL 쿼리",
-                CellTemplate = queryTemplate,
-                Width = 120
             });
 
             // 🔥 쿼리 실행 탭 전용 컬럼들 - 탭 인덱스 기준으로 변경

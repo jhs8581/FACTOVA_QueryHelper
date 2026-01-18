@@ -429,5 +429,79 @@ namespace FACTOVA_QueryHelper.Controls
                     "오류", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        /// <summary>
+        /// 🔥 비어있는 탭에 쿼리 열기 (외부에서 호출)
+        /// </summary>
+        public void OpenQueryInNewTab(QueryItem query)
+        {
+            try
+            {
+                // QueryExecutor 배열 (1~10)
+                var executors = new[] 
+                { 
+                    QueryExecutor1, QueryExecutor2, QueryExecutor3, QueryExecutor4, QueryExecutor5,
+                    QueryExecutor6, QueryExecutor7, QueryExecutor8, QueryExecutor9, QueryExecutor10
+                };
+
+                // 비어있는 탭 찾기 (쿼리가 없거나 기본 쿼리인 탭)
+                int targetIndex = -1;
+                for (int i = 0; i < executors.Length; i++)
+                {
+                    var executor = executors[i];
+                    var currentQuery = executor.GetCurrentQuery();
+                    
+                    if (string.IsNullOrWhiteSpace(currentQuery) || 
+                        currentQuery.Trim().StartsWith("-- 쿼리를 입력하세요") ||
+                        currentQuery.Trim() == "SELECT * FROM")
+                    {
+                        targetIndex = i;
+                        break;
+                    }
+                }
+
+                // 비어있는 탭이 없으면 첫 번째 탭 사용
+                if (targetIndex == -1)
+                {
+                    targetIndex = 0;
+                    var result = MessageBox.Show(
+                        "비어있는 쿼리 탭이 없습니다.\n첫 번째 탭에 쿼리를 덮어쓰시겠습니까?",
+                        "확인",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+                    
+                    if (result != MessageBoxResult.Yes)
+                        return;
+                }
+
+                // 해당 탭 선택
+                QueryTabControl.SelectedIndex = targetIndex;
+                var targetExecutor = executors[targetIndex];
+
+                // 접속 정보 설정 (있는 경우)
+                if (query.ConnectionInfoId.HasValue && query.ConnectionInfoId.Value > 0)
+                {
+                    targetExecutor.SetConnectionInfoId(query.ConnectionInfoId.Value);
+                }
+
+                // 쿼리 설정
+                targetExecutor.SetQuery(query.Query ?? "");
+
+                // 탭 이름 변경
+                var tabItem = QueryTabControl.Items[targetIndex] as TabItem;
+                if (tabItem != null)
+                {
+                    tabItem.Header = query.BizName ?? query.QueryName ?? $"Query {targetIndex + 1}";
+                }
+
+                System.Diagnostics.Debug.WriteLine($"📤 Query opened in tab {targetIndex + 1}: {query.BizName}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Error opening query in tab: {ex.Message}");
+                MessageBox.Show($"쿼리 탭 열기 중 오류가 발생했습니다:\n{ex.Message}", 
+                    "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
     }
 }

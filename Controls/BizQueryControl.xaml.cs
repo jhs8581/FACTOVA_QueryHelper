@@ -383,6 +383,38 @@ namespace FACTOVA_QueryHelper.Controls
             }
         }
 
+        /// <summary>
+        /// 🔥 쿼리 탭으로 열기 버튼 클릭
+        /// </summary>
+        private void OpenInQueryTabButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is QueryItem query)
+            {
+                try
+                {
+                    // MainWindow 찾기
+                    var mainWindow = Window.GetWindow(this) as MainWindow;
+                    if (mainWindow != null)
+                    {
+                        // 쿼리 실행 탭으로 이동하고 쿼리 전달
+                        mainWindow.OpenQueryInEditorTab(query);
+                        UpdateStatus($"'{query.BizName}' 쿼리를 쿼리 실행 탭에서 열었습니다.", Colors.Blue);
+                    }
+                    else
+                    {
+                        MessageBox.Show("메인 윈도우를 찾을 수 없습니다.", "오류",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"쿼리 탭 열기 실패:\n{ex.Message}", "오류",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    UpdateStatus($"쿼리 탭 열기 실패: {ex.Message}", Colors.Red);
+                }
+            }
+        }
+
         #endregion
 
         /// <summary>

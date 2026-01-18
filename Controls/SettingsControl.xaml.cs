@@ -841,17 +841,17 @@ namespace FACTOVA_QueryHelper.Controls
         {
             return new List<TabSetting>
             {
-                new TabSetting { TabId = "LogAnalysis", TabName = "실시간 모니터링", IsVisible = true, Order = 0 },
+                new TabSetting { TabId = "LogAnalysis", TabName = "📊 실시간 모니터링", IsVisible = true, Order = 0 },
                 new TabSetting { TabId = "GmesInfo", TabName = "GMES 정보 조회", IsVisible = true, Order = 1 },
-                new TabSetting { TabId = "GmesInfoNew", TabName = "GMES 정보 조회 (New)", IsVisible = true, Order = 2 },
-                new TabSetting { TabId = "BizQuery", TabName = "비즈 쿼리 조회", IsVisible = true, Order = 3 },
-                new TabSetting { TabId = "QueryManagement", TabName = "쿼리 관리", IsVisible = true, Order = 4 },
-                new TabSetting { TabId = "QueryEditor", TabName = "쿼리 실행", IsVisible = true, Order = 5 },
+                new TabSetting { TabId = "GmesInfoNew", TabName = "🏭 생산 정보 조회", IsVisible = true, Order = 2 },
+                new TabSetting { TabId = "BizQuery", TabName = "📂 비즈 쿼리 조회", IsVisible = true, Order = 3 },
+                new TabSetting { TabId = "QueryManagement", TabName = "📝 쿼리 관리", IsVisible = true, Order = 4 },
+                new TabSetting { TabId = "QueryEditor", TabName = "▶️ 쿼리 실행", IsVisible = true, Order = 5 },
                 new TabSetting { TabId = "NerpValidation", TabName = "🔍 NERP 검증", IsVisible = true, Order = 6 },
-                new TabSetting { TabId = "SfcMonitoring", TabName = "SFC 모니터링", IsVisible = true, Order = 7 },
-                new TabSetting { TabId = "BizTransform", TabName = "비즈 변환", IsVisible = true, Order = 8 },
-                new TabSetting { TabId = "InTransform", TabName = "IN 조건 변환", IsVisible = true, Order = 9 },
-                new TabSetting { TabId = "Settings", TabName = "설정", IsVisible = true, Order = 10 },
+                new TabSetting { TabId = "SfcMonitoring", TabName = "📡 SFC 모니터링", IsVisible = true, Order = 7 },
+                new TabSetting { TabId = "BizTransform", TabName = "🔄 비즈 변환", IsVisible = true, Order = 8 },
+                new TabSetting { TabId = "InTransform", TabName = "📋 IN 조건 변환", IsVisible = true, Order = 9 },
+                new TabSetting { TabId = "Settings", TabName = "⚙️ 설정", IsVisible = true, Order = 10 },
                 new TabSetting { TabId = "Help", TabName = "📖 도움말", IsVisible = true, Order = 11 }
             };
         }
@@ -864,16 +864,26 @@ namespace FACTOVA_QueryHelper.Controls
             if (_sharedData == null) return;
 
             var tabSettings = _sharedData.Settings.TabSettings;
+            var defaultSettings = GetDefaultTabSettings();
             
             // 설정이 없으면 기본값 사용
             if (tabSettings == null || tabSettings.Count == 0)
             {
-                tabSettings = GetDefaultTabSettings();
+                tabSettings = defaultSettings;
             }
             else
             {
+                // 🔥 기존 설정의 탭 이름을 최신 기본값으로 업데이트
+                foreach (var existingTab in tabSettings)
+                {
+                    var defaultTab = defaultSettings.FirstOrDefault(d => d.TabId == existingTab.TabId);
+                    if (defaultTab != null)
+                    {
+                        existingTab.TabName = defaultTab.TabName;
+                    }
+                }
+                
                 // 새로 추가된 탭이 있으면 추가
-                var defaultSettings = GetDefaultTabSettings();
                 foreach (var defaultTab in defaultSettings)
                 {
                     if (!tabSettings.Any(t => t.TabId == defaultTab.TabId))

@@ -278,5 +278,46 @@ namespace FACTOVA_QueryHelper
             // 메인 윈도우에는 상태바가 없으므로 디버그 출력만 수행
             System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss}] {message}");
         }
+
+        /// <summary>
+        /// 🔥 쿼리 실행 탭에서 쿼리 열기
+        /// </summary>
+        public void OpenQueryInEditorTab(QueryItem query)
+        {
+            try
+            {
+                // 쿼리 실행 탭 찾기
+                TabItem? queryEditorTab = null;
+                foreach (TabItem tab in MainTabControl.Items)
+                {
+                    if (tab.Content is QueryEditorView)
+                    {
+                        queryEditorTab = tab;
+                        break;
+                    }
+                }
+
+                if (queryEditorTab != null)
+                {
+                    // 쿼리 실행 탭으로 이동
+                    MainTabControl.SelectedItem = queryEditorTab;
+                    
+                    // QueryEditorView에 쿼리 전달
+                    QueryEditorView.OpenQueryInNewTab(query);
+                    
+                    System.Diagnostics.Debug.WriteLine($"📤 Query '{query.BizName}' opened in Query Editor tab");
+                }
+                else
+                {
+                    MessageBox.Show("쿼리 실행 탭을 찾을 수 없습니다.", "오류",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"쿼리 탭 열기 실패:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
     }
 }
