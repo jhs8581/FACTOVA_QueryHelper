@@ -931,6 +931,40 @@ namespace FACTOVA_QueryHelper.Controls
             };
             executeButton.Click += async (s, e) => await ExecuteDynamicGridQuery(gridInfo);
 
+            // 🔥 팝업 보기 버튼
+            var popupButton = new Button
+            {
+                Content = "🔍",
+                Width = 30,
+                Height = 28,
+                Background = new SolidColorBrush(Color.FromRgb(108, 117, 125)),
+                Foreground = Brushes.White,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand,
+                FontWeight = FontWeights.Bold,
+                FontSize = 14,
+                Margin = new Thickness(0, 0, 5, 0),
+                ToolTip = "팝업으로 보기"
+            };
+            popupButton.Click += (s, e) => ShowGridInPopup(gridInfo);
+
+            // 🔥 셀 상세 보기 버튼 (피벗)
+            var cellDetailButton = new Button
+            {
+                Content = "📊",
+                Width = 30,
+                Height = 28,
+                Background = new SolidColorBrush(Color.FromRgb(111, 66, 193)), // #6F42C1 보라색
+                Foreground = Brushes.White,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand,
+                FontWeight = FontWeights.Bold,
+                FontSize = 14,
+                Margin = new Thickness(0, 0, 5, 0),
+                ToolTip = "선택 행 상세 보기 (피벗)"
+            };
+            cellDetailButton.Click += (s, e) => ShowCellDetailPopup(gridInfo);
+
             // 쿼리 보기 버튼
             var viewQueryButton = new Button
             {
@@ -1004,6 +1038,8 @@ namespace FACTOVA_QueryHelper.Controls
             headerPanel.Children.Add(gridInfo.QueryComboBox);  // 쿼리 선택 콤보박스
             headerPanel.Children.Add(gridInfo.ClearButton);     // 취소 버튼
             headerPanel.Children.Add(executeButton);            // 실행 버튼
+            headerPanel.Children.Add(popupButton);              // 🔥 팝업 보기 버튼
+            headerPanel.Children.Add(cellDetailButton);         // 🔥 셀 상세 보기 버튼 (피벗)
             headerPanel.Children.Add(viewQueryButton);          // 쿼리 보기 버튼
             headerPanel.Children.Add(gridInfo.ResultInfoTextBlock); // 결과 정보
 
@@ -1019,6 +1055,92 @@ namespace FACTOVA_QueryHelper.Controls
         private void UpdateAllGridComboBoxes()
         {
             BindGridComboBoxes(null);
+        }
+
+        // 🔥 그리드 팝업으로 표시하는 메서드
+        private void ShowGridInPopup(DynamicGridInfo gridInfo)
+        {
+            if (gridInfo.DataGrid.ItemsSource == null)
+            {
+                MessageBox.Show("조회된 데이터가 없습니다.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var dataView = gridInfo.DataGrid.ItemsSource as DataView;
+            if (dataView == null || dataView.Count == 0)
+            {
+                MessageBox.Show("조회된 데이터가 없습니다.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                var popupWindow = new Windows.GridPopupWindow
+                {
+                    Owner = Window.GetWindow(this),
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+                };
+
+                // 제목 설정
+                var queryName = (gridInfo.QueryComboBox.SelectedItem as QueryItem)?.BizName ?? $"그리드 {gridInfo.Index}";
+                popupWindow.SetTitle(queryName);
+
+                // 정보 설정
+                var info = gridInfo.ResultInfoTextBlock.Text;
+                popupWindow.SetInfo(info);
+
+                // 데이터 설정
+                popupWindow.SetDataSource(dataView);
+
+                popupWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"팝업 표시 실패:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // 🔥 선택된 행의 데이터를 피벗 형태로 표시하는 팝업
+        private void ShowCellDetailPopup(DynamicGridInfo gridInfo)
+        {
+            if (gridInfo.DataGrid.SelectedItem == null)
+            {
+                MessageBox.Show("행을 선택해주세요.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                var popup = new Windows.CellDetailPopupWindow
+                {
+                    Owner = Window.GetWindow(this),
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+                };
+
+                // DataRowView인 경우 (DataTable 바인딩)
+                if (gridInfo.DataGrid.SelectedItem is DataRowView rowView)
+                {
+                    int rowIndex = gridInfo.DataGrid.Items.IndexOf(rowView);
+                    popup.SetDataFromDataRowView(rowView, rowIndex);
+                }
+                // 일반 객체인 경우
+                else
+                {
+                    int rowIndex = gridInfo.DataGrid.SelectedIndex;
+                    popup.SetDataFromObject(gridInfo.DataGrid.SelectedItem, rowIndex);
+                }
+
+                popup.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"셀 상세 보기 실패:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async System.Threading.Tasks.Task ExecuteDynamicGridQuery(DynamicGridInfo gridInfo)

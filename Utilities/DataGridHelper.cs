@@ -53,7 +53,7 @@ namespace FACTOVA_QueryHelper.Utilities
             // 🎯 CellStyle은 App.xaml의 전역 스타일 사용 (ControlTemplate으로 세로 중앙 정렬)
             // dataGrid.CellStyle을 명시적으로 설정하지 않음 → App.xaml 암묵적 스타일 적용
 
-            // 🔥 모든 DataGridTextColumn에 TextWrapping 적용
+            // 🔥 모든 DataGridTextColumn에 TextWrapping + DateTime 포맷 적용
             dataGrid.AutoGeneratingColumn += (s, e) =>
             {
                 if (e.Column is DataGridTextColumn textColumn)
@@ -62,6 +62,15 @@ namespace FACTOVA_QueryHelper.Utilities
                     style.Setters.Add(new Setter(TextBlock.TextWrappingProperty, TextWrapping.Wrap));
                     style.Setters.Add(new Setter(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center));
                     textColumn.ElementStyle = style;
+                    
+                    // 🔥 DateTime 타입 컬럼 자동 포맷 (yyyy-MM-dd HH:mm:ss)
+                    if (e.PropertyType == typeof(DateTime) || e.PropertyType == typeof(DateTime?))
+                    {
+                        textColumn.Binding = new System.Windows.Data.Binding(e.PropertyName)
+                        {
+                            StringFormat = "yyyy-MM-dd HH:mm:ss"
+                        };
+                    }
                 }
             };
 

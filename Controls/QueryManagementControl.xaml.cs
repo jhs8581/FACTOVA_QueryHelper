@@ -801,6 +801,7 @@ namespace FACTOVA_QueryHelper.Controls
                 AlternatingRowBackground = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
                 GridLinesVisibility = DataGridGridLinesVisibility.All,
                 HeadersVisibility = DataGridHeadersVisibility.All,
+                FontFamily = new FontFamily("Malgun Gothic, Segoe UI, sans-serif"), // 🔥 폰트 통일
                 FontSize = 11,
                 BorderThickness = new Thickness(1),
                 BorderBrush = new SolidColorBrush(Color.FromRgb(224, 224, 224)),

@@ -926,6 +926,7 @@ namespace FACTOVA_QueryHelper.Controls
                     SelectionUnit = DataGridSelectionUnit.CellOrRowHeader,
                     ClipboardCopyMode = DataGridClipboardCopyMode.IncludeHeader,
                     ItemsSource = result.DefaultView,
+                    FontFamily = new FontFamily("Malgun Gothic, Segoe UI, sans-serif"), // 🔥 폰트 통일
                     FontSize = fontSize
                 };
                 
@@ -952,7 +953,7 @@ namespace FACTOVA_QueryHelper.Controls
                 // 🔥 CellStyle은 App.xaml 전역 스타일 사용 (ControlTemplate으로 세로 중앙 정렬)
                 // 직접 CellStyle을 설정하면 App.xaml의 암묵적 스타일이 무시되므로 제거
                 
-                // AutoGeneratingColumn 이벤트 핸들러 추가 (숫자 포맷 등)
+                // AutoGeneratingColumn 이벤트 핸들러 추가 (숫자 포맷, DateTime 포맷 등)
                 dataGrid.AutoGeneratingColumn += (s, e) =>
                 {
                     // 숫자 타입 컬럼 자동 인식
@@ -962,6 +963,10 @@ namespace FACTOVA_QueryHelper.Controls
                                            e.PropertyType == typeof(double) || 
                                            e.PropertyType == typeof(float) ||
                                            e.PropertyType == typeof(short);
+                    
+                    // 🔥 DateTime 타입 컬럼 자동 인식
+                    bool isDateTimeColumn = e.PropertyType == typeof(DateTime) || 
+                                            e.PropertyType == typeof(DateTime?);
                     
                     if (e.Column is DataGridTextColumn textColumn)
                     {
@@ -976,6 +981,14 @@ namespace FACTOVA_QueryHelper.Controls
                             textColumn.Binding = new System.Windows.Data.Binding(e.PropertyName)
                             {
                                 StringFormat = "#,##0.######"
+                            };
+                        }
+                        else if (isDateTimeColumn)
+                        {
+                            // 🔥 DateTime 컬럼 yyyy-MM-dd HH:mm:ss 포맷
+                            textColumn.Binding = new System.Windows.Data.Binding(e.PropertyName)
+                            {
+                                StringFormat = "yyyy-MM-dd HH:mm:ss"
                             };
                         }
                         

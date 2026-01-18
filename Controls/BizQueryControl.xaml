@@ -209,6 +209,7 @@
                           Grid.Row="1"
                           AutoGenerateColumns="False"
                           SelectionMode="Single"
+                          FontFamily="Malgun Gothic, Segoe UI, sans-serif"
                           SelectionChanged="QueriesDataGrid_SelectionChanged">
                     
                     <!-- 🔥 RowColor 바인딩을 위한 커스텀 RowStyle -->

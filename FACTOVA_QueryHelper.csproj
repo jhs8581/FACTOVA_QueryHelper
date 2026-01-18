@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="Windows\CellDetailPopupWindow.xaml.cs" />
     <Compile Include="Windows\GridPopupWindow.xaml.cs" />
     <Compile Include="Windows\XmlParameterInputWindow.xaml.cs" />
   </ItemGroup>
@@ -62,6 +63,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Page Include="Windows\CellDetailPopupWindow.xaml" />
     <Page Include="Windows\GridPopupWindow.xaml" />
     <Page Include="Windows\XmlParameterInputWindow.xaml" />
   </ItemGroup>

@@ -906,6 +906,23 @@ namespace FACTOVA_QueryHelper.Controls
             };
             popupButton.Click += (s, e) => ShowGridInPopup(gridInfo);
 
+            // 🔥 셀 상세 보기 버튼 (피벗)
+            var cellDetailButton = new Button
+            {
+                Content = "📊",
+                Width = 30,
+                Height = 28,
+                Background = new SolidColorBrush(Color.FromRgb(111, 66, 193)), // #6F42C1 보라색
+                Foreground = Brushes.White,
+                BorderThickness = new Thickness(0),
+                Cursor = Cursors.Hand,
+                FontWeight = FontWeights.Bold,
+                FontSize = 14,
+                Margin = new Thickness(0, 0, 5, 0),
+                ToolTip = "선택 행 상세 보기 (피벗)"
+            };
+            cellDetailButton.Click += (s, e) => ShowCellDetailPopup(gridInfo);
+
             // 쿼리 보기 버튼
             var viewQueryButton = new Button
             {
@@ -1068,6 +1085,7 @@ namespace FACTOVA_QueryHelper.Controls
             headerPanel.Children.Add(gridInfo.ClearButton);     // 취소 버튼
             headerPanel.Children.Add(executeButton);            // 실행 버튼
             headerPanel.Children.Add(popupButton);              // 🔥 팝업 보기 버튼
+            headerPanel.Children.Add(cellDetailButton);         // 🔥 셀 상세 보기 버튼 (피벗)
             headerPanel.Children.Add(viewQueryButton);          // 쿼리 보기 버튼
             headerPanel.Children.Add(validateParamsButton);     // 파라미터 확인 버튼
             headerPanel.Children.Add(gridInfo.ResultInfoTextBlock); // 결과 정보
@@ -1123,6 +1141,46 @@ namespace FACTOVA_QueryHelper.Controls
             catch (Exception ex)
             {
                 MessageBox.Show($"팝업 표시 실패:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // 🔥 선택된 행의 데이터를 피벗 형태로 표시하는 팝업
+        private void ShowCellDetailPopup(DynamicGridInfo gridInfo)
+        {
+            if (gridInfo.DataGrid.SelectedItem == null)
+            {
+                MessageBox.Show("행을 선택해주세요.", "알림",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                var popup = new Windows.CellDetailPopupWindow
+                {
+                    Owner = Window.GetWindow(this),
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+                };
+
+                // DataRowView인 경우 (DataTable 바인딩)
+                if (gridInfo.DataGrid.SelectedItem is DataRowView rowView)
+                {
+                    int rowIndex = gridInfo.DataGrid.Items.IndexOf(rowView);
+                    popup.SetDataFromDataRowView(rowView, rowIndex);
+                }
+                // 일반 객체인 경우
+                else
+                {
+                    int rowIndex = gridInfo.DataGrid.SelectedIndex;
+                    popup.SetDataFromObject(gridInfo.DataGrid.SelectedItem, rowIndex);
+                }
+
+                popup.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"셀 상세 보기 실패:\n{ex.Message}", "오류",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
