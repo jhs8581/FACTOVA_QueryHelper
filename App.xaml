@@ -25,6 +25,7 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Background" Value="White"/>
             <Setter Property="HeadersVisibility" Value="All"/>
+            <Setter Property="FontFamily" Value="Malgun Gothic, Segoe UI, sans-serif"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="RowHeight" Value="30"/>
         </Style>

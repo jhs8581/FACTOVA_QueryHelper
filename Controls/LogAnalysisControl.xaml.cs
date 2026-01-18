@@ -949,20 +949,8 @@ namespace FACTOVA_QueryHelper.Controls
                     VerticalAlignment.Center));
                 dataGrid.ColumnHeaderStyle = headerStyle;
                 
-                // 🔥 NERP 스타일 셀 (선택 시 연한 파란색 + 검정 글자)
-                var cellStyle = new Style(typeof(DataGridCell));
-                cellStyle.Setters.Add(new Setter(DataGridCell.PaddingProperty, new Thickness(5, 3, 5, 3)));
-                
-                var selectedTrigger = new Trigger
-                {
-                    Property = DataGridCell.IsSelectedProperty,
-                    Value = true
-                };
-                selectedTrigger.Setters.Add(new Setter(DataGridCell.BackgroundProperty, 
-                    new SolidColorBrush(Color.FromRgb(227, 242, 253)))); // #E3F2FD
-                selectedTrigger.Setters.Add(new Setter(DataGridCell.ForegroundProperty, Brushes.Black));
-                cellStyle.Triggers.Add(selectedTrigger);
-                dataGrid.CellStyle = cellStyle;
+                // 🔥 CellStyle은 App.xaml 전역 스타일 사용 (ControlTemplate으로 세로 중앙 정렬)
+                // 직접 CellStyle을 설정하면 App.xaml의 암묵적 스타일이 무시되므로 제거
                 
                 // AutoGeneratingColumn 이벤트 핸들러 추가 (숫자 포맷 등)
                 dataGrid.AutoGeneratingColumn += (s, e) =>
@@ -975,18 +963,23 @@ namespace FACTOVA_QueryHelper.Controls
                                            e.PropertyType == typeof(float) ||
                                            e.PropertyType == typeof(short);
                     
-                    if (e.Column is DataGridTextColumn textColumn && isNumericColumn)
+                    if (e.Column is DataGridTextColumn textColumn)
                     {
-                        // 숫자 컬럼 오른쪽 정렬 + 콤마 포맷
                         var elementStyle = new Style(typeof(TextBlock));
-                        elementStyle.Setters.Add(new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Right));
-                        elementStyle.Setters.Add(new Setter(TextBlock.PaddingProperty, new Thickness(5, 3, 5, 3)));
-                        textColumn.ElementStyle = elementStyle;
+                        elementStyle.Setters.Add(new Setter(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center));
+                        elementStyle.Setters.Add(new Setter(TextBlock.TextWrappingProperty, TextWrapping.Wrap));
                         
-                        textColumn.Binding = new System.Windows.Data.Binding(e.PropertyName)
+                        if (isNumericColumn)
                         {
-                            StringFormat = "#,##0.######"
-                        };
+                            // 숫자 컬럼 오른쪽 정렬 + 콤마 포맷
+                            elementStyle.Setters.Add(new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Right));
+                            textColumn.Binding = new System.Windows.Data.Binding(e.PropertyName)
+                            {
+                                StringFormat = "#,##0.######"
+                            };
+                        }
+                        
+                        textColumn.ElementStyle = elementStyle;
                     }
                     
                     e.Column.MinWidth = 80;
