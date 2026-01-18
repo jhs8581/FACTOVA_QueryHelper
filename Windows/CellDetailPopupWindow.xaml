@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="셀 상세 보기" 
-        Height="800" Width="700"
+        Height="800" Width="1200"
         WindowStartupLocation="CenterOwner"
         Background="#FFF8F9FA"
         ResizeMode="CanResizeWithGrip">
@@ -101,53 +101,110 @@
         </Border>
 
         <!-- 피벗 그리드 영역 -->
-        <Border Grid.Row="2" 
-                Background="White" 
-                BorderBrush="#FFE0E0E0" 
-                BorderThickness="1" 
-                CornerRadius="8"
-                Padding="10">
-            <DataGrid x:Name="PivotDataGrid" 
-                      AutoGenerateColumns="False"
-                      CanUserAddRows="False"
-                      IsReadOnly="True"
-                      GridLinesVisibility="All"
-                      HeadersVisibility="Column"
-                      SelectionMode="Single"
-                      SelectionUnit="FullRow"
-                      FontFamily="Malgun Gothic, Segoe UI, sans-serif"
-                      FontSize="12"
-                      ClipboardCopyMode="IncludeHeader">
-                <DataGrid.Columns>
-                    <!-- 컬럼명 -->
-                    <DataGridTextColumn Header="컬럼명" 
-                                        Binding="{Binding ColumnName}" 
-                                        Width="220">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="Foreground" Value="#FF0078D7"/>
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="Padding" Value="5,3"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-                    
-                    <!-- 값 -->
-                    <DataGridTextColumn Header="값" 
-                                        Binding="{Binding Value}" 
-                                        Width="*">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="TextWrapping" Value="Wrap"/>
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="Padding" Value="5,3"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-                </DataGrid.Columns>
-            </DataGrid>
-        </Border>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 왼쪽: DataGrid -->
+            <Border Grid.Column="0"
+                    Background="White" 
+                    BorderBrush="#FFE0E0E0" 
+                    BorderThickness="1" 
+                    CornerRadius="8"
+                    Padding="10">
+                <DataGrid x:Name="PivotDataGrid" 
+                          AutoGenerateColumns="False"
+                          CanUserAddRows="False"
+                          IsReadOnly="True"
+                          GridLinesVisibility="All"
+                          HeadersVisibility="Column"
+                          SelectionMode="Single"
+                          SelectionUnit="FullRow"
+                          FontFamily="Malgun Gothic, Segoe UI, sans-serif"
+                          FontSize="12"
+                          ClipboardCopyMode="IncludeHeader"
+                          SelectionChanged="PivotDataGrid_SelectionChanged">
+                    <DataGrid.Columns>
+                        <!-- 컬럼명 -->
+                        <DataGridTextColumn Header="컬럼명" 
+                                            Binding="{Binding ColumnName}" 
+                                            Width="220">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="Foreground" Value="#FF0078D7"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Padding" Value="5,8"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        
+                        <!-- 값 (미리보기) -->
+                        <DataGridTextColumn Header="값" 
+                                            Binding="{Binding Value}" 
+                                            Width="*">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Padding" Value="5,8"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+            <!-- 오른쪽: 확대 보기 영역 -->
+            <Border Grid.Column="2"
+                    Background="White" 
+                    BorderBrush="#FFE0E0E0" 
+                    BorderThickness="1" 
+                    CornerRadius="8"
+                    Padding="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 헤더 -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBlock Text="🔍" 
+                                   FontSize="16" 
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,5,0"/>
+                        <TextBlock Text="선택된 값 확대 보기" 
+                                   FontSize="14" 
+                                   FontWeight="Bold"
+                                   Foreground="#FF0078D7"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- 확대 TextBox -->
+                    <ScrollViewer Grid.Row="1" 
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Auto">
+                        <TextBox x:Name="DetailTextBox"
+                                 Text="← 왼쪽에서 행을 선택하면 값이 여기에 표시됩니다."
+                                 TextWrapping="Wrap"
+                                 IsReadOnly="True"
+                                 FontFamily="Malgun Gothic, Consolas"
+                                 FontSize="13"
+                                 Padding="10"
+                                 Background="#FFF8F9FA"
+                                 BorderThickness="0"
+                                 Foreground="#FF495057"
+                                 AcceptsReturn="True"
+                                 VerticalScrollBarVisibility="Disabled"
+                                 HorizontalScrollBarVisibility="Disabled"/>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
 
         <!-- 하단 버튼 영역 -->
         <Border Grid.Row="3" 

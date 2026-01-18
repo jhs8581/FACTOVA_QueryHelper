@@ -29,6 +29,26 @@ namespace FACTOVA_QueryHelper.Windows
         }
 
         /// <summary>
+        /// DataGrid 행 선택 시 우측 확대 보기 영역에 값 표시
+        /// </summary>
+        private void PivotDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PivotDataGrid.SelectedItem is PivotItem selectedItem)
+            {
+                DetailTextBox.Text = selectedItem.Value ?? "(빈 값)";
+            }
+        }
+
+        /// <summary>
+        /// DataGrid 행 로딩 시 멀티라인 콘텐츠에 맞게 높이 조정
+        /// </summary>
+        private void PivotDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
+        {
+            // 행 높이를 자동으로 조정되도록 설정 제거
+            // TextWrapping="Wrap"과 함께 자동으로 높이가 조정됩니다
+        }
+
+        /// <summary>
         /// DataRowView에서 데이터를 피벗 형태로 변환하여 설정
         /// </summary>
         public void SetDataFromDataRowView(DataRowView rowView, int rowIndex = -1)
@@ -317,5 +337,10 @@ namespace FACTOVA_QueryHelper.Windows
         public string ColumnName { get; set; } = "";
         public string Value { get; set; } = "";
         public object? OriginalValue { get; set; }
+    
+        /// <summary>
+        /// 멀티라인 여부 (줄바꿈 포함)
+        /// </summary>
+        public bool IsMultiLine => Value.Contains('\n') || Value.Contains('\r');
     }
 }
