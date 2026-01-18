@@ -288,11 +288,12 @@
                               LoadingRow="DataGrid_LoadingRow"
                               ClipboardCopyMode="ExcludeHeader"
                               SelectionMode="Single"
-                              SelectionUnit="FullRow"
+                              SelectionUnit="Cell"
                               CanUserResizeColumns="True"
                               CanUserReorderColumns="False"
                               CanUserSortColumns="False"
-                              SelectionChanged="PlanInfoDataGrid_SelectionChanged">
+                              SelectionChanged="PlanInfoDataGrid_SelectionChanged"
+                              PreviewMouseLeftButtonDown="PlanInfoDataGrid_PreviewMouseLeftButtonDown">
                         <!-- 🔥 CellStyle은 App.xaml 전역 스타일 사용 -->
                         <DataGrid.Columns>
                             <!-- 파라미터 컬럼 (편집 가능) -->

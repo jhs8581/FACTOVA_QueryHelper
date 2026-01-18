@@ -56,6 +56,9 @@ namespace FACTOVA_QueryHelper.Controls
             PlanInfoDataGrid.LoadingRow += DataGrid_LoadingRow;
             PlanInfoDataGrid.SelectionChanged += PlanInfoDataGrid_SelectionChanged;
             
+            // 🔥 더블클릭으로 바로 편집 모드 진입
+            PlanInfoDataGrid.MouseDoubleClick += PlanInfoDataGrid_MouseDoubleClick;
+            
             // 🔥 행 번호 표시 활성화 (NERP 스타일)
             DataGridHelper.EnableRowNumbersWithNerpStyle(PlanInfoDataGrid);
             
@@ -442,6 +445,60 @@ namespace FACTOVA_QueryHelper.Controls
         {
             _selectedParameter = PlanInfoDataGrid.SelectedItem as ParameterInfo;
             DeleteParameterButton.IsEnabled = _selectedParameter != null;
+        }
+
+        /// <summary>
+        /// 🔥 파라미터 DataGrid 더블클릭으로 바로 편집 모드 진입
+        /// </summary>
+        private void PlanInfoDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // 더블클릭은 더 이상 필요 없음 - 싱글클릭으로 처리
+        }
+
+        /// <summary>
+        /// 🔥 파라미터 DataGrid 싱글클릭으로 바로 편집 모드 진입
+        /// </summary>
+        private void PlanInfoDataGrid_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // 클릭한 요소가 DataGridCell인지 확인
+            var originalSource = e.OriginalSource as DependencyObject;
+            
+            // DataGridCell 찾기
+            DataGridCell? cell = null;
+            while (originalSource != null)
+            {
+                if (originalSource is DataGridCell dgCell)
+                {
+                    cell = dgCell;
+                    break;
+                }
+                originalSource = VisualTreeHelper.GetParent(originalSource);
+            }
+
+            if (cell != null && !cell.IsEditing && !cell.IsReadOnly)
+            {
+                // 셀이 이미 선택된 상태가 아니면 선택
+                if (!cell.IsFocused)
+                {
+                    cell.Focus();
+                }
+
+                // 편집 모드로 진입
+                var dataGrid = sender as DataGrid;
+                if (dataGrid != null)
+                {
+                    // 현재 셀을 선택하고 편집 모드로 진입
+                    if (dataGrid.SelectionUnit != DataGridSelectionUnit.FullRow)
+                    {
+                        if (!cell.IsSelected)
+                        {
+                            cell.IsSelected = true;
+                        }
+                    }
+                    
+                    dataGrid.BeginEdit(e);
+                }
+            }
         }
 
         /// <summary>

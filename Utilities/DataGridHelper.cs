@@ -60,7 +60,7 @@ namespace FACTOVA_QueryHelper.Utilities
             // 🎯 CellStyle은 App.xaml의 전역 스타일 사용 (ControlTemplate으로 세로 중앙 정렬)
             // dataGrid.CellStyle을 명시적으로 설정하지 않음 → App.xaml 암묵적 스타일 적용
 
-            // 🔥 모든 DataGridTextColumn에 TextWrapping + DateTime 포맷 적용
+            // 🔥 모든 DataGridTextColumn에 TextWrapping + DateTime 포맷 + 숫자 우측정렬 적용
             dataGrid.AutoGeneratingColumn += (s, e) =>
             {
                 if (e.Column is DataGridTextColumn textColumn)
@@ -68,16 +68,39 @@ namespace FACTOVA_QueryHelper.Utilities
                     var style = new Style(typeof(TextBlock));
                     style.Setters.Add(new Setter(TextBlock.TextWrappingProperty, TextWrapping.Wrap));
                     style.Setters.Add(new Setter(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center));
-                    textColumn.ElementStyle = style;
                     
+                    // 🔥 숫자 타입 컬럼 우측 정렬 + 천단위 구분자
+                    if (IsNumericType(e.PropertyType))
+                    {
+                        style.Setters.Add(new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Right));
+                        style.Setters.Add(new Setter(TextBlock.PaddingProperty, new Thickness(0, 0, 8, 0)));
+                        
+                        // 정수형은 천단위 구분자, 실수형은 소수점 2자리
+                        if (IsIntegerType(e.PropertyType))
+                        {
+                            textColumn.Binding = new System.Windows.Data.Binding(e.PropertyName)
+                            {
+                                StringFormat = "#,##0"
+                            };
+                        }
+                        else
+                        {
+                            textColumn.Binding = new System.Windows.Data.Binding(e.PropertyName)
+                            {
+                                StringFormat = "#,##0.##"
+                            };
+                        }
+                    }
                     // 🔥 DateTime 타입 컬럼 자동 포맷 (yyyy-MM-dd HH:mm:ss)
-                    if (e.PropertyType == typeof(DateTime) || e.PropertyType == typeof(DateTime?))
+                    else if (e.PropertyType == typeof(DateTime) || e.PropertyType == typeof(DateTime?))
                     {
                         textColumn.Binding = new System.Windows.Data.Binding(e.PropertyName)
                         {
                             StringFormat = "yyyy-MM-dd HH:mm:ss"
                         };
                     }
+                    
+                    textColumn.ElementStyle = style;
                 }
             };
 
@@ -512,6 +535,45 @@ namespace FACTOVA_QueryHelper.Utilities
 
             // DataGrid에 스타일 적용
             dataGrid.RowHeaderStyle = rowHeaderStyle;
+        }
+
+        /// <summary>
+        /// 🔥 숫자 타입 여부 확인 (정수 + 실수)
+        /// </summary>
+        private static bool IsNumericType(Type type)
+        {
+            // Nullable 타입인 경우 내부 타입 확인
+            var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+            
+            return underlyingType == typeof(byte) ||
+                   underlyingType == typeof(sbyte) ||
+                   underlyingType == typeof(short) ||
+                   underlyingType == typeof(ushort) ||
+                   underlyingType == typeof(int) ||
+                   underlyingType == typeof(uint) ||
+                   underlyingType == typeof(long) ||
+                   underlyingType == typeof(ulong) ||
+                   underlyingType == typeof(float) ||
+                   underlyingType == typeof(double) ||
+                   underlyingType == typeof(decimal);
+        }
+
+        /// <summary>
+        /// 🔥 정수 타입 여부 확인
+        /// </summary>
+        private static bool IsIntegerType(Type type)
+        {
+            // Nullable 타입인 경우 내부 타입 확인
+            var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+            
+            return underlyingType == typeof(byte) ||
+                   underlyingType == typeof(sbyte) ||
+                   underlyingType == typeof(short) ||
+                   underlyingType == typeof(ushort) ||
+                   underlyingType == typeof(int) ||
+                   underlyingType == typeof(uint) ||
+                   underlyingType == typeof(long) ||
+                   underlyingType == typeof(ulong);
         }
     }
 }
