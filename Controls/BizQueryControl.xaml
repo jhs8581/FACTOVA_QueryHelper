@@ -238,79 +238,44 @@
                     </DataGrid.RowStyle>
                     
                     <DataGrid.Columns>
+                        <!-- 순번: 특수 스타일 유지 (가운데정렬, 볼드) -->
                         <DataGridTextColumn Header="순번" Binding="{Binding OrderNumber}" Width="80">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
                                     <Setter Property="FontWeight" Value="Bold"/>
-                                    <Setter Property="FontSize" Value="13"/>
-                                    <Setter Property="Foreground" Value="Black"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
                         
-                        <!-- 🔥 그룹명 컬럼 - 동적으로 표시/숨김 -->
+                        <!-- 🔥 그룹명 컬럼 - 동적으로 표시/숨김, 특수 색상 유지 -->
                         <DataGridTextColumn x:Name="GroupNameColumn" Header="그룹명" Binding="{Binding QueryName}" Width="Auto">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
                                     <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="Padding" Value="5,0"/>
                                     <Setter Property="Foreground" Value="#FF0078D7"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <DataGridTextColumn Header="비즈명" Binding="{Binding BizName}" Width="Auto">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Padding" Value="5,0"/>
-                                    <Setter Property="Foreground" Value="Black"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="비즈명" Binding="{Binding BizName}" Width="Auto"/>
                         
-                        <DataGridTextColumn Header="쿼리비즈명" Binding="{Binding QueryBizName}" Width="Auto">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Padding" Value="5,0"/>
-                                    <Setter Property="Foreground" Value="Black"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="쿼리비즈명" Binding="{Binding QueryBizName}" Width="Auto"/>
                         
-                        <DataGridTextColumn Header="설명" Binding="{Binding Description2}" Width="*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="TextWrapping" Value="Wrap"/>
-                                    <Setter Property="Padding" Value="5,0"/>
-                                    <Setter Property="Foreground" Value="Black"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="설명" Binding="{Binding Description2}" Width="*"/>
 
-                        <DataGridTextColumn Header="TNS" Binding="{Binding TnsName}" Width="120" Visibility="Collapsed">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Padding" Value="5,0"/>
-                                    <Setter Property="Foreground" Value="Black"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="TNS" Binding="{Binding TnsName}" Width="120" Visibility="Collapsed"/>
 
-                        <DataGridTextColumn Header="User ID" Binding="{Binding UserId}" Width="100" Visibility="Collapsed">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Padding" Value="5,0"/>
-                                    <Setter Property="Foreground" Value="Black"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="User ID" Binding="{Binding UserId}" Width="100" Visibility="Collapsed"/>
 
                         <DataGridTextColumn Header="Password" Binding="{Binding Password}" Width="100" Visibility="Collapsed">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Text" Value="••••••••"/>
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
                                     <Setter Property="Foreground" Value="#FF6C757D"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>

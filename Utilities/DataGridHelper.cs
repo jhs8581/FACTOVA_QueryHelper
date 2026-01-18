@@ -67,22 +67,47 @@ namespace FACTOVA_QueryHelper.Utilities
                 {
                     var style = new Style(typeof(TextBlock));
                     style.Setters.Add(new Setter(TextBlock.TextWrappingProperty, TextWrapping.Wrap));
-                    style.Setters.Add(new Setter(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Top));
+                    style.Setters.Add(new Setter(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center));
                     textColumn.ElementStyle = style;
                 }
             };
 
-            // 🔥 이미 존재하는 컬럼에도 TextWrapping 적용
+            // 🔥 이미 존재하는 컬럼에도 TextWrapping + 중앙 정렬 적용
             foreach (var column in dataGrid.Columns)
             {
-                if (column is DataGridTextColumn textColumn && textColumn.ElementStyle == null)
+                if (column is DataGridTextColumn textColumn)
                 {
+                    // 기존 스타일이 있으면 BasedOn으로 확장, 없으면 새로 생성
                     var style = new Style(typeof(TextBlock));
+                    if (textColumn.ElementStyle != null)
+                    {
+                        style.BasedOn = textColumn.ElementStyle;
+                    }
                     style.Setters.Add(new Setter(TextBlock.TextWrappingProperty, TextWrapping.Wrap));
-                    style.Setters.Add(new Setter(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Top));
+                    style.Setters.Add(new Setter(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center));
                     textColumn.ElementStyle = style;
                 }
             }
+
+            // 🔥 Loaded 이벤트에서도 컬럼 스타일 적용 (XAML 바인딩 후 적용되도록)
+            dataGrid.Loaded += (s, e) =>
+            {
+                foreach (var column in dataGrid.Columns)
+                {
+                    if (column is DataGridTextColumn textColumn)
+                    {
+                        var style = new Style(typeof(TextBlock));
+                        if (textColumn.ElementStyle != null && textColumn.ElementStyle.BasedOn == null)
+                        {
+                            // 이미 우리가 적용한 스타일인지 확인 (BasedOn이 없으면 원본)
+                            style.BasedOn = textColumn.ElementStyle;
+                        }
+                        style.Setters.Add(new Setter(TextBlock.TextWrappingProperty, TextWrapping.Wrap));
+                        style.Setters.Add(new Setter(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center));
+                        textColumn.ElementStyle = style;
+                    }
+                }
+            };
 
             // 🎨 스타일이 적용된 RowHeader 사용
             if (useStyledRowHeaders)

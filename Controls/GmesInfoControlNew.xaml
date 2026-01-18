@@ -219,81 +219,111 @@
                               CanUserReorderColumns="False"
                               CanUserSortColumns="False"
                               SelectionChanged="PlanInfoDataGrid_SelectionChanged">
-                        <!-- 🔥 FACTOVA Grid 스타일 자동 적용 (ColumnHeaderStyle, CellStyle 제거) -->
+                        <!-- 🔥 CellStyle로 배경색 처리, TextBlock은 중앙 정렬 -->
+                        <DataGrid.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="0"/>
+                            </Style>
+                        </DataGrid.CellStyle>
                         <DataGrid.Columns>
                             <!-- 파라미터 컬럼 (편집 가능) -->
-                            <DataGridTextColumn Header="파라미터" 
-                                                Binding="{Binding Parameter, UpdateSourceTrigger=PropertyChanged}" 
-                                                Width="190"
-                                                IsReadOnly="False">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="FontWeight" Value="Bold"/>
-                                        <Setter Property="Foreground" Value="Black"/>
-                                        <Setter Property="Background" Value="#FFE3F2FD"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
-                                                <Setter Property="Background" Value="#FFF08080"/>
-                                                <Setter Property="Foreground" Value="White"/>
-                                                <Setter Property="FontWeight" Value="Bold"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                                <DataGridTextColumn.EditingElementStyle>
-                                    <Style TargetType="TextBox">
-                                        <Setter Property="FontWeight" Value="Bold"/>
-                                        <Setter Property="Foreground" Value="Black"/>
-                                        <Setter Property="Background" Value="#FFBBDEFB"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
-                                                <Setter Property="Background" Value="#FFF08080"/>
-                                                <Setter Property="Foreground" Value="White"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </DataGridTextColumn.EditingElementStyle>
-                            </DataGridTextColumn>
+                            <DataGridTemplateColumn Header="파라미터" Width="190">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Padding="5,0">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#FFE3F2FD"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                                                            <Setter Property="Background" Value="#FFF08080"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="{Binding Parameter}" 
+                                                       VerticalAlignment="Center"
+                                                       FontWeight="Bold">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="Black"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                                                                <Setter Property="Foreground" Value="White"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding Parameter, UpdateSourceTrigger=PropertyChanged}" 
+                                                 FontWeight="Bold"
+                                                 VerticalContentAlignment="Center">
+                                            <TextBox.Style>
+                                                <Style TargetType="TextBox">
+                                                    <Setter Property="Background" Value="#FFBBDEFB"/>
+                                                    <Setter Property="Foreground" Value="Black"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                                                            <Setter Property="Background" Value="#FFF08080"/>
+                                                            <Setter Property="Foreground" Value="White"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBox.Style>
+                                        </TextBox>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
                             
                             <!-- 값 컬럼 (편집 가능) -->
-                            <DataGridTextColumn Header="값" 
-                                                Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}" 
-                                                Width="140"
-                                                IsReadOnly="False">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="Black"/>
-                                        <Setter Property="Background" Value="#FFFFFFE0"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                                <DataGridTextColumn.EditingElementStyle>
-                                    <Style TargetType="TextBox">
-                                        <Setter Property="Foreground" Value="Black"/>
-                                        <Setter Property="Background" Value="#FFFFFF99"/>
-                                    </Style>
-                                </DataGridTextColumn.EditingElementStyle>
-                            </DataGridTextColumn>
+                            <DataGridTemplateColumn Header="값" Width="140">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#FFFFFFE0" Padding="5,0">
+                                            <TextBlock Text="{Binding Value}" 
+                                                       VerticalAlignment="Center"
+                                                       Foreground="Black"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}" 
+                                                 Background="#FFFFFF99"
+                                                 Foreground="Black"
+                                                 VerticalContentAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
                             
-                            <!-- 설명 컬럼 (편집 가능하도록 변경) -->
-                            <DataGridTextColumn Header="설명" 
-                                                Binding="{Binding Description, UpdateSourceTrigger=PropertyChanged}" 
-                                                Width="250"
-                                                IsReadOnly="False">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="Black"/>
-                                        <Setter Property="TextWrapping" Value="NoWrap"/>
-                                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-                                        <Setter Property="Background" Value="#FFF5F5F5"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                                <DataGridTextColumn.EditingElementStyle>
-                                    <Style TargetType="TextBox">
-                                        <Setter Property="Foreground" Value="Black"/>
-                                        <Setter Property="Background" Value="#FFE0E0E0"/>
-                                    </Style>
-                                </DataGridTextColumn.EditingElementStyle>
-                            </DataGridTextColumn>
+                            <!-- 설명 컬럼 (편집 가능) -->
+                            <DataGridTemplateColumn Header="설명" Width="250">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#FFF5F5F5" Padding="5,0">
+                                            <TextBlock Text="{Binding Description}" 
+                                                       VerticalAlignment="Center"
+                                                       Foreground="Black"
+                                                       TextWrapping="NoWrap"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" 
+                                                 Background="#FFE0E0E0"
+                                                 Foreground="Black"
+                                                 VerticalContentAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                     
