@@ -146,8 +146,43 @@ namespace FACTOVA_QueryHelper.Windows
         /// </summary>
         private string FormatValue(object? value, Type? type)
         {
+            // 🔥 null 값은 빈 문자열로 표시
             if (value == null || value == DBNull.Value)
-                return "(null)";
+                return "";
+
+            // 🔥 CLOB, BLOB 등 대용량 텍스트 처리 (byte[], char[] 등)
+            if (value is byte[] byteArray)
+            {
+                try
+                {
+                    // UTF-8로 디코딩 시도
+                    return System.Text.Encoding.UTF8.GetString(byteArray);
+                }
+                catch
+                {
+                    return $"[Binary Data: {byteArray.Length} bytes]";
+                }
+            }
+
+            if (value is char[] charArray)
+            {
+                return new string(charArray);
+            }
+
+            // 🔥 Oracle CLOB/NCLOB 처리 (OracleClob 타입)
+            var typeName = value.GetType().Name;
+            if (typeName.Contains("Clob") || typeName.Contains("Lob"))
+            {
+                try
+                {
+                    // ToString()으로 전체 내용 가져오기 시도
+                    return value.ToString() ?? "";
+                }
+                catch
+                {
+                    return "[CLOB Data]";
+                }
+            }
 
             if (type == typeof(DateTime) || type == typeof(DateTime?))
             {
@@ -167,6 +202,7 @@ namespace FACTOVA_QueryHelper.Windows
                     return formattable.ToString("#,##0", null) ?? value.ToString() ?? "";
             }
 
+            // 🔥 일반 문자열 (긴 텍스트도 전체 표시)
             return value.ToString() ?? "";
         }
 
