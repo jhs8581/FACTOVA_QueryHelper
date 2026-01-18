@@ -1456,6 +1456,9 @@ namespace FACTOVA_QueryHelper.Controls
         {
             if (_sharedData == null) return;
 
+            // 🔥 각 쿼리 실행마다 새로운 OracleDbService 인스턴스 생성 (병렬 실행 시 충돌 방지)
+            var dbService = new OracleDbService();
+            
             try
             {
                 if (!string.IsNullOrWhiteSpace(queryItem.Version) && SiteComboBox.SelectedItem is SiteInfo selectedSite)
@@ -1464,8 +1467,11 @@ namespace FACTOVA_QueryHelper.Controls
 
                     if (string.IsNullOrEmpty(tnsName))
                     {
-                        MessageBox.Show($"사업장 '{selectedSite.SiteName}'에 버전 {queryItem.Version}에 대한 TNS 설정이 없습니다.", "오류",
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            MessageBox.Show($"사업장 '{selectedSite.SiteName}'에 버전 {queryItem.Version}에 대한 TNS 설정이 없습니다.", "오류",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                        });
                         return;
                     }
 
@@ -1475,8 +1481,11 @@ namespace FACTOVA_QueryHelper.Controls
 
                     if (connectionInfo == null)
                     {
-                        MessageBox.Show($"접속 정보 '{tnsName}'를 찾을 수 없습니다.", "오류",
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            MessageBox.Show($"접속 정보 '{tnsName}'를 찾을 수 없습니다.", "오류",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                        });
                         return;
                     }
 
@@ -1485,13 +1494,16 @@ namespace FACTOVA_QueryHelper.Controls
 
                     if (selectedTns == null)
                     {
-                        MessageBox.Show($"TNS '{connectionInfo.TNS}'를 찾을 수 없습니다.", "오류",
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            MessageBox.Show($"TNS '{connectionInfo.TNS}'를 찾을 수 없습니다.", "오류",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                        });
                         return;
                     }
 
-                    // 🔥 OracleDbService 연결 설정
-                    await _dbService!.ConfigureAsync(selectedTns, connectionInfo.UserId, connectionInfo.Password);
+                    // 🔥 로컬 dbService 연결 설정
+                    await dbService.ConfigureAsync(selectedTns, connectionInfo.UserId, connectionInfo.Password);
                 }
                 else if (queryItem.ConnectionInfoId.HasValue)
                 {
@@ -1501,8 +1513,11 @@ namespace FACTOVA_QueryHelper.Controls
                     
                     if (connectionInfo == null)
                     {
-                        MessageBox.Show($"접속 정보 ID {queryItem.ConnectionInfoId.Value}를 찾을 수 없습니다.", "오류",
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            MessageBox.Show($"접속 정보 ID {queryItem.ConnectionInfoId.Value}를 찾을 수 없습니다.", "오류",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                        });
                         return;
                     }
                     
@@ -1511,20 +1526,23 @@ namespace FACTOVA_QueryHelper.Controls
                     
                     if (selectedTns == null)
                     {
-                        MessageBox.Show($"TNS '{connectionInfo.TNS}'를 찾을 수 없습니다.", "오류",
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            MessageBox.Show($"TNS '{connectionInfo.TNS}'를 찾을 수 없습니다.", "오류",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                        });
                         return;
                     }
                     
-                    // 🔥 OracleDbService 연결 설정
-                    await _dbService!.ConfigureAsync(selectedTns, connectionInfo.UserId, connectionInfo.Password);
+                    // 🔥 로컬 dbService 연결 설정
+                    await dbService.ConfigureAsync(selectedTns, connectionInfo.UserId, connectionInfo.Password);
                 }
                 else if (!string.IsNullOrWhiteSpace(queryItem.Host) &&
                     !string.IsNullOrWhiteSpace(queryItem.Port) &&
                     !string.IsNullOrWhiteSpace(queryItem.ServiceName))
                 {
                     var tnsString = $"(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={queryItem.Host})(PORT={queryItem.Port}))(CONNECT_DATA=(SERVICE_NAME={queryItem.ServiceName})))";
-                    await _dbService!.ConfigureAsync(tnsString, queryItem.UserId, queryItem.Password);
+                    await dbService.ConfigureAsync(tnsString, queryItem.UserId, queryItem.Password);
                 }
                 else if (!string.IsNullOrWhiteSpace(queryItem.TnsName))
                 {
@@ -1533,61 +1551,76 @@ namespace FACTOVA_QueryHelper.Controls
 
                     if (selectedTns == null)
                     {
-                        MessageBox.Show($"TNS '{queryItem.TnsName}'를 찾을 수 없습니다.", "오류",
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            MessageBox.Show($"TNS '{queryItem.TnsName}'를 찾을 수 없습니다.", "오류",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                        });
                         return;
                     }
 
-                    // 🔥 OracleDbService 연결 설정
-                    await _dbService!.ConfigureAsync(selectedTns, queryItem.UserId, queryItem.Password);
+                    // 🔥 로컬 dbService 연결 설정
+                    await dbService.ConfigureAsync(selectedTns, queryItem.UserId, queryItem.Password);
                 }
                 else
                 {
-                    MessageBox.Show("연결 정보가 없습니다.\n쿼리에 TNS 또는 접속 정보를 설정해주세요.", "오류",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        MessageBox.Show("연결 정보가 없습니다.\n쿼리에 TNS 또는 접속 정보를 설정해주세요.", "오류",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    });
                     return;
                 }
 
                 string processedQuery = ReplaceQueryParameters(queryItem.Query);
 
-                // 🔥 OracleDbService로 쿼리 실행
-                var result = await _dbService!.ExecuteQueryAsync(processedQuery);
+                // 🔥 로컬 dbService로 쿼리 실행
+                var result = await dbService.ExecuteQueryAsync(processedQuery);
 
-                // 🔥 ItemsSource와 Columns을 모두 초기화 후 바인딩
-                targetGrid.ItemsSource = null;
-                targetGrid.Columns.Clear();
-                
-                // 🔥 데이터가 있을 때만 바인딩
-                if (result != null && result.Rows.Count > 0)
+                // 🔥 UI 업데이트는 Dispatcher로 수행
+                await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    targetGrid.ItemsSource = result.DefaultView;
-                    ApplyFontSizeToGrid(targetGrid);
+                    // ItemsSource와 Columns을 모두 초기화 후 바인딩
+                    targetGrid.ItemsSource = null;
+                    targetGrid.Columns.Clear();
                     
-                    // 🔥 데이터 로드 후 컬럼 너비를 내용에 맞게 재조정
-                    targetGrid.UpdateLayout();
-                    foreach (var column in targetGrid.Columns)
+                    // 데이터가 있을 때만 바인딩
+                    if (result != null && result.Rows.Count > 0)
                     {
-                        column.Width = new DataGridLength(1, DataGridLengthUnitType.Auto);
+                        targetGrid.ItemsSource = result.DefaultView;
+                        ApplyFontSizeToGrid(targetGrid);
+                        
+                        // 데이터 로드 후 컬럼 너비를 내용에 맞게 재조정
+                        targetGrid.UpdateLayout();
+                        foreach (var column in targetGrid.Columns)
+                        {
+                            column.Width = new DataGridLength(1, DataGridLengthUnitType.Auto);
+                        }
+                        targetGrid.UpdateLayout();
                     }
-                    targetGrid.UpdateLayout();
-                }
-                else
-                {
-                    // 🔥 데이터가 없으면 그리드를 비워둠
-                    System.Diagnostics.Debug.WriteLine($"⚠️ 조회 결과 0건 - 그리드 초기화됨");
-                }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"⚠️ 조회 결과 0건 - 그리드 초기화됨");
+                    }
+                });
             }
             catch (Exception ex)
             {
-                // 🔥 오류 발생 시에도 그리드 초기화
-                targetGrid.ItemsSource = null;
-                targetGrid.Columns.Clear();
+                // 🔥 오류 발생 시에도 그리드 초기화 (UI 스레드에서 실행)
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    targetGrid.ItemsSource = null;
+                    targetGrid.Columns.Clear();
+                });
                 
-                MessageBox.Show($"쿼리 실행 실패:\n{ex.Message}", "오류",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                // 예외를 다시 throw하여 상위에서 처리
+                throw;
             }
-            // 🔥 Disconnect() 제거 - ExecuteQueryAsync 내부에서 연결 관리하므로 불필요
-            // 병렬 실행 시 다른 쿼리의 연결을 끊는 문제 해결
+            finally
+            {
+                // 🔥 로컬 dbService 연결 해제
+                dbService.Disconnect();
+            }
         }
 
         private async System.Threading.Tasks.Task ExecuteQueryToGridWithRowData(
