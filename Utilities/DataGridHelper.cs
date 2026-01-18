@@ -95,9 +95,6 @@ namespace FACTOVA_QueryHelper.Utilities
             {
                 ApplyRowHeaderStyle(dataGrid);
             }
-
-            // 🔥 우클릭 메뉴 추가 (행 높이 선택)
-            AddRowHeightContextMenu(dataGrid);
         }
 
         /// <summary>
@@ -151,58 +148,6 @@ namespace FACTOVA_QueryHelper.Utilities
                     textColumn.ElementStyle = newStyle;
                 }
             }
-        }
-
-        /// <summary>
-        /// 🔥 DataGrid에 행 높이 선택 우클릭 메뉴 추가
-        /// </summary>
-        private static void AddRowHeightContextMenu(DataGrid dataGrid)
-        {
-            var contextMenu = dataGrid.ContextMenu ?? new ContextMenu();
-
-            // 구분선 추가 (기존 메뉴가 있으면)
-            if (contextMenu.Items.Count > 0)
-            {
-                contextMenu.Items.Add(new Separator());
-            }
-
-            // 행 높이 서브메뉴
-            var rowHeightMenu = new MenuItem
-            {
-                Header = "📏 행 높이",
-                Icon = new System.Windows.Controls.TextBlock { Text = "📏", FontSize = 14 }
-            };
-
-            // 행 높이 옵션들
-            var heights = new (string Name, double Value)[]
-            {
-                ("기본 (자동)", double.NaN),
-                ("작게 (25)", 25),
-                ("중간 (50)", 50),
-                ("크게 (100)", 100),
-                ("아주 크게 (200)", 200)
-            };
-
-            foreach (var (name, value) in heights)
-            {
-                var menuItem = new MenuItem { Header = name };
-                var heightValue = value; // 클로저를 위한 복사
-                menuItem.Click += (s, e) =>
-                {
-                    if (double.IsNaN(heightValue))
-                    {
-                        dataGrid.RowHeight = double.NaN;
-                    }
-                    else
-                    {
-                        dataGrid.RowHeight = heightValue;
-                    }
-                };
-                rowHeightMenu.Items.Add(menuItem);
-            }
-
-            contextMenu.Items.Add(rowHeightMenu);
-            dataGrid.ContextMenu = contextMenu;
         }
 
         /// <summary>

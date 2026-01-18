@@ -475,56 +475,6 @@ namespace FACTOVA_QueryHelper.Controls
             excelButton.Margin = new Thickness(10, 0, 0, 0);
             buttonPanel.Children.Add(excelButton);
 
-            // 구분선
-            buttonPanel.Children.Add(new Rectangle
-            {
-                Width = 1,
-                Height = 24,
-                Fill = new SolidColorBrush(Color.FromRgb(224, 224, 224)),
-                Margin = new Thickness(10, 0, 5, 0)
-            });
-
-            // 🔥 행 높이 선택 콤보박스
-            buttonPanel.Children.Add(new TextBlock
-            {
-                Text = "📏 행 높이:",
-                VerticalAlignment = VerticalAlignment.Center,
-                FontWeight = FontWeights.SemiBold,
-                Margin = new Thickness(5, 0, 5, 0)
-            });
-
-            var rowHeightCombo = new ComboBox
-            {
-                Width = 100,
-                Height = 28,
-                VerticalContentAlignment = VerticalAlignment.Center,
-                FontSize = 11
-            };
-            rowHeightCombo.Items.Add(new ComboBoxItem { Content = "기본", Tag = 0.0 });
-            rowHeightCombo.Items.Add(new ComboBoxItem { Content = "작게 (25)", Tag = 25.0 });
-            rowHeightCombo.Items.Add(new ComboBoxItem { Content = "중간 (50)", Tag = 50.0 });
-            rowHeightCombo.Items.Add(new ComboBoxItem { Content = "크게 (100)", Tag = 100.0 });
-            rowHeightCombo.Items.Add(new ComboBoxItem { Content = "아주 크게 (200)", Tag = 200.0 });
-            rowHeightCombo.SelectedIndex = 0;
-            rowHeightCombo.SelectionChanged += (s, args) =>
-            {
-                if (rowHeightCombo.SelectedItem is ComboBoxItem item && item.Tag is double height)
-                {
-                    if (_dataGrids.TryGetValue(tabIndex, out var dg))
-                    {
-                        if (height > 0)
-                        {
-                            dg.RowHeight = height;
-                        }
-                        else
-                        {
-                            dg.RowHeight = double.NaN; // 기본(자동)
-                        }
-                    }
-                }
-            };
-            buttonPanel.Children.Add(rowHeightCombo);
-
             Grid.SetColumn(buttonPanel, 0);
             grid.Children.Add(buttonPanel);
 
