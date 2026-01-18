@@ -250,7 +250,7 @@
                         </DataGridTextColumn>
                         
                         <!-- 🔥 그룹명 컬럼 - 동적으로 표시/숨김 -->
-                        <DataGridTextColumn x:Name="GroupNameColumn" Header="그룹명" Binding="{Binding QueryName}" Width="200">
+                        <DataGridTextColumn x:Name="GroupNameColumn" Header="그룹명" Binding="{Binding QueryName}" Width="Auto">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="FontWeight" Value="SemiBold"/>
@@ -259,8 +259,8 @@
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
-                        
-                        <DataGridTextColumn Header="비즈명" Binding="{Binding BizName}" Width="200">
+
+                        <DataGridTextColumn Header="비즈명" Binding="{Binding BizName}" Width="Auto">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Padding" Value="5,0"/>
@@ -269,7 +269,7 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
                         
-                        <DataGridTextColumn Header="쿼리비즈명" Binding="{Binding QueryBizName}" Width="150">
+                        <DataGridTextColumn Header="쿼리비즈명" Binding="{Binding QueryBizName}" Width="Auto">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Padding" Value="5,0"/>

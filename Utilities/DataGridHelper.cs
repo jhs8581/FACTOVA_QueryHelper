@@ -44,11 +44,106 @@ namespace FACTOVA_QueryHelper.Utilities
                 dataGrid.HeadersVisibility = DataGridHeadersVisibility.All;
             }
 
+            // 🔥 행 높이 기본값: 자동 (내용에 맞춤)
+            dataGrid.RowHeight = double.NaN;
+
+            // 📋 읽기 전용 모드 해제 (셀 복사를 위해 필요)
+            dataGrid.IsReadOnly = false;
+
+            // 🎯 셀 스타일: 세로 중앙 정렬 + 가로 꽉 채우기
+            var cellStyle = new Style(typeof(DataGridCell));
+            cellStyle.Setters.Add(new Setter(
+                DataGridCell.VerticalContentAlignmentProperty,
+                VerticalAlignment.Center)); // 🔥 세로 중앙 정렬
+            cellStyle.Setters.Add(new Setter(
+                DataGridCell.HorizontalContentAlignmentProperty,
+                HorizontalAlignment.Stretch)); // 🔥 가로 꽉 채우기
+            dataGrid.CellStyle = cellStyle;
+
+            // 🔥 모든 DataGridTextColumn에 TextWrapping 적용
+            dataGrid.AutoGeneratingColumn += (s, e) =>
+            {
+                if (e.Column is DataGridTextColumn textColumn)
+                {
+                    var style = new Style(typeof(TextBlock));
+                    style.Setters.Add(new Setter(TextBlock.TextWrappingProperty, TextWrapping.Wrap));
+                    style.Setters.Add(new Setter(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Top));
+                    textColumn.ElementStyle = style;
+                }
+            };
+
+            // 🔥 이미 존재하는 컬럼에도 TextWrapping 적용
+            foreach (var column in dataGrid.Columns)
+            {
+                if (column is DataGridTextColumn textColumn && textColumn.ElementStyle == null)
+                {
+                    var style = new Style(typeof(TextBlock));
+                    style.Setters.Add(new Setter(TextBlock.TextWrappingProperty, TextWrapping.Wrap));
+                    style.Setters.Add(new Setter(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Top));
+                    textColumn.ElementStyle = style;
+                }
+            }
+
             // 🎨 스타일이 적용된 RowHeader 사용
             if (useStyledRowHeaders)
             {
                 ApplyRowHeaderStyle(dataGrid);
             }
+
+            // 🔥 우클릭 메뉴 추가 (행 높이 선택)
+            AddRowHeightContextMenu(dataGrid);
+        }
+
+        /// <summary>
+        /// 🔥 DataGrid에 행 높이 선택 우클릭 메뉴 추가
+        /// </summary>
+        private static void AddRowHeightContextMenu(DataGrid dataGrid)
+        {
+            var contextMenu = dataGrid.ContextMenu ?? new ContextMenu();
+
+            // 구분선 추가 (기존 메뉴가 있으면)
+            if (contextMenu.Items.Count > 0)
+            {
+                contextMenu.Items.Add(new Separator());
+            }
+
+            // 행 높이 서브메뉴
+            var rowHeightMenu = new MenuItem
+            {
+                Header = "📏 행 높이",
+                Icon = new System.Windows.Controls.TextBlock { Text = "📏", FontSize = 14 }
+            };
+
+            // 행 높이 옵션들
+            var heights = new (string Name, double Value)[]
+            {
+                ("기본 (자동)", double.NaN),
+                ("작게 (25)", 25),
+                ("중간 (50)", 50),
+                ("크게 (100)", 100),
+                ("아주 크게 (200)", 200)
+            };
+
+            foreach (var (name, value) in heights)
+            {
+                var menuItem = new MenuItem { Header = name };
+                var heightValue = value; // 클로저를 위한 복사
+                menuItem.Click += (s, e) =>
+                {
+                    if (double.IsNaN(heightValue))
+                    {
+                        dataGrid.RowHeight = double.NaN;
+                    }
+                    else
+                    {
+                        dataGrid.RowHeight = heightValue;
+                    }
+                };
+                rowHeightMenu.Items.Add(menuItem);
+            }
+
+            contextMenu.Items.Add(rowHeightMenu);
+            dataGrid.ContextMenu = contextMenu;
         }
 
         /// <summary>
@@ -131,6 +226,8 @@ namespace FACTOVA_QueryHelper.Utilities
         {
             // 행 번호를 RowHeader에 표시 (1부터 시작)
             e.Row.Header = (e.Row.GetIndex() + 1).ToString();
+            
+            // 📏 행 높이는 우클릭 메뉴에서 사용자가 선택 (DataGrid.RowHeight)
         }
 
         /// <summary>
@@ -175,6 +272,19 @@ namespace FACTOVA_QueryHelper.Utilities
             {
                 dataGrid.HeadersVisibility = DataGridHeadersVisibility.All;
             }
+
+            // 📋 읽기 전용 모드 해제 (셀 복사를 위해 필요)
+            dataGrid.IsReadOnly = false;
+
+            // 🎯 셀 스타일: 세로 중앙 정렬 + 가로 꽉 채우기
+            var cellStyle = new Style(typeof(DataGridCell));
+            cellStyle.Setters.Add(new Setter(
+                DataGridCell.VerticalContentAlignmentProperty,
+                VerticalAlignment.Center)); // 🔥 세로 중앙 정렬
+            cellStyle.Setters.Add(new Setter(
+                DataGridCell.HorizontalContentAlignmentProperty,
+                HorizontalAlignment.Stretch)); // 🔥 가로 꽉 채우기
+            dataGrid.CellStyle = cellStyle;
 
             // 🎨 NERP 스타일 적용
             ApplyNerpRowHeaderStyle(dataGrid);
@@ -260,6 +370,19 @@ namespace FACTOVA_QueryHelper.Utilities
             {
                 dataGrid.HeadersVisibility = DataGridHeadersVisibility.All;
             }
+
+            // 📋 읽기 전용 모드 해제 (셀 복사를 위해 필요)
+            dataGrid.IsReadOnly = false;
+
+            // 🎯 셀 스타일: 세로 중앙 정렬 + 가로 꽉 채우기
+            var cellStyle = new Style(typeof(DataGridCell));
+            cellStyle.Setters.Add(new Setter(
+                DataGridCell.VerticalContentAlignmentProperty,
+                VerticalAlignment.Center)); // 🔥 세로 중앙 정렬
+            cellStyle.Setters.Add(new Setter(
+                DataGridCell.HorizontalContentAlignmentProperty,
+                HorizontalAlignment.Stretch)); // 🔥 가로 꽉 채우기
+            dataGrid.CellStyle = cellStyle;
 
             // 🎨 다크 스타일 적용
             ApplyDarkRowHeaderStyle(dataGrid);

@@ -56,28 +56,95 @@ namespace FACTOVA_QueryHelper.Windows
                 e.Column.Header = header.Replace("_", "__");
             }
             
-            // CLOB 컬럼 처리
-            string columnName = e.PropertyName;
-            if (columnName.Contains("CLOB", StringComparison.OrdinalIgnoreCase) ||
-                columnName.EndsWith("_TEXT", StringComparison.OrdinalIgnoreCase) ||
-                columnName.Contains("MEMO", StringComparison.OrdinalIgnoreCase) ||
-                columnName.Contains("DESCRIPTION", StringComparison.OrdinalIgnoreCase) ||
-                columnName.Contains("CONTENT", StringComparison.OrdinalIgnoreCase))
+            // 🔥 정렬 활성화
+            e.Column.CanUserSort = true;
+            
+            // 🔥 숫자 타입 컬럼 자동 인식
+            bool isNumericColumn = e.PropertyType == typeof(int) || 
+                                   e.PropertyType == typeof(long) || 
+                                   e.PropertyType == typeof(decimal) || 
+                                   e.PropertyType == typeof(double) || 
+                                   e.PropertyType == typeof(float) ||
+                                   e.PropertyType == typeof(short) ||
+                                   e.PropertyType == typeof(Int16) ||
+                                   e.PropertyType == typeof(Int32) ||
+                                   e.PropertyType == typeof(Int64);
+            
+            if (e.Column is DataGridTextColumn textColumn)
+            {
+                var displayStyle = new Style(typeof(TextBlock));
+                displayStyle.Setters.Add(new Setter(TextBlock.TextWrappingProperty, TextWrapping.Wrap));
+                displayStyle.Setters.Add(new Setter(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center));
+                displayStyle.Setters.Add(new Setter(TextBlock.PaddingProperty, new Thickness(5, 3, 5, 3)));
+                
+                // 🔥 숫자 컬럼은 오른쪽 정렬 + 콤마 포맷
+                if (isNumericColumn)
+                {
+                    displayStyle.Setters.Add(new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Right));
+                    displayStyle.Setters.Add(new Setter(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Right));
+                    
+                    // 🔥 숫자 3자리 콤마 포맷 적용
+                    textColumn.Binding = new Binding(e.PropertyName)
+                    {
+                        StringFormat = "#,##0.######" // 소수점 있는 경우도 처리
+                    };
+                }
+                
+                textColumn.ElementStyle = displayStyle;
+                
+                // 🔥 Auto 너비 (헤더/데이터 중 더 긴 쪽에 맞춤)
+                e.Column.Width = DataGridLength.Auto;
+            }
+            
+            // 🔥 일반 컬럼 선택 시 글자색 검정 유지
+            var cellStyle = new Style(typeof(DataGridCell));
+            cellStyle.Setters.Add(new Setter(DataGridCell.ForegroundProperty, Brushes.Black));
+            
+            var selectedTrigger = new Trigger
+            {
+                Property = DataGridCell.IsSelectedProperty,
+                Value = true
+            };
+            selectedTrigger.Setters.Add(new Setter(DataGridCell.ForegroundProperty, Brushes.Black));
+            selectedTrigger.Setters.Add(new Setter(DataGridCell.BackgroundProperty, new SolidColorBrush(Color.FromRgb(173, 216, 230)))); // 연한 파란색
+            cellStyle.Triggers.Add(selectedTrigger);
+            
+            e.Column.CellStyle = cellStyle;
+            
+            // CLOB 컬럼 처리 (기존 로직 유지)
+            if (e.PropertyType == typeof(string) && e.PropertyDescriptor != null)
             {
                 var dataGrid = sender as DataGrid;
-                if (dataGrid != null)
+                if (dataGrid?.ItemsSource is DataView dataView)
                 {
-                    e.Column.Width = new DataGridLength(200);
-                    
-                    var templateColumn = new DataGridTemplateColumn
+                    var columnName = e.PropertyName;
+                    if (dataView.Table.Columns.Contains(columnName))
                     {
-                        Header = e.Column.Header,
-                        HeaderStyle = e.Column.HeaderStyle,
-                        Width = new DataGridLength(200),
-                        CellTemplate = CreateClobCellTemplate(columnName)
-                    };
-                    
-                    e.Column = templateColumn;
+                        var dataColumn = dataView.Table.Columns[columnName];
+                        
+                        bool isLongText = dataColumn.DataType == typeof(string) && 
+                                         (dataColumn.MaxLength == -1 || dataColumn.MaxLength > 500);
+                        
+                        if (!isLongText && dataView.Table.Rows.Count > 0)
+                        {
+                            var sampleValue = dataView.Table.Rows[0][columnName]?.ToString() ?? "";
+                            isLongText = sampleValue.Length > 100 || sampleValue.Contains('\n');
+                        }
+                        
+                        if (isLongText)
+                        {
+                            e.Cancel = true;
+                            
+                            var templateColumn = new DataGridTemplateColumn
+                            {
+                                Header = header.Replace("_", "__"),
+                                Width = new DataGridLength(200),
+                                CellTemplate = CreateClobCellTemplate(columnName)
+                            };
+                            
+                            dataGrid.Columns.Add(templateColumn);
+                        }
+                    }
                 }
             }
         }
@@ -96,10 +163,15 @@ namespace FACTOVA_QueryHelper.Windows
             factory.SetValue(TextBox.AcceptsReturnProperty, true);
             factory.SetValue(TextBox.VerticalScrollBarVisibilityProperty, ScrollBarVisibility.Auto);
             factory.SetValue(TextBox.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Auto);
-            factory.SetValue(TextBox.MaxHeightProperty, 100.0);
             factory.SetValue(TextBox.BorderThicknessProperty, new Thickness(0));
             factory.SetValue(TextBox.BackgroundProperty, Brushes.Transparent);
             factory.SetValue(TextBox.PaddingProperty, new Thickness(5));
+            
+            // 🔥 셀 전체를 꽉 채우도록 설정
+            factory.SetValue(TextBox.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
+            factory.SetValue(TextBox.VerticalAlignmentProperty, VerticalAlignment.Stretch);
+            factory.SetValue(TextBox.MinHeightProperty, 25.0);  // 최소 높이
+            factory.SetValue(TextBox.MaxHeightProperty, 200.0); // 최대 높이 (너무 길면 스크롤)
             
             var dataTemplate = new DataTemplate
             {

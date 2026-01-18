@@ -282,27 +282,44 @@ namespace FACTOVA_QueryHelper.Controls
             }
         }
 
-        public void Initialize(SharedDataContext sharedData)
+        public async void Initialize(SharedDataContext sharedData)
         {
             _isInitializing = true;
             
             _sharedData = sharedData;
             _database = new QueryDatabase(sharedData.Settings.DatabasePath);
             
-            // 🔥 사업장 정보 로드
-            LoadSiteInfos();
-            
-            LoadInputValues();
-            LoadInfoQueries();
-            
-            // 그리드를 항상 20개로 고정 생성
-            CreateDynamicGrids(20);
-            
-            // 폰트 크기 적용
-            ApplyFontSize();
-            UpdateFontSizeDisplay();
-            
-            _isInitializing = false;
+            try
+            {
+                // 🔥 비동기 작업은 백그라운드에서 실행
+                await System.Threading.Tasks.Task.Run(() =>
+                {
+                    // 데이터 로드는 백그라운드에서
+                    System.Diagnostics.Debug.WriteLine("📊 Loading site infos...");
+                });
+                
+                // UI 업데이트는 UI 스레드에서
+                LoadSiteInfos();
+                LoadInputValues();
+                LoadInfoQueries();
+                
+                System.Diagnostics.Debug.WriteLine("📊 Creating 20 dynamic grids...");
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                
+                // 그리드를 항상 20개로 고정 생성
+                CreateDynamicGrids(20);
+                
+                sw.Stop();
+                System.Diagnostics.Debug.WriteLine($"✅ Grids created in {sw.ElapsedMilliseconds}ms");
+                
+                // 폰트 크기 적용
+                ApplyFontSize();
+                UpdateFontSizeDisplay();
+            }
+            finally
+            {
+                _isInitializing = false;
+            }
             
             // 🔥 초기화 완료 후 사업장 정보를 다시 한번 명시적으로 적용
             if (SiteComboBox.SelectedItem is SiteInfo selectedSite)
@@ -1617,10 +1634,15 @@ namespace FACTOVA_QueryHelper.Controls
             factory.SetValue(TextBox.AcceptsReturnProperty, true);
             factory.SetValue(TextBox.VerticalScrollBarVisibilityProperty, ScrollBarVisibility.Auto);
             factory.SetValue(TextBox.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Auto);
-            factory.SetValue(TextBox.MaxHeightProperty, 100.0);
             factory.SetValue(TextBox.BorderThicknessProperty, new Thickness(0));
             factory.SetValue(TextBox.BackgroundProperty, Brushes.Transparent);
             factory.SetValue(TextBox.PaddingProperty, new Thickness(5));
+            
+            // 🔥 셀 전체를 꽉 채우도록 설정
+            factory.SetValue(TextBox.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
+            factory.SetValue(TextBox.VerticalAlignmentProperty, VerticalAlignment.Stretch);
+            factory.SetValue(TextBox.MinHeightProperty, 25.0);  // 최소 높이
+            factory.SetValue(TextBox.MaxHeightProperty, 200.0); // 최대 높이 (너무 길면 스크롤)
             
             var dataTemplate = new DataTemplate
             {

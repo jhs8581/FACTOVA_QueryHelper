@@ -127,14 +127,18 @@ namespace FACTOVA_QueryHelper.Services
                 throw new InvalidOperationException("Database not configured. Call ConfigureAsync first.");
             }
 
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             System.Diagnostics.Debug.WriteLine("🔌 Creating temporary connection...");
+            
             var connection = new OracleConnection(_connectionString);
             await connection.OpenAsync();
+            System.Diagnostics.Debug.WriteLine($"  ⏱️ Connection opened: {sw.ElapsedMilliseconds}ms");
             
-            // 🔥 NLS 설정 통일 (OracleDatabase와 동일하게)
-            SetSessionNlsSettings(connection);
+            // 🔥 NLS 설정을 비동기로 실행
+            await Task.Run(() => SetSessionNlsSettings(connection));
+            System.Diagnostics.Debug.WriteLine($"  ⏱️ NLS settings applied: {sw.ElapsedMilliseconds}ms");
             
-            System.Diagnostics.Debug.WriteLine("✅ Temporary connection opened");
+            System.Diagnostics.Debug.WriteLine($"✅ Temporary connection opened (total: {sw.ElapsedMilliseconds}ms)");
             return connection;
         }
 
@@ -421,7 +425,7 @@ namespace FACTOVA_QueryHelper.Services
                 System.Diagnostics.Debug.WriteLine($"📊 Starting query execution...");
                 connection = await CreateConnectionAsync();
                 
-                // 쿼리를 ROWNUM으로 감싸서 최대 2000건 제한
+                // 쿼리에 ROWNUM 제한 추가 (서브쿼리로 감싸지 않음)
                 var limitedQuery = WrapQueryWithRowLimit(query, 2000);
                 System.Diagnostics.Debug.WriteLine($"Original query: {query}");
                 System.Diagnostics.Debug.WriteLine($"Limited query: {limitedQuery}");
@@ -455,17 +459,14 @@ namespace FACTOVA_QueryHelper.Services
                 });
 
                 System.Diagnostics.Debug.WriteLine("⏳ Executing Oracle query...");
-                var adapter = new OracleDataAdapter(command);
                 
-                // 취소 가능한 쿼리 실행 (🔥 로컬 변수 사용)
-                await Task.Run(() => 
+                // 🔥 OracleDataReader를 직접 사용하여 중복 컬럼명 자동 처리
+                await Task.Run(async () => 
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    adapter.Fill(dataTable);
+                    using var reader = await command.ExecuteReaderAsync();
+                    BuildDataTableFromReader(reader, dataTable);
                 }, cancellationToken);
-
-                // 🔥 중복 컬럼명 자동 해결
-                ResolveDuplicateColumnNames(dataTable);
 
                 System.Diagnostics.Debug.WriteLine($"✅ Query executed successfully. Rows: {dataTable.Rows.Count} (max 2000)");
             }
@@ -478,22 +479,6 @@ namespace FACTOVA_QueryHelper.Services
             {
                 System.Diagnostics.Debug.WriteLine($"✅ Query successfully cancelled by user (ORA-01013)");
                 throw new OperationCanceledException("쿼리가 사용자에 의해 취소되었습니다.");
-            }
-            catch (OracleException oex) when (oex.Number == 918) // ORA-00918: column ambiguously defined
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ Ambiguous column error (ORA-00918)");
-                throw new InvalidOperationException(
-                    "❌ 중복된 컬럼명이 있습니다!\n\n" +
-                    "해결 방법:\n" +
-                    "1. SELECT A.*, B.* 대신 컬럼을 명시하세요\n" +
-                    "2. 또는 컬럼에 Alias를 붙이세요 (예: A.COL1 AS A_COL1)\n\n" +
-                    "예시:\n" +
-                    "SELECT A.PROGRAM_ID AS A_PROGRAM_ID\n" +
-                    "     , A.NAME\n" +
-                    "     , B.PROGRAM_ID AS B_PROGRAM_ID\n" +
-                    "     , B.VALUE\n" +
-                    "  FROM TABLE_A A, TABLE_B B\n" +
-                    " WHERE A.ID = B.ID");
             }
             catch (Exception ex)
             {
@@ -555,7 +540,7 @@ namespace FACTOVA_QueryHelper.Services
                 System.Diagnostics.Debug.WriteLine($"📊 Starting query execution...");
                 connection = await CreateConnectionAsync();
                 
-                // 쿼리를 ROWNUM으로 감싸서 최대 2000건 제한
+                // 쿼리에 ROWNUM 제한 추가 (서브쿼리로 감싸지 않음)
                 var limitedQuery = WrapQueryWithRowLimit(query, 2000);
                 
                 // 🔥 &변수명 또는 @변수명을 :변수명으로 변환 (모든 발생 위치)
@@ -599,17 +584,14 @@ namespace FACTOVA_QueryHelper.Services
                 });
 
                 System.Diagnostics.Debug.WriteLine("⏳ Executing Oracle query...");
-                var adapter = new OracleDataAdapter(command);
                 
-                // 취소 가능한 쿼리 실행 (🔥 로컬 변수 사용)
-                await Task.Run(() => 
+                // 🔥 OracleDataReader를 직접 사용하여 중복 컬럼명 자동 처리
+                await Task.Run(async () => 
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    adapter.Fill(dataTable);
+                    using var reader = await command.ExecuteReaderAsync();
+                    BuildDataTableFromReader(reader, dataTable);
                 }, cancellationToken);
-
-                // 🔥 중복 컬럼명 자동 해결
-                ResolveDuplicateColumnNames(dataTable);
 
                 System.Diagnostics.Debug.WriteLine($"✅ Query with parameters executed successfully. Rows: {dataTable.Rows.Count} (max 2000)");
             }
@@ -622,22 +604,6 @@ namespace FACTOVA_QueryHelper.Services
             {
                 System.Diagnostics.Debug.WriteLine($"✅ Query successfully cancelled by user (ORA-01013)");
                 throw new OperationCanceledException("쿼리가 사용자에 의해 취소되었습니다.");
-            }
-            catch (OracleException oex) when (oex.Number == 918) // ORA-00918: column ambiguously defined
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ Ambiguous column error (ORA-00918)");
-                throw new InvalidOperationException(
-                    "❌ 중복된 컬럼명이 있습니다!\n\n" +
-                    "해결 방법:\n" +
-                    "1. SELECT A.*, B.* 대신 컬럼을 명시하세요\n" +
-                    "2. 또는 컬럼에 Alias를 붙이세요 (예: A.COL1 AS A_COL1)\n\n" +
-                    "예시:\n" +
-                    "SELECT A.PROGRAM_ID AS A_PROGRAM_ID\n" +
-                    "     , A.NAME\n" +
-                    "     , B.PROGRAM_ID AS B_PROGRAM_ID\n" +
-                    "     , B.VALUE\n" +
-                    "  FROM TABLE_A A, TABLE_B B\n" +
-                    " WHERE A.ID = B.ID");
             }
             catch (Exception ex)
             {
@@ -670,43 +636,88 @@ namespace FACTOVA_QueryHelper.Services
         }
 
         /// <summary>
-        /// DataTable의 중복 컬럼명을 자동으로 변경 (Column1, Column2, ...)
-        /// WPF의 액셀러레이터 키 문제를 해결하기 위해 '_'를 '__'로 이스케이프
+        /// 🔥 OracleDataReader에서 DataTable을 직접 구성하여 중복 컬럼명 자동 처리
+        /// PL/SQL Developer처럼 중복 컬럼명에 자동으로 순번 부여
         /// </summary>
-        private void ResolveDuplicateColumnNames(DataTable dataTable)
+        private void BuildDataTableFromReader(OracleDataReader reader, DataTable dataTable)
         {
-            var columnNames = new Dictionary<string, int>();
-
-            foreach (DataColumn column in dataTable.Columns)
+            // 1️⃣ 컬럼 스키마 읽기 (중복 컬럼명 자동 처리)
+            var columnNames = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var schemaTable = reader.GetSchemaTable();
+            
+            if (schemaTable == null)
             {
-                var originalName = column.ColumnName;
+                throw new InvalidOperationException("Unable to read schema from query result.");
+            }
+
+            foreach (DataRow schemaRow in schemaTable.Rows)
+            {
+                var originalName = schemaRow["ColumnName"].ToString() ?? "Column";
+                var dataType = (Type)schemaRow["DataType"];
 
                 // 🔥 WPF 액셀러레이터 키 문제 해결: '_'를 '__'로 변경
                 var escapedName = originalName.Replace("_", "__");
-
+                
+                string finalColumnName;
                 if (columnNames.ContainsKey(escapedName))
                 {
-                    // 중복된 컬럼명 발견 → 순번 추가
+                    // 중복된 컬럼명 → 순번 추가 (PL/SQL Developer 방식)
                     columnNames[escapedName]++;
-                    var newName = $"{escapedName}__{columnNames[escapedName]}";
-                    column.ColumnName = newName;
-                    System.Diagnostics.Debug.WriteLine($"🔧 Renamed duplicate column: {originalName} → {newName}");
+                    finalColumnName = $"{escapedName}__{columnNames[escapedName]}";
+                    System.Diagnostics.Debug.WriteLine($"🔧 Duplicate column detected: {originalName} → {finalColumnName}");
                 }
                 else
                 {
-                    column.ColumnName = escapedName;
-                    columnNames[escapedName] = 0;
+                    finalColumnName = escapedName;
+                    columnNames[escapedName] = 1;
                     
                     if (escapedName != originalName)
                     {
                         System.Diagnostics.Debug.WriteLine($"🔧 Escaped column name: {originalName} → {escapedName}");
                     }
                 }
+
+                dataTable.Columns.Add(finalColumnName, dataType);
             }
+
+            // 2️⃣ 데이터 읽기
+            while (reader.Read())
+            {
+                var row = dataTable.NewRow();
+                for (int i = 0; i < dataTable.Columns.Count; i++)
+                {
+                    row[i] = reader.IsDBNull(i) ? DBNull.Value : reader.GetValue(i);
+                }
+                dataTable.Rows.Add(row);
+            }
+
+            System.Diagnostics.Debug.WriteLine($"✅ DataTable built with {dataTable.Columns.Count} columns, {dataTable.Rows.Count} rows");
         }
 
         /// <summary>
-        /// 쿼리를 ROWNUM으로 감싸서 최대 행 수를 제한
+        /// 🔥 중복 컬럼명 문제 해결: 쿼리를 서브쿼리로 감싸고 각 컬럼에 자동 alias 부여
+        /// PL/SQL Developer처럼 중복 컬럼명이 있어도 실행 가능하도록 처리
+        /// </summary>
+        private string WrapQueryWithColumnAliases(string query)
+        {
+            var trimmedQuery = query.Trim();
+            
+            // SELECT 문이 아니면 그대로 반환
+            if (!trimmedQuery.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
+            {
+                return query;
+            }
+
+            // 🔥 서브쿼리로 감싸서 Oracle이 자동으로 컬럼 alias를 생성하도록 유도
+            // 바깥쪽 SELECT *는 Oracle이 각 컬럼에 순번을 자동으로 부여
+            return $@"SELECT * FROM (
+    {query}
+) SUBQUERY_AUTO_ALIAS";
+        }
+
+        /// <summary>
+        /// 쿼리에 ROWNUM 제한을 추가 (서브쿼리로 감싸지 않고 WHERE 절에 직접 추가)
+        /// 중복 컬럼명이 있는 쿼리도 실행 가능하도록 처리
         /// </summary>
         private string WrapQueryWithRowLimit(string query, int maxRows)
         {
@@ -716,17 +727,47 @@ namespace FACTOVA_QueryHelper.Services
                 return query; // 이미 ROWNUM 제한이 있으면 그대로 반환
             }
 
+            var trimmedQuery = query.Trim().TrimEnd(';'); // 끝의 세미콜론 제거
+
             // SELECT 문인지 확인
-            var trimmedQuery = query.Trim();
             if (!trimmedQuery.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
             {
                 return query; // SELECT 문이 아니면 그대로 반환
             }
 
-            // ROWNUM 제한 추가
-            return $@"SELECT * FROM (
-{query}
-) WHERE ROWNUM <= {maxRows}";
+            // 🔥 WHERE 절이 있는지 확인 (정규식으로 마지막 WHERE 찾기)
+            var whereMatch = System.Text.RegularExpressions.Regex.Match(
+                trimmedQuery, 
+                @"\bWHERE\b", 
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.RightToLeft
+            );
+
+            if (whereMatch.Success)
+            {
+                // WHERE 절이 있으면 AND ROWNUM 추가
+                var insertPosition = whereMatch.Index + whereMatch.Length;
+                return trimmedQuery.Insert(insertPosition, $" ROWNUM <= {maxRows} AND");
+            }
+            else
+            {
+                // WHERE 절이 없으면 끝에 추가 (ORDER BY, GROUP BY 고려)
+                var orderByMatch = System.Text.RegularExpressions.Regex.Match(
+                    trimmedQuery,
+                    @"\b(ORDER\s+BY|GROUP\s+BY)\b",
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase
+                );
+
+                if (orderByMatch.Success)
+                {
+                    // ORDER BY나 GROUP BY 앞에 WHERE 추가
+                    return trimmedQuery.Insert(orderByMatch.Index, $" WHERE ROWNUM <= {maxRows} ");
+                }
+                else
+                {
+                    // 그냥 끝에 추가
+                    return $"{trimmedQuery} WHERE ROWNUM <= {maxRows}";
+                }
+            }
         }
     }
 }

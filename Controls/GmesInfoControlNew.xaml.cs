@@ -1683,6 +1683,7 @@ namespace FACTOVA_QueryHelper.Controls
             }
         }
         
+        
         private DataTemplate CreateClobCellTemplate(string columnName)
         {
             var factory = new FrameworkElementFactory(typeof(TextBox));
@@ -1697,10 +1698,15 @@ namespace FACTOVA_QueryHelper.Controls
             factory.SetValue(TextBox.AcceptsReturnProperty, true);
             factory.SetValue(TextBox.VerticalScrollBarVisibilityProperty, ScrollBarVisibility.Auto);
             factory.SetValue(TextBox.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Auto);
-            factory.SetValue(TextBox.MaxHeightProperty, 100.0);
             factory.SetValue(TextBox.BorderThicknessProperty, new Thickness(0));
             factory.SetValue(TextBox.BackgroundProperty, Brushes.Transparent);
             factory.SetValue(TextBox.PaddingProperty, new Thickness(5));
+            
+            // 🔥 셀 전체를 꽉 채우도록 설정
+            factory.SetValue(TextBox.HorizontalAlignmentProperty, HorizontalAlignment.Stretch);
+            factory.SetValue(TextBox.VerticalAlignmentProperty, VerticalAlignment.Stretch);
+            factory.SetValue(TextBox.MinHeightProperty, 25.0);  // 최소 높이
+            factory.SetValue(TextBox.MaxHeightProperty, 200.0); // 최대 높이 (너무 길면 스크롤)
             
             var dataTemplate = new DataTemplate
             {
