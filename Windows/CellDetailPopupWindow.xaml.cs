@@ -219,8 +219,6 @@ namespace FACTOVA_QueryHelper.Windows
                 }
 
                 Clipboard.SetText(sb.ToString());
-                MessageBox.Show($"{_filteredItems.Count}개 항목이 클립보드에 복사되었습니다.", 
-                    "복사 완료", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -242,8 +240,6 @@ namespace FACTOVA_QueryHelper.Windows
                 }
 
                 Clipboard.SetText($"{selectedItem.ColumnName}\t{selectedItem.Value}");
-                MessageBox.Show("선택한 항목이 클립보드에 복사되었습니다.", 
-                    "복사 완료", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
