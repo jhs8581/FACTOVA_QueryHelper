@@ -50,15 +50,8 @@ namespace FACTOVA_QueryHelper.Utilities
             // 📋 읽기 전용 모드 해제 (셀 복사를 위해 필요)
             dataGrid.IsReadOnly = false;
 
-            // 🎯 셀 스타일: 세로 중앙 정렬 + 가로 꽉 채우기
-            var cellStyle = new Style(typeof(DataGridCell));
-            cellStyle.Setters.Add(new Setter(
-                DataGridCell.VerticalContentAlignmentProperty,
-                VerticalAlignment.Center)); // 🔥 세로 중앙 정렬
-            cellStyle.Setters.Add(new Setter(
-                DataGridCell.HorizontalContentAlignmentProperty,
-                HorizontalAlignment.Stretch)); // 🔥 가로 꽉 채우기
-            dataGrid.CellStyle = cellStyle;
+            // 🎯 CellStyle은 App.xaml의 전역 스타일 사용 (ControlTemplate으로 세로 중앙 정렬)
+            // dataGrid.CellStyle을 명시적으로 설정하지 않음 → App.xaml 암묵적 스타일 적용
 
             // 🔥 모든 DataGridTextColumn에 TextWrapping 적용
             dataGrid.AutoGeneratingColumn += (s, e) =>

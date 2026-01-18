@@ -43,12 +43,27 @@
             <Setter Property="Height" Value="35"/>
         </Style>
         
-        <!-- 🔥 기본 DataGrid 셀 스타일 (암묵적) -->
+        <!-- 🔥 기본 DataGrid 셀 스타일 (암묵적) - 세로 중앙 정렬 -->
         <Style TargetType="DataGridCell">
             <Setter Property="Padding" Value="8,5"/>
             <Setter Property="BorderBrush" Value="#E0E0E0"/>
             <Setter Property="BorderThickness" Value="0,0,1,0"/>
             <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <!-- 🔥 ControlTemplate으로 세로 중앙 정렬 강제 -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center" 
+                                              HorizontalAlignment="Stretch"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
             <Style.Triggers>
                 <Trigger Property="IsSelected" Value="True">
                     <Setter Property="Background" Value="#E3F2FD"/>

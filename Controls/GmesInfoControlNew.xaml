@@ -219,13 +219,7 @@
                               CanUserReorderColumns="False"
                               CanUserSortColumns="False"
                               SelectionChanged="PlanInfoDataGrid_SelectionChanged">
-                        <!-- 🔥 CellStyle로 배경색 처리, TextBlock은 중앙 정렬 -->
-                        <DataGrid.CellStyle>
-                            <Style TargetType="DataGridCell">
-                                <Setter Property="VerticalContentAlignment" Value="Center"/>
-                                <Setter Property="Padding" Value="0"/>
-                            </Style>
-                        </DataGrid.CellStyle>
+                        <!-- 🔥 CellStyle은 App.xaml 전역 스타일 사용 -->
                         <DataGrid.Columns>
                             <!-- 파라미터 컬럼 (편집 가능) -->
                             <DataGridTemplateColumn Header="파라미터" Width="190">
