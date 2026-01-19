@@ -1593,32 +1593,16 @@ namespace FACTOVA_QueryHelper.Controls
         {
             if (_sharedData == null) return;
 
+
             // 🔥 각 쿼리 실행마다 새로운 OracleDbService 인스턴스 생성 (병렬 실행 시 충돌 방지)
             var dbService = new OracleDbService();
             
             try
             {
-                // 🔥 상단에서 선택한 접속 정보 우선 사용
-                if (_selectedConnectionInfo != null)
+                // 🔥 1순위: 쿼리에 설정된 접속 정보 우선 사용 (각 쿼리마다 다른 DB 연결 가능)
+                // ConnectionInfoId가 null이 아니고 0보다 큰 경우에만 사용
+                if (queryItem.ConnectionInfoId.HasValue && queryItem.ConnectionInfoId.Value > 0)
                 {
-                    var selectedTns = _sharedData.TnsEntries.FirstOrDefault(t =>
-                        t.Name.Equals(_selectedConnectionInfo.TNS, StringComparison.OrdinalIgnoreCase));
-                    
-                    if (selectedTns == null)
-                    {
-                        await Application.Current.Dispatcher.InvokeAsync(() =>
-                        {
-                            MessageBox.Show($"TNS '{_selectedConnectionInfo.TNS}'를 찾을 수 없습니다.", "오류",
-                                MessageBoxButton.OK, MessageBoxImage.Error);
-                        });
-                        return;
-                    }
-                    
-                    await dbService.ConfigureAsync(selectedTns, _selectedConnectionInfo.UserId, _selectedConnectionInfo.Password);
-                }
-                else if (queryItem.ConnectionInfoId.HasValue)
-                {
-                    // 쿼리에 설정된 접속 정보 사용
                     var connectionInfoService = new Services.ConnectionInfoService(_sharedData.Settings.DatabasePath);
                     var allConnections = connectionInfoService.GetAll();
                     var connectionInfo = allConnections.FirstOrDefault(c => c.Id == queryItem.ConnectionInfoId.Value);
@@ -1636,6 +1620,7 @@ namespace FACTOVA_QueryHelper.Controls
                     var selectedTns = _sharedData.TnsEntries.FirstOrDefault(t =>
                         t.Name.Equals(connectionInfo.TNS, StringComparison.OrdinalIgnoreCase));
                     
+                    
                     if (selectedTns == null)
                     {
                         await Application.Current.Dispatcher.InvokeAsync(() =>
@@ -1648,6 +1633,7 @@ namespace FACTOVA_QueryHelper.Controls
                     
                     await dbService.ConfigureAsync(selectedTns, connectionInfo.UserId, connectionInfo.Password);
                 }
+                // 🔥 2순위: 쿼리에 TnsName이 직접 설정된 경우
                 else if (!string.IsNullOrWhiteSpace(queryItem.TnsName))
                 {
                     var selectedTns = _sharedData.TnsEntries.FirstOrDefault(t =>
@@ -1665,11 +1651,29 @@ namespace FACTOVA_QueryHelper.Controls
 
                     await dbService.ConfigureAsync(selectedTns, queryItem.UserId, queryItem.Password);
                 }
+                // 🔥 3순위: 상단에서 선택한 접속 정보 사용 (폴백)
+                else if (_selectedConnectionInfo != null)
+                {
+                    var selectedTns = _sharedData.TnsEntries.FirstOrDefault(t =>
+                        t.Name.Equals(_selectedConnectionInfo.TNS, StringComparison.OrdinalIgnoreCase));
+                    
+                    if (selectedTns == null)
+                    {
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            MessageBox.Show($"TNS '{_selectedConnectionInfo.TNS}'를 찾을 수 없습니다.", "오류",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                        });
+                        return;
+                    }
+                    
+                    await dbService.ConfigureAsync(selectedTns, _selectedConnectionInfo.UserId, _selectedConnectionInfo.Password);
+                }
                 else
                 {
                     await Application.Current.Dispatcher.InvokeAsync(() =>
                     {
-                        MessageBox.Show("접속 정보를 선택하거나 쿼리에 TNS를 설정해주세요.", "오류",
+                        MessageBox.Show("쿼리에 접속 정보를 설정하거나 상단에서 접속 정보를 선택해주세요.", "오류",
                             MessageBoxButton.OK, MessageBoxImage.Error);
                     });
                     return;
