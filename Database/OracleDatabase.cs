@@ -8,7 +8,18 @@ namespace FACTOVA_QueryHelper.Database
 {
     public class OracleDatabase
     {
+        /// <summary>
+        /// 쿼리 실행 (기본: ROWNUM 제한 활성화, 2000건)
+        /// </summary>
         public static async Task<DataTable> ExecuteQueryAsync(string connectionString, string userId, string password, string query)
+        {
+            return await ExecuteQueryAsync(connectionString, userId, password, query, true, 2000);
+        }
+        
+        /// <summary>
+        /// 쿼리 실행 (ROWNUM 제한 설정 가능)
+        /// </summary>
+        public static async Task<DataTable> ExecuteQueryAsync(string connectionString, string userId, string password, string query, bool enableRowLimit, int rowLimitCount)
         {
             var dataTable = new DataTable();
 
@@ -31,12 +42,14 @@ namespace FACTOVA_QueryHelper.Database
                     
                     System.Diagnostics.Debug.WriteLine($"Connection String: {fullConnectionString.Replace(password, "***")}");
                     
-                    // 🔥 쿼리에 ROWNUM 제한이 없으면 자동으로 2000건 제한 추가
-                    string processedQuery = ApplyRowLimitIfNeeded(query);
+                    // 🔥 쿼리에 ROWNUM 제한이 없으면 설정에 따라 제한 추가
+                    string processedQuery = enableRowLimit 
+                        ? ApplyRowLimitIfNeeded(query, rowLimitCount) 
+                        : query;
                     
                     if (processedQuery != query)
                     {
-                        System.Diagnostics.Debug.WriteLine("⚠️ 쿼리에 ROWNUM 제한이 없어서 자동으로 2000건 제한을 추가했습니다.");
+                        System.Diagnostics.Debug.WriteLine($"⚠️ 쿼리에 ROWNUM 제한이 없어서 자동으로 {rowLimitCount}건 제한을 추가했습니다.");
                     }
                     
                     // 🔍 실행될 전체 쿼리 로깅
@@ -97,9 +110,9 @@ namespace FACTOVA_QueryHelper.Database
         }
 
         /// <summary>
-        /// 쿼리에 ROWNUM 또는 RN 제한이 없으면 자동으로 2000건 제한을 추가합니다.
+        /// 쿼리에 ROWNUM 또는 RN 제한이 없으면 자동으로 행 제한을 추가합니다.
         /// </summary>
-        private static string ApplyRowLimitIfNeeded(string query)
+        private static string ApplyRowLimitIfNeeded(string query, int rowLimitCount)
         {
             if (string.IsNullOrWhiteSpace(query))
                 return query;
@@ -115,7 +128,7 @@ namespace FACTOVA_QueryHelper.Database
                 return query;
             }
 
-            // 🔥 행 제한이 없으면 2000건 제한 추가
+            // 🔥 행 제한이 없으면 지정된 행 수 제한 추가
             string trimmedQuery = query.Trim();
             
             // ORDER BY 절이 있는지 확인
@@ -124,47 +137,46 @@ namespace FACTOVA_QueryHelper.Database
             if (orderByMatch.Success)
             {
                 // 🔥 ORDER BY가 있으면 전체 쿼리를 서브쿼리로 감싸서 ROWNUM 적용
-                // SELECT * FROM (원본쿼리) WHERE ROWNUM <= 2000
-                return $"SELECT * FROM (\n{trimmedQuery}\n) WHERE ROWNUM <= 2000";
+                return $"SELECT * FROM (\n{trimmedQuery}\n) WHERE ROWNUM <= {rowLimitCount}";
             }
             else
-            {
-                // 🔥 ORDER BY가 없으면 WHERE 절에 ROWNUM 조건 추가
-                bool hasWhere = Regex.IsMatch(trimmedQuery, @"\bWHERE\b", RegexOptions.IgnoreCase);
-                
-                // GROUP BY나 HAVING 절이 있는지 확인 (WHERE는 GROUP BY 전에 와야 함)
-                Match groupByMatch = Regex.Match(trimmedQuery, @"\b(GROUP\s+BY|HAVING)\b", RegexOptions.IgnoreCase);
-                
-                if (groupByMatch.Success)
                 {
-                    // GROUP BY나 HAVING이 있으면 그 앞에 ROWNUM 조건 추가
-                    int groupByIndex = groupByMatch.Index;
-                    string beforeGroupBy = trimmedQuery.Substring(0, groupByIndex).TrimEnd();
-                    string groupByPart = trimmedQuery.Substring(groupByIndex);
+                    // 🔥 ORDER BY가 없으면 WHERE 절에 ROWNUM 조건 추가
+                    bool hasWhere = Regex.IsMatch(trimmedQuery, @"\bWHERE\b", RegexOptions.IgnoreCase);
+                
+                    // GROUP BY나 HAVING 절이 있는지 확인 (WHERE는 GROUP BY 전에 와야 함)
+                    Match groupByMatch = Regex.Match(trimmedQuery, @"\b(GROUP\s+BY|HAVING)\b", RegexOptions.IgnoreCase);
+                
+                    if (groupByMatch.Success)
+                    {
+                        // GROUP BY나 HAVING이 있으면 그 앞에 ROWNUM 조건 추가
+                        int groupByIndex = groupByMatch.Index;
+                        string beforeGroupBy = trimmedQuery.Substring(0, groupByIndex).TrimEnd();
+                        string groupByPart = trimmedQuery.Substring(groupByIndex);
                     
-                    if (hasWhere)
-                    {
-                        return $"{beforeGroupBy}\n  AND ROWNUM <= 2000\n{groupByPart}";
+                        if (hasWhere)
+                        {
+                            return $"{beforeGroupBy}\n  AND ROWNUM <= {rowLimitCount}\n{groupByPart}";
+                        }
+                        else
+                        {
+                            return $"{beforeGroupBy}\nWHERE ROWNUM <= {rowLimitCount}\n{groupByPart}";
+                        }
                     }
                     else
                     {
-                        return $"{beforeGroupBy}\nWHERE ROWNUM <= 2000\n{groupByPart}";
-                    }
-                }
-                else
-                {
-                    // GROUP BY도 없으면 마지막에 WHERE ROWNUM <= 2000 추가
-                    if (hasWhere)
-                    {
-                        return $"{trimmedQuery}\n  AND ROWNUM <= 2000";
-                    }
-                    else
-                    {
-                        return $"{trimmedQuery}\nWHERE ROWNUM <= 2000";
+                        // GROUP BY도 없으면 마지막에 WHERE ROWNUM 추가
+                        if (hasWhere)
+                        {
+                            return $"{trimmedQuery}\n  AND ROWNUM <= {rowLimitCount}";
+                        }
+                        else
+                        {
+                            return $"{trimmedQuery}\nWHERE ROWNUM <= {rowLimitCount}";
+                        }
                     }
                 }
             }
-        }
 
         public static async Task<bool> TestConnectionAsync(string connectionString, string userId, string password)
         {

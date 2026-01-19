@@ -378,28 +378,28 @@
                             </DataGridTemplateColumn>
                             
                             <!-- 설명 컬럼 (편집 가능) -->
-                            <DataGridTemplateColumn Header="설명" Width="250">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Border Background="#FFF5F5F5" Padding="5,0">
-                                            <TextBlock Text="{Binding Description}" 
-                                                       VerticalAlignment="Center"
-                                                       Foreground="Black"
-                                                       TextWrapping="NoWrap"
-                                                       TextTrimming="CharacterEllipsis"/>
-                                        </Border>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                                <DataGridTemplateColumn.CellEditingTemplate>
-                                    <DataTemplate>
-                                        <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" 
-                                                 Background="#FFE0E0E0"
-                                                 Foreground="Black"
-                                                 VerticalContentAlignment="Center"/>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellEditingTemplate>
-                            </DataGridTemplateColumn>
-                        </DataGrid.Columns>
+                                <DataGridTemplateColumn Header="설명" Width="*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Background="#FFF5F5F5" Padding="5,0">
+                                                <TextBlock Text="{Binding Description}" 
+                                                           VerticalAlignment="Center"
+                                                           Foreground="Black"
+                                                           TextWrapping="NoWrap"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate>
+                                            <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" 
+                                                     Background="#FFE0E0E0"
+                                                     Foreground="Black"
+                                                     VerticalContentAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
                     </DataGrid>
                     
                     <!-- 결과 텍스트 -->

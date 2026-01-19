@@ -358,6 +358,13 @@ namespace FACTOVA_QueryHelper.Controls
                     
                     // OracleDbService 생성 및 설정
                     var dbService = new Services.OracleDbService();
+                    
+                    // 🔥 ROWNUM 제한 설정 적용
+                    if (_sharedData != null)
+                    {
+                        dbService.SetRowLimit(_sharedData.Settings.EnableRowLimit, _sharedData.Settings.RowLimitCount);
+                    }
+                    
                     executorControl.SetDbService(dbService);
                     
                     // ConnectionInfo 목록 새로고침

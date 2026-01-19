@@ -1597,6 +1597,9 @@ namespace FACTOVA_QueryHelper.Controls
             // 🔥 각 쿼리 실행마다 새로운 OracleDbService 인스턴스 생성 (병렬 실행 시 충돌 방지)
             var dbService = new OracleDbService();
             
+            // 🔥 ROWNUM 제한 설정 적용
+            dbService.SetRowLimit(_sharedData.Settings.EnableRowLimit, _sharedData.Settings.RowLimitCount);
+            
             try
             {
                 // 🔥 1순위: 쿼리에 설정된 접속 정보 우선 사용 (각 쿼리마다 다른 DB 연결 가능)
@@ -1745,7 +1748,8 @@ namespace FACTOVA_QueryHelper.Controls
             // 🔥 1단계: AS 뒤의 파라미터는 알리아스로 처리 (@ 기호만 제거)
             result = ReplaceAliasParameters(result);
 
-            // 🔥 2단계: 모든 파라미터를 기준정보 파라미터에서 치환
+            // 🔥 2단계: 모든 파라미터를 기준정보 파라미터에서 치환 (항상 따옴표 포함)
+            // AS 뒤의 파라미터는 1단계에서 이미 따옴표 없이 처리됨
             if (_parameters != null)
             {
                 foreach (var param in _parameters)
@@ -1768,51 +1772,47 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         /// <summary>
-        /// AS 뒤의 파라미터를 알리아스로 처리 (파라미터 값을 컬럼명으로 사용)
-        /// 예: 'value' AS @WORK_ORDER_NAME → 'value' AS A11 (파라미터 값이 A11일 때)
+        /// AS 뒤의 파라미터를 알리아스로 처리 (따옴표 없이 치환)
+        /// 예1: 'value' AS @WORK_ORDER_NAME → 'value' AS A11
+        /// 예2: 'value' AS D_@PARAM1 → 'value' AS D_VALUE
         /// </summary>
         private string ReplaceAliasParameters(string query)
         {
-            if (string.IsNullOrEmpty(query))
+            if (string.IsNullOrEmpty(query) || _parameters == null)
                 return query;
 
-            // AS 패턴 찾기: AS @PARAMETER_NAME
-            // 정규식: AS\s+@[A-Za-z_][A-Za-z0-9_]*
-            var pattern = @"\bAS\s+(@[A-Za-z_][A-Za-z0-9_]*)";
-            var regex = new System.Text.RegularExpressions.Regex(pattern, 
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            string result = query;
 
-            var result = regex.Replace(query, match =>
+            // 🔥 AS 뒤에 오는 모든 파라미터를 따옴표 없이 치환
+            // 패턴: AS 뒤에 공백 후 식별자 내에 @PARAM이 포함된 경우
+            // 예: AS @PARAM, AS D_@PARAM, AS PREFIX_@PARAM_SUFFIX 등
+            foreach (var param in _parameters)
             {
-                var paramWithAt = match.Groups[1].Value;
-                
-                // 🔥 기준정보 파라미터에서 찾기
-                string? aliasValue = null;
-                
-                if (_parameters != null)
+                if (string.IsNullOrWhiteSpace(param.Parameter))
+                    continue;
+
+                string paramName = param.Parameter.StartsWith("@") ? param.Parameter : $"@{param.Parameter}";
+                string paramValue = param.Value ?? "";
+
+                // AS 뒤에 오는 식별자에서 파라미터 찾기
+                // 정규식: AS\s+([A-Za-z0-9_]*@PARAM[A-Za-z0-9_]*)
+                var escapedParam = System.Text.RegularExpressions.Regex.Escape(paramName);
+                var pattern = $@"\bAS\s+([A-Za-z0-9_]*{escapedParam}[A-Za-z0-9_]*)";
+                var regex = new System.Text.RegularExpressions.Regex(pattern, 
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+                result = regex.Replace(result, match =>
                 {
-                    var param = _parameters.FirstOrDefault(p => 
-                        p.Parameter.Equals(paramWithAt, StringComparison.OrdinalIgnoreCase) ||
-                        ("@" + p.Parameter).Equals(paramWithAt, StringComparison.OrdinalIgnoreCase));
-                    
-                    if (param != null)
-                    {
-                        aliasValue = param.Value;
-                    }
-                }
-                
-                // 파라미터 값을 찾았으면 그 값을 알리아스로 사용, 못 찾았으면 @ 제거
-                if (!string.IsNullOrEmpty(aliasValue))
-                {
-                    return "AS " + aliasValue;
-                }
-                else
-                {
-                    // 파라미터를 못 찾은 경우 @ 제거
-                    var paramWithoutAt = paramWithAt.Substring(1);
-                    return "AS " + paramWithoutAt;
-                }
-            });
+                    var fullAlias = match.Groups[1].Value;
+                    // 파라미터만 값으로 치환 (따옴표 없이)
+                    var replacedAlias = System.Text.RegularExpressions.Regex.Replace(
+                        fullAlias, 
+                        System.Text.RegularExpressions.Regex.Escape(paramName), 
+                        paramValue, 
+                        System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    return "AS " + replacedAlias;
+                });
+            }
 
             return result;
         }

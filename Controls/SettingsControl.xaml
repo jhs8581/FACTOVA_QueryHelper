@@ -198,6 +198,63 @@
 
                         <!-- 구분선 -->
                         <Rectangle Height="1" Fill="#FFE0E0E0" Margin="0,0,0,15"/>
+                        
+                        <!-- 🔥 ROWNUM 제한 설정 -->
+                        <TextBlock Text="📊 데이터 조회 제한" 
+                                   FontWeight="SemiBold" 
+                                   FontSize="13"
+                                   Margin="0,0,0,10"/>
+                        
+                        <Border Background="#FFF8F9FA" 
+                                BorderBrush="#FFE0E0E0" 
+                                BorderThickness="1" 
+                                CornerRadius="4"
+                                Padding="15"
+                                Margin="0,0,0,15">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <CheckBox x:Name="EnableRowLimitCheckBox" 
+                                              Content="ROWNUM 제한 사용"
+                                              FontSize="12"
+                                              VerticalAlignment="Center"
+                                              IsChecked="True"
+                                              Checked="EnableRowLimitCheckBox_Changed"
+                                              Unchecked="EnableRowLimitCheckBox_Changed"/>
+                                    <TextBlock Text="(체크 해제 시 무제한 조회)" 
+                                               FontSize="11" 
+                                               Foreground="#FF6C757D"
+                                               VerticalAlignment="Center"
+                                               Margin="10,0,0,0"/>
+                                </StackPanel>
+                                
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="최대 조회 행 수:" 
+                                               FontSize="12"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,10,0"/>
+                                    <TextBox x:Name="RowLimitCountTextBox" 
+                                             Width="100"
+                                             Height="28"
+                                             Text="2000"
+                                             FontSize="12"
+                                             VerticalContentAlignment="Center"
+                                             HorizontalContentAlignment="Right"
+                                             Padding="5,0"/>
+                                    <TextBlock Text="행" 
+                                               FontSize="12"
+                                               VerticalAlignment="Center"
+                                               Margin="5,0,0,0"/>
+                                </StackPanel>
+                                
+                                <TextBlock Text="※ 쿼리 실행 시 지정된 행 수만큼만 조회됩니다. (성능 향상)" 
+                                           FontSize="11" 
+                                           Foreground="#FF6C757D"
+                                           Margin="0,10,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- 구분선 -->
+                        <Rectangle Height="1" Fill="#FFE0E0E0" Margin="0,0,0,15"/>
 
                         <!-- 저장 버튼 -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">

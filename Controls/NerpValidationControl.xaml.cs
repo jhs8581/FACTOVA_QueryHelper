@@ -332,6 +332,12 @@ namespace FACTOVA_QueryHelper.Controls
                         
                         var dbService = new OracleDbService();
                         
+                        // 🔥 ROWNUM 제한 설정 적용
+                        if (_sharedData != null)
+                        {
+                            dbService.SetRowLimit(_sharedData.Settings.EnableRowLimit, _sharedData.Settings.RowLimitCount);
+                        }
+                        
                         // TNS 정보 가져오기
                         var tnsName = connection.TNS;
                         

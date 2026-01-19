@@ -144,9 +144,9 @@ namespace FACTOVA_QueryHelper
                 if (scrollViewer != null)
                 {
                     if (e.Delta > 0)
-                        scrollViewer.LineLeft();
-                    else
                         scrollViewer.LineRight();
+                    else
+                        scrollViewer.LineLeft();
                     
                     e.Handled = true;
                 }
@@ -161,9 +161,9 @@ namespace FACTOVA_QueryHelper
             if (Keyboard.Modifiers == ModifierKeys.Shift && sender is ScrollViewer scrollViewer)
             {
                 if (e.Delta > 0)
-                    scrollViewer.LineLeft();
-                else
                     scrollViewer.LineRight();
+                else
+                    scrollViewer.LineLeft();
                 
                 e.Handled = true;
             }

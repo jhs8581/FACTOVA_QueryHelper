@@ -1268,6 +1268,9 @@ namespace FACTOVA_QueryHelper.Controls
         private async System.Threading.Tasks.Task ExecuteQueryToGrid(QueryItem queryItem, DataGrid targetGrid)
         {
             if (_sharedData == null) return;
+            
+            // 🔥 ROWNUM 제한 설정 적용
+            _dbService?.SetRowLimit(_sharedData.Settings.EnableRowLimit, _sharedData.Settings.RowLimitCount);
 
             try
             {

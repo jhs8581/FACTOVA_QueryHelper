@@ -715,7 +715,8 @@ namespace FACTOVA_QueryHelper.Database
                     Id = Convert.ToInt32(reader["Id"]),
                     Parameter = reader["Parameter"]?.ToString() ?? "",
                     Description = reader["Description"]?.ToString() ?? "",
-                    Value = reader["Value"]?.ToString() ?? ""
+                    Value = reader["Value"]?.ToString() ?? "",
+                    NoQuotes = reader["NoQuotes"] != DBNull.Value && Convert.ToInt32(reader["NoQuotes"]) == 1
                 });
             }
 
@@ -732,12 +733,13 @@ namespace FACTOVA_QueryHelper.Database
 
             var command = connection.CreateCommand();
             command.CommandText = @"
-                INSERT INTO Parameters (Parameter, Description, Value, DisplayOrder)
-                VALUES ($parameter, $description, $value, 0)";
+                INSERT INTO Parameters (Parameter, Description, Value, DisplayOrder, NoQuotes)
+                VALUES ($parameter, $description, $value, 0, $noQuotes)";
 
             command.Parameters.AddWithValue("$parameter", parameter.Parameter);
             command.Parameters.AddWithValue("$description", parameter.Description ?? "");
             command.Parameters.AddWithValue("$value", parameter.Value ?? "");
+            command.Parameters.AddWithValue("$noQuotes", parameter.NoQuotes ? 1 : 0);
 
             command.ExecuteNonQuery();
         }
@@ -756,6 +758,7 @@ namespace FACTOVA_QueryHelper.Database
                     Parameter = $parameter,
                     Description = $description,
                     Value = $value,
+                    NoQuotes = $noQuotes,
                     ModifiedDate = CURRENT_TIMESTAMP
                 WHERE Id = $id";
 
@@ -763,6 +766,7 @@ namespace FACTOVA_QueryHelper.Database
             command.Parameters.AddWithValue("$parameter", parameter.Parameter);
             command.Parameters.AddWithValue("$description", parameter.Description ?? "");
             command.Parameters.AddWithValue("$value", parameter.Value ?? "");
+            command.Parameters.AddWithValue("$noQuotes", parameter.NoQuotes ? 1 : 0);
 
             command.ExecuteNonQuery();
         }

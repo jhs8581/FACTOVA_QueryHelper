@@ -459,6 +459,12 @@ namespace FACTOVA_QueryHelper.Controls
                 ResultStatusText.Foreground = new SolidColorBrush(Colors.Orange);
                 QueryResultDataGrid.ItemsSource = null;
 
+                // 🔥 ROWNUM 제한 설정 적용
+                if (_sharedData != null && _dbService != null)
+                {
+                    _dbService.SetRowLimit(_sharedData.Settings.EnableRowLimit, _sharedData.Settings.RowLimitCount);
+                }
+
                 var bindVars = QueryTextBox.ExtractBindVariables(query);
                 DataTable dataTable;
 

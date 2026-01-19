@@ -16,6 +16,10 @@ namespace FACTOVA_QueryHelper.Services
         private bool _isConfigured = false;
         private CancellationTokenSource? _currentQueryCancellation;
         private OracleCommand? _currentCommand;
+        
+        // 🔥 ROWNUM 제한 설정
+        private bool _enableRowLimit = true;
+        private int _rowLimitCount = 2000;
 
         /// <summary>
         /// 현재 연결 설정 상태
@@ -26,6 +30,15 @@ namespace FACTOVA_QueryHelper.Services
         /// 쿼리 실행 중 여부
         /// </summary>
         public bool IsQueryRunning => _currentQueryCancellation != null && !_currentQueryCancellation.IsCancellationRequested;
+        
+        /// <summary>
+        /// 🔥 ROWNUM 제한 설정
+        /// </summary>
+        public void SetRowLimit(bool enableRowLimit, int rowLimitCount)
+        {
+            _enableRowLimit = enableRowLimit;
+            _rowLimitCount = rowLimitCount > 0 ? rowLimitCount : 2000;
+        }
 
         /// <summary>
         /// TnsEntry 객체를 사용한 연결 설정
@@ -396,7 +409,7 @@ namespace FACTOVA_QueryHelper.Services
         }
 
         /// <summary>
-        /// 쿼리를 실행하고 DataTable로 결과 반환 - 타임아웃 10초, 취소 가능, 최대 2000건
+        /// 쿼리를 실행하고 DataTable로 결과 반환 - 타임아웃 10초, 취소 가능, 설정된 행 수 제한
         /// </summary>
         public async Task<DataTable> ExecuteQueryAsync(string query)
         {
@@ -425,8 +438,8 @@ namespace FACTOVA_QueryHelper.Services
                 System.Diagnostics.Debug.WriteLine($"📊 Starting query execution...");
                 connection = await CreateConnectionAsync();
                 
-                // 쿼리에 ROWNUM 제한 추가 (서브쿼리로 감싸지 않음)
-                var limitedQuery = WrapQueryWithRowLimit(query, 2000);
+                // 🔥 쿼리에 ROWNUM 제한 추가 (설정에 따라)
+                var limitedQuery = _enableRowLimit ? WrapQueryWithRowLimit(query, _rowLimitCount) : query;
                 System.Diagnostics.Debug.WriteLine($"Original query: {query}");
                 System.Diagnostics.Debug.WriteLine($"Limited query: {limitedQuery}");
                 

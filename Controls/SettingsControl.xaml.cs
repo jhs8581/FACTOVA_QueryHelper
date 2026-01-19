@@ -165,6 +165,14 @@ namespace FACTOVA_QueryHelper.Controls
                 ? QueryDatabase.GetDefaultDatabasePath() 
                 : _sharedData.Settings.DatabasePath;
             
+            // 🔥 ROWNUM 제한 설정 로드 (null 체크 추가)
+            if (EnableRowLimitCheckBox != null && RowLimitCountTextBox != null)
+            {
+                EnableRowLimitCheckBox.IsChecked = _sharedData.Settings.EnableRowLimit;
+                RowLimitCountTextBox.Text = _sharedData.Settings.RowLimitCount.ToString();
+                RowLimitCountTextBox.IsEnabled = _sharedData.Settings.EnableRowLimit;
+            }
+            
             // 현재 버전 표시
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             CurrentVersionTextBlock.Text = $"v{version}";
@@ -212,7 +220,24 @@ namespace FACTOVA_QueryHelper.Controls
         {
             TnsPathTextBox.Text = SettingsManager.GetDefaultTnsPath();
             DatabasePathTextBox.Text = QueryDatabase.GetDefaultDatabasePath();
+            if (EnableRowLimitCheckBox != null) EnableRowLimitCheckBox.IsChecked = true;
+            if (RowLimitCountTextBox != null)
+            {
+                RowLimitCountTextBox.Text = "2000";
+                RowLimitCountTextBox.IsEnabled = true;
+            }
             UpdateStatus("설정이 기본값으로 복원되었습니다.", Colors.Green);
+        }
+        
+        /// <summary>
+        /// 🔥 ROWNUM 제한 체크박스 변경 이벤트
+        /// </summary>
+        private void EnableRowLimitCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            if (RowLimitCountTextBox != null && EnableRowLimitCheckBox != null)
+            {
+                RowLimitCountTextBox.IsEnabled = EnableRowLimitCheckBox.IsChecked == true;
+            }
         }
 
         private void SaveSettingsButton_Click(object sender, RoutedEventArgs e)
@@ -238,6 +263,19 @@ namespace FACTOVA_QueryHelper.Controls
 
             _sharedData.Settings.TnsPath = TnsPathTextBox.Text;
             _sharedData.Settings.DatabasePath = DatabasePathTextBox.Text;
+            
+            // 🔥 ROWNUM 제한 설정 저장
+            _sharedData.Settings.EnableRowLimit = EnableRowLimitCheckBox.IsChecked == true;
+            if (int.TryParse(RowLimitCountTextBox.Text, out int rowLimit) && rowLimit > 0)
+            {
+                _sharedData.Settings.RowLimitCount = rowLimit;
+            }
+            else
+            {
+                _sharedData.Settings.RowLimitCount = 2000; // 기본값
+                RowLimitCountTextBox.Text = "2000";
+            }
+            
             _sharedData.SaveSettingsCallback?.Invoke();
             
             // QueryExecutionManager 설정 업데이트

@@ -7,11 +7,12 @@ namespace FACTOVA_QueryHelper.Models
     /// </summary>
     public class ParameterInfo : INotifyPropertyChanged
     {
-        private int _id;
+    private int _id;
         private string _parameter = string.Empty;
         private string _description = string.Empty;
         private string _value = string.Empty;
         private bool _isHighlighted;
+        private bool _noQuotes;
 
         public int Id
         {
@@ -77,6 +78,22 @@ namespace FACTOVA_QueryHelper.Models
                 {
                     _isHighlighted = value;
                     OnPropertyChanged(nameof(IsHighlighted));
+                }
+            }
+        }
+
+        /// <summary>
+        /// 치환 시 따옴표 제외 여부 (true: 따옴표 없이 치환)
+        /// </summary>
+        public bool NoQuotes
+        {
+            get => _noQuotes;
+            set
+            {
+                if (_noQuotes != value)
+                {
+                    _noQuotes = value;
+                    OnPropertyChanged(nameof(NoQuotes));
                 }
             }
         }

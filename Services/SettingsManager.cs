@@ -36,6 +36,10 @@ namespace FACTOVA_QueryHelper
         public string UpdateSource { get; set; } = "GitHub"; // 업데이트 소스: "GitHub" 또는 "Network"
         public string NetworkUpdatePath { get; set; } = @"\\서버\FACTOVA_Apps\QueryHelper\latest"; // 네트워크 업데이트 경로
         
+        // 🔥 ROWNUM 제한 설정
+        public bool EnableRowLimit { get; set; } = true; // ROWNUM 제한 활성화 (기본값: true)
+        public int RowLimitCount { get; set; } = 2000; // 최대 조회 행 수 (기본값: 2000)
+        
         // 🔥 탭 설정 (표시 여부 및 순서)
         public List<TabSetting> TabSettings { get; set; } = new List<TabSetting>();
         
