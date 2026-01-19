@@ -2474,26 +2474,38 @@ namespace FACTOVA_QueryHelper.Controls
 
             try
             {
+                // 🔥 모든 파라미터를 추출 (AS 뒤에 오는 것도 포함)
+                // 별칭용 파라미터도 값을 입력받아야 하므로 추출 대상에 포함
+                // 치환 시 AS 뒤의 파라미터만 따옴표 없이 처리됨
+
                 // 단순 공백 및 개행 문자 기준으로 파라미터 분리
-                var tokens = query.Split(new[] { ' ', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                var tokens = query.Split(new[] { ' ', '\n', '\r', '\t', '(', ')', ',', '=' }, StringSplitOptions.RemoveEmptyEntries);
 
                 foreach (var token in tokens)
                 {
-                    // '@'로 시작하고 그 다음이 영문자 또는 '_'인 경우에만 파라미터로 인식
-                    if (token.StartsWith("@") && 
-                        token.Length > 1 && 
-                        (char.IsLetter(token[1]) || token[1] == '_'))
+                    // 토큰에서 @로 시작하는 파라미터 추출
+                    int atIndex = token.IndexOf('@');
+                    while (atIndex >= 0 && atIndex < token.Length - 1)
                     {
-                        // 특수문자 제거 후 파라미터만 추출
-                        var cleaned = new string(token.Skip(1).TakeWhile(c => char.IsLetterOrDigit(c) || c == '_').ToArray());
-                        if (!string.IsNullOrEmpty(cleaned))
+                        // @ 다음 문자가 영문자 또는 _인 경우에만 파라미터로 인식
+                        if (char.IsLetter(token[atIndex + 1]) || token[atIndex + 1] == '_')
                         {
-                            var param = "@" + cleaned;
-                            if (!parameters.Contains(param))
+                            // 특수문자 제거 후 파라미터만 추출
+                            var paramPart = token.Substring(atIndex + 1);
+                            var cleaned = new string(paramPart.TakeWhile(c => char.IsLetterOrDigit(c) || c == '_').ToArray());
+                            
+                            if (!string.IsNullOrEmpty(cleaned))
                             {
-                                parameters.Add(param);
+                                var param = "@" + cleaned;
+                                if (!parameters.Contains(param))
+                                {
+                                    parameters.Add(param);
+                                }
                             }
                         }
+                        
+                        // 다음 @ 찾기
+                        atIndex = token.IndexOf('@', atIndex + 1);
                     }
                 }
             }
