@@ -14,7 +14,7 @@
     <RowDefinition Height="*"/>
 </Grid.RowDefinitions>
 
-<!-- 상단 조회 영역 (사업장) -->
+<!-- 상단 조회 영역 (접속 정보) -->
 <Border Grid.Row="0" 
         x:Name="SearchConditionBorder"
         Background="White" 
@@ -26,13 +26,13 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="600"/>
+            <ColumnDefinition Width="400"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0" BorderBrush="#FFE0E0E0" BorderThickness="1" Background="#FFF8F9FA">
-            <TextBlock Text="사업장" FontWeight="SemiBold" VerticalAlignment="Center" Margin="10,5" FontSize="11"/>
+            <TextBlock Text="접속 정보" FontWeight="SemiBold" VerticalAlignment="Center" Margin="10,5" FontSize="11"/>
         </Border>
         <Border Grid.Column="1" BorderBrush="#FFE0E0E0" BorderThickness="1">
             <Grid Margin="5">
@@ -41,17 +41,17 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                         
-                <ComboBox x:Name="SiteComboBox" 
+                <ComboBox x:Name="ConnectionInfoComboBox" 
                           Grid.Column="0"
                           Height="28" 
                           FontSize="11"
                           VerticalContentAlignment="Center"
-                          DisplayMemberPath="DisplayText"
+                          DisplayMemberPath="Name"
                           Margin="0,0,5,0"
-                          SelectionChanged="SiteComboBox_SelectionChanged"
-                          ToolTip="치환: @REPRESENTATIVE_FACTORY_CODE, @ORGANIZATION_ID, @FACILITY_CODE, @WIP_LINE_ID, @LINE_ID, @DIVISION"/>
+                          SelectionChanged="ConnectionInfoComboBox_SelectionChanged"
+                          ToolTip="쿼리 실행에 사용할 접속 정보를 선택합니다"/>
                         
-                <Button x:Name="RefreshSiteButton"
+                <Button x:Name="RefreshConnectionButton"
                         Grid.Column="1"
                         Content="🔄"
                         Width="28"
@@ -61,12 +61,12 @@
                         BorderThickness="0"
                         Cursor="Hand"
                         FontSize="14"
-                        ToolTip="사업장 정보 새로고침"
-                        Click="RefreshSiteButton_Click"/>
+                        ToolTip="접속 정보 새로고침"
+                        Click="RefreshConnectionButton_Click"/>
             </Grid>
         </Border>
         
-        <!-- 파라미터 패널 토글 버튼 (사업장 오른쪽) -->
+        <!-- 파라미터 패널 토글 버튼 -->
         <Button x:Name="ToggleParameterPanelButton"
                 Grid.Column="3"
                 Content="📋 파라미터 숨기기"
@@ -180,36 +180,7 @@
                                        VerticalAlignment="Center"/>
                             
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                            <!-- 파라미터 추가 버튼 -->
-                            <Button x:Name="AddParameterButton" 
-                                    Width="30" Height="30"
-                                    Click="AddParameterButton_Click"
-                                    Background="#FF28A745" 
-                                    Foreground="White"
-                                    BorderThickness="0"
-                                    Cursor="Hand"
-                                    FontWeight="Bold"
-                                    FontSize="14"
-                                    Margin="0,0,5,0"
-                                    ToolTip="파라미터 추가">
-                                <TextBlock Text="➕"/>
-                            </Button>
-                            
-                            <!-- 파라미터 삭제 버튼 -->
-                            <Button x:Name="DeleteParameterButton" 
-                                    Width="30" Height="30"
-                                    Click="DeleteParameterButton_Click"
-                                    Background="#FFDC3545" 
-                                    Foreground="White"
-                                    BorderThickness="0"
-                                    Cursor="Hand"
-                                    FontWeight="Bold"
-                                    FontSize="14"
-                                    Margin="0,0,5,0"
-                                    ToolTip="파라미터 삭제"
-                                    IsEnabled="False">
-                                <TextBlock Text="🗑️"/>
-                            </Button>
+                            <!-- 🔥 추가/삭제/저장 버튼 제거 - 자동 추출 및 자동 저장으로 변경 -->
                             
                             <!-- XML 입력 버튼 -->
                             <Button x:Name="XmlInputButton" 
@@ -224,21 +195,6 @@
                                     Margin="0,0,5,0"
                                     ToolTip="XML 입력">
                                 <TextBlock Text="📝"/>
-                            </Button>
-                            
-                            <!-- 색상 초기화 버튼 -->
-                            <Button x:Name="ClearHighlightButton" 
-                                    Width="30" Height="30"
-                                    Click="ClearHighlightButton_Click"
-                                    Background="#FF6C757D" 
-                                    Foreground="White"
-                                    BorderThickness="0"
-                                    Cursor="Hand"
-                                    FontWeight="Bold"
-                                    FontSize="14"
-                                    Margin="0,0,5,0"
-                                    ToolTip="파라미터 색상 초기화">
-                                <TextBlock Text="🎨"/>
                             </Button>
                             
                             <!-- 값 초기화 버튼 -->
@@ -256,7 +212,56 @@
                                 <TextBlock Text="🔄"/>
                             </Button>
                             
-                            <!-- 파라미터 저장 버튼 -->
+                            <!-- 🔥 숨김: 파라미터 추가 버튼 (수동 추가가 필요한 경우용) -->
+                            <Button x:Name="AddParameterButton" 
+                                    Width="30" Height="30"
+                                    Click="AddParameterButton_Click"
+                                    Background="#FF28A745" 
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    FontWeight="Bold"
+                                    FontSize="14"
+                                    Margin="0,0,5,0"
+                                    ToolTip="파라미터 수동 추가"
+                                    Visibility="Collapsed">
+                                <TextBlock Text="➕"/>
+                            </Button>
+                            
+                            <!-- 🔥 숨김: 파라미터 삭제 버튼 -->
+                            <Button x:Name="DeleteParameterButton" 
+                                    Width="30" Height="30"
+                                    Click="DeleteParameterButton_Click"
+                                    Background="#FFDC3545" 
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    FontWeight="Bold"
+                                    FontSize="14"
+                                    Margin="0,0,5,0"
+                                    ToolTip="파라미터 삭제"
+                                    IsEnabled="False"
+                                    Visibility="Collapsed">
+                                <TextBlock Text="🗑️"/>
+                            </Button>
+                            
+                            <!-- 🔥 숨김: 색상 초기화 버튼 -->
+                            <Button x:Name="ClearHighlightButton" 
+                                    Width="30" Height="30"
+                                    Click="ClearHighlightButton_Click"
+                                    Background="#FF6C757D" 
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    FontWeight="Bold"
+                                    FontSize="14"
+                                    Margin="0,0,5,0"
+                                    ToolTip="파라미터 색상 초기화"
+                                    Visibility="Collapsed">
+                                <TextBlock Text="🎨"/>
+                            </Button>
+                            
+                            <!-- 🔥 숨김: 파라미터 저장 버튼 (자동 저장으로 대체) -->
                             <Button x:Name="SaveParametersButton" 
                                     Width="30" Height="30"
                                     Click="SaveParametersButton_Click"
@@ -266,7 +271,8 @@
                                     Cursor="Hand"
                                     FontWeight="Bold"
                                     FontSize="14"
-                                    ToolTip="변경사항 저장">
+                                    ToolTip="변경사항 저장"
+                                    Visibility="Collapsed">
                                 <TextBlock Text="💾"/>
                             </Button>
                         </StackPanel>
@@ -497,9 +503,9 @@
                                     FontSize="11"
                                     Click="ExecuteAllGridsButton_Click"
                                     Margin="0,0,10,0">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <TextBlock Text="⚡" FontSize="12" Margin="0,0,5,0"/>
-                                    <TextBlock Text="전체 조회"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="⚡" FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="전체 조회" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
                             

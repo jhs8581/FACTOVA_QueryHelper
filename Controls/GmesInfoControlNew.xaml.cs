@@ -59,6 +59,9 @@ namespace FACTOVA_QueryHelper.Controls
             // 🔥 더블클릭으로 바로 편집 모드 진입
             PlanInfoDataGrid.MouseDoubleClick += PlanInfoDataGrid_MouseDoubleClick;
             
+            // 🔥 셀 편집 완료 시 자동 저장
+            PlanInfoDataGrid.CellEditEnding += PlanInfoDataGrid_CellEditEnding;
+            
             // 🔥 행 번호 표시 활성화 (NERP 스타일)
             DataGridHelper.EnableRowNumbersWithNerpStyle(PlanInfoDataGrid);
             
@@ -84,6 +87,9 @@ namespace FACTOVA_QueryHelper.Controls
             };
         }
 
+        // 🔥 선택된 접속 정보
+        private Models.ConnectionInfo? _selectedConnectionInfo;
+
         public void Initialize(SharedDataContext sharedData)
         {
             _isInitializing = true;
@@ -91,8 +97,8 @@ namespace FACTOVA_QueryHelper.Controls
             _sharedData = sharedData;
             _database = new QueryDatabase(sharedData.Settings.DatabasePath);
             
-            // 🔥 사업장 정보 로드
-            LoadSiteInfos();
+            // 🔥 접속 정보 로드
+            LoadConnectionInfos();
             
             // 🔥 파라미터 로드
             LoadParameters();
@@ -108,97 +114,63 @@ namespace FACTOVA_QueryHelper.Controls
             
             _isInitializing = false;
             
-            // 🔥 초기화 완료 후 사업장 정보를 다시 한번 명시적으로 적용
-            if (SiteComboBox.SelectedItem is SiteInfo selectedSite)
-            {
-                _sharedData.Settings.GmesFactory = selectedSite.RepresentativeFactory;
-                _sharedData.Settings.GmesOrg = selectedSite.Organization;
-                _sharedData.Settings.GmesFacility = selectedSite.Facility;
-                _sharedData.Settings.GmesWipLineId = selectedSite.WipLineId;
-                _sharedData.Settings.GmesEquipLineId = selectedSite.EquipLineId;
-                _sharedData.SaveSettingsCallback?.Invoke();
-                
-                System.Diagnostics.Debug.WriteLine("=== Initialize 완료 후 사업장 정보 재확인 ===");
-                System.Diagnostics.Debug.WriteLine($"선택된 사업장: {selectedSite.SiteName}");
-                System.Diagnostics.Debug.WriteLine($"Factory: {_sharedData.Settings.GmesFactory}");
-                System.Diagnostics.Debug.WriteLine($"Org: {_sharedData.Settings.GmesOrg}");
-                System.Diagnostics.Debug.WriteLine($"Facility: {_sharedData.Settings.GmesFacility}");
-                System.Diagnostics.Debug.WriteLine($"WipLineId: {_sharedData.Settings.GmesWipLineId}");
-                System.Diagnostics.Debug.WriteLine($"EquipLineId: {_sharedData.Settings.GmesEquipLineId}");
-                System.Diagnostics.Debug.WriteLine("============================================");
-            }
+            System.Diagnostics.Debug.WriteLine("=== Initialize 완료 ===");
         }
 
-        #region 사업장 관리
+        #region 접속 정보 관리
 
         /// <summary>
-        /// 사업장 정보를 로드합니다.
+        /// 접속 정보를 로드합니다.
         /// </summary>
-        private void LoadSiteInfos()
+        private void LoadConnectionInfos()
         {
-            if (_database == null) return;
+            if (_sharedData == null) return;
 
             try
             {
-                var sites = _database.GetAllSites();
+                var connectionInfoService = new Services.ConnectionInfoService(_sharedData.Settings.DatabasePath);
+                var connections = connectionInfoService.GetAll();
                 
-                SiteComboBox.ItemsSource = sites;
+                ConnectionInfoComboBox.ItemsSource = connections;
 
-                if (sites.Count > 0)
+                if (connections.Count > 0)
                 {
-                    SiteComboBox.SelectedItem = sites[0];
+                    ConnectionInfoComboBox.SelectedItem = connections[0];
+                    _selectedConnectionInfo = connections[0];
                     
-                    System.Diagnostics.Debug.WriteLine($"=== 사업장 로드 완료 ===");
-                    System.Diagnostics.Debug.WriteLine($"총 {sites.Count}개 사업장");
-                    System.Diagnostics.Debug.WriteLine($"선택된 사업장: {sites[0].SiteName}");
-                    System.Diagnostics.Debug.WriteLine($"  - Factory: {sites[0].RepresentativeFactory}");
-                    System.Diagnostics.Debug.WriteLine($"  - Org: {sites[0].Organization}");
-                    System.Diagnostics.Debug.WriteLine($"  - Facility: {sites[0].Facility}");
-                    System.Diagnostics.Debug.WriteLine($"  - WipLineId: {sites[0].WipLineId}");
-                    System.Diagnostics.Debug.WriteLine($"  - EquipLineId: {sites[0].EquipLineId}");
+                    System.Diagnostics.Debug.WriteLine($"=== 접속 정보 로드 완료 ===");
+                    System.Diagnostics.Debug.WriteLine($"총 {connections.Count}개 접속 정보");
+                    System.Diagnostics.Debug.WriteLine($"선택된 접속 정보: {connections[0].Name}");
                     System.Diagnostics.Debug.WriteLine("========================");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ 사업장 정보 로드 오류: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ 접속 정보 로드 오류: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// 사업장 ComboBox 선택 변경 이벤트
+        /// 접속 정보 ComboBox 선택 변경 이벤트
         /// </summary>
-        private void SiteComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ConnectionInfoComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_isInitializing || SiteComboBox.SelectedItem is not SiteInfo selectedSite)
-                return;
+            if (_isInitializing) return;
 
-            if (_sharedData != null)
+            if (ConnectionInfoComboBox.SelectedItem is Models.ConnectionInfo selectedConnection)
             {
-                System.Diagnostics.Debug.WriteLine("=== 사업장 선택 변경 ===");
-                
-                _sharedData.Settings.GmesFactory = selectedSite.RepresentativeFactory;
-                _sharedData.Settings.GmesOrg = selectedSite.Organization;
-                _sharedData.Settings.GmesFacility = selectedSite.Facility;
-                _sharedData.Settings.GmesWipLineId = selectedSite.WipLineId;
-                _sharedData.Settings.GmesEquipLineId = selectedSite.EquipLineId;
-                _sharedData.SaveSettingsCallback?.Invoke();
-                
-                System.Diagnostics.Debug.WriteLine($"사업장명: {selectedSite.SiteName}");
-                System.Diagnostics.Debug.WriteLine($"Factory: {_sharedData.Settings.GmesFactory}");
-                System.Diagnostics.Debug.WriteLine($"Org: {_sharedData.Settings.GmesOrg}");
-                System.Diagnostics.Debug.WriteLine($"Facility: {_sharedData.Settings.GmesFacility}");
-                System.Diagnostics.Debug.WriteLine("========================");
+                _selectedConnectionInfo = selectedConnection;
+                System.Diagnostics.Debug.WriteLine($"=== 접속 정보 선택 변경: {selectedConnection.Name} ===");
             }
         }
 
         /// <summary>
-        /// 사업장 새로고침 버튼 클릭
+        /// 접속 정보 새로고침 버튼 클릭
         /// </summary>
-        private void RefreshSiteButton_Click(object sender, RoutedEventArgs e)
+        private void RefreshConnectionButton_Click(object sender, RoutedEventArgs e)
         {
-            LoadSiteInfos();
-            MessageBox.Show("사업장 정보가 새로고침되었습니다.", "완료",
+            LoadConnectionInfos();
+            MessageBox.Show("접속 정보가 새로고침되었습니다.", "완료",
                 MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
@@ -237,7 +209,7 @@ namespace FACTOVA_QueryHelper.Controls
         #region 기준정보 파라미터 관리
 
         /// <summary>
-        /// 파라미터 목록 로드
+        /// 파라미터 목록 로드 (전체)
         /// </summary>
         private void LoadParameters()
         {
@@ -249,14 +221,119 @@ namespace FACTOVA_QueryHelper.Controls
                 _parameters = new System.Collections.ObjectModel.ObservableCollection<ParameterInfo>(parameters);
                 PlanInfoDataGrid.ItemsSource = _parameters;
                 
-                ParameterStatusTextBlock.Text = $"{parameters.Count}개 파라미터 로드됨";
-                ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Green);
+                ParameterStatusTextBlock.Text = "기준정보를 선택하면 파라미터가 자동 추출됩니다.";
+                ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Gray);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"파라미터 로드 실패:\n{ex.Message}", "오류",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 ParameterStatusTextBlock.Text = "파라미터 로드 실패";
+                ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Red);
+            }
+        }
+
+        /// <summary>
+        /// 🔥 쿼리 그룹에서 파라미터를 자동 추출하여 표시
+        /// </summary>
+        private void LoadParametersFromQueryGroup(string queryName)
+        {
+            if (_database == null) return;
+
+            try
+            {
+                // 해당 그룹의 모든 쿼리 가져오기
+                var groupQueries = _infoQueries
+                    .Where(q => q.QueryName == queryName)
+                    .ToList();
+
+                if (groupQueries.Count == 0)
+                {
+                    _parameters?.Clear();
+                    ParameterStatusTextBlock.Text = "쿼리가 없습니다.";
+                    ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Gray);
+                    return;
+                }
+
+                // 모든 쿼리에서 파라미터 추출
+                var extractedParams = new HashSet<string>();
+                foreach (var query in groupQueries)
+                {
+                    var usedParams = ExtractParametersFromQuery(query.Query);
+                    foreach (var param in usedParams)
+                    {
+                        extractedParams.Add(param);
+                    }
+                }
+
+                // 🔥 모든 파라미터를 기준정보에서 관리 (사업장 파라미터 제외 로직 제거)
+                var allParams = extractedParams
+                    .OrderBy(p => p)
+                    .ToList();
+
+                // DB에서 기존 파라미터 값 가져오기
+                var savedParameters = _database.GetAllParameters();
+
+                // 새로운 파라미터 목록 생성
+                var newParameterList = new List<ParameterInfo>();
+                
+                foreach (var paramName in allParams)
+                {
+                    // @ 제거한 이름으로 DB에서 찾기
+                    var paramNameWithoutAt = paramName.TrimStart('@');
+                    var savedParam = savedParameters.FirstOrDefault(p => 
+                        p.Parameter.TrimStart('@').Equals(paramNameWithoutAt, StringComparison.OrdinalIgnoreCase));
+
+                    if (savedParam != null)
+                    {
+                        // 기존 저장된 값 사용
+                        newParameterList.Add(new ParameterInfo
+                        {
+                            Id = savedParam.Id,
+                            Parameter = paramName,
+                            Value = savedParam.Value,
+                            Description = savedParam.Description,
+                            IsHighlighted = false
+                        });
+                    }
+                    else
+                    {
+                        // 새로운 파라미터 (저장된 값 없음)
+                        newParameterList.Add(new ParameterInfo
+                        {
+                            Id = 0,
+                            Parameter = paramName,
+                            Value = "",
+                            Description = "",
+                            IsHighlighted = true // 새 파라미터는 하이라이트
+                        });
+                    }
+                }
+
+                // ObservableCollection 업데이트
+                _parameters = new System.Collections.ObjectModel.ObservableCollection<ParameterInfo>(newParameterList);
+                PlanInfoDataGrid.ItemsSource = _parameters;
+
+                // 상태 메시지
+                int newCount = newParameterList.Count(p => p.Id == 0);
+                if (newCount > 0)
+                {
+                    ParameterStatusTextBlock.Text = $"📋 {newParameterList.Count}개 파라미터 (신규 {newCount}개 - 분홍색 표시)";
+                    ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Blue);
+                }
+                else
+                {
+                    ParameterStatusTextBlock.Text = $"📋 {newParameterList.Count}개 파라미터 (최근 입력값 로드됨)";
+                    ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Green);
+                }
+
+                System.Diagnostics.Debug.WriteLine($"✅ 쿼리 그룹 '{queryName}'에서 {newParameterList.Count}개 파라미터 추출됨");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"파라미터 추출 실패:\n{ex.Message}", "오류",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                ParameterStatusTextBlock.Text = "파라미터 추출 실패";
                 ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Red);
             }
         }
@@ -448,6 +525,53 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         /// <summary>
+        /// 🔥 파라미터 셀 편집 완료 시 자동 저장
+        /// </summary>
+        private void PlanInfoDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            if (e.EditAction == DataGridEditAction.Cancel) return;
+            if (_database == null) return;
+            
+            // Dispatcher로 약간 지연시켜 바인딩이 완료된 후 저장
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                try
+                {
+                    if (e.Row.Item is ParameterInfo param)
+                    {
+                        if (string.IsNullOrWhiteSpace(param.Parameter))
+                            return;
+
+                        if (param.Id == 0)
+                        {
+                            // 신규 파라미터 추가
+                            _database.AddParameter(param);
+                            System.Diagnostics.Debug.WriteLine($"✅ 신규 파라미터 저장: {param.Parameter}");
+                        }
+                        else
+                        {
+                            // 기존 파라미터 업데이트
+                            _database.UpdateParameter(param);
+                            System.Diagnostics.Debug.WriteLine($"✅ 파라미터 업데이트: {param.Parameter}");
+                        }
+
+                        // 하이라이트 해제 (저장 완료 표시)
+                        param.IsHighlighted = false;
+                        
+                        ParameterStatusTextBlock.Text = $"💾 '{param.Parameter}' 저장됨";
+                        ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Green);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ 파라미터 자동 저장 실패: {ex.Message}");
+                    ParameterStatusTextBlock.Text = $"❌ 저장 실패: {ex.Message}";
+                    ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Red);
+                }
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        /// <summary>
         /// 🔥 파라미터 DataGrid 더블클릭으로 바로 편집 모드 진입
         /// </summary>
         private void PlanInfoDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -623,10 +747,18 @@ namespace FACTOVA_QueryHelper.Controls
                 selectedPlanQuery.OrderNumber >= 0)
             {
                 LoadDetailQueriesByQueryName(selectedPlanQuery.QueryName);
+                
+                // 🔥 해당 그룹의 모든 쿼리에서 파라미터 자동 추출
+                LoadParametersFromQueryGroup(selectedPlanQuery.QueryName);
             }
             else
             {
                 UpdateAllGridComboBoxes();
+                
+                // 🔥 선택 해제 시 파라미터 초기화
+                _parameters?.Clear();
+                ParameterStatusTextBlock.Text = "기준정보를 선택하세요.";
+                ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Gray);
             }
         }
 
@@ -1000,13 +1132,18 @@ namespace FACTOVA_QueryHelper.Controls
                 
                 var allQueries = _database.GetAllQueries();
                 
+                // 🔥 그룹명(QueryName)으로 정렬
                 var infoQueries = allQueries
                     .Where(q => q.QueryType == "정보 조회")
-                    .OrderBy(q => q.BizName)
+                    .OrderBy(q => q.QueryName)
                     .ThenBy(q => q.OrderNumber)
                     .ToList();
 
-                var planQueries = infoQueries.Where(q => q.OrderNumber == 0).ToList();
+                // 🔥 기준정보 콤보박스용 (OrderNumber == 0인 항목만, 그룹명 정렬)
+                var planQueries = infoQueries
+                    .Where(q => q.OrderNumber == 0)
+                    .OrderBy(q => q.QueryName)
+                    .ToList();
 
                 var placeholderItem = new QueryItem 
                 { 
@@ -1461,52 +1598,27 @@ namespace FACTOVA_QueryHelper.Controls
             
             try
             {
-                if (!string.IsNullOrWhiteSpace(queryItem.Version) && SiteComboBox.SelectedItem is SiteInfo selectedSite)
+                // 🔥 상단에서 선택한 접속 정보 우선 사용
+                if (_selectedConnectionInfo != null)
                 {
-                    var tnsName = selectedSite.GetTnsForVersion(queryItem.Version);
-
-                    if (string.IsNullOrEmpty(tnsName))
-                    {
-                        await Application.Current.Dispatcher.InvokeAsync(() =>
-                        {
-                            MessageBox.Show($"사업장 '{selectedSite.SiteName}'에 버전 {queryItem.Version}에 대한 TNS 설정이 없습니다.", "오류",
-                                MessageBoxButton.OK, MessageBoxImage.Error);
-                        });
-                        return;
-                    }
-
-                    var connectionInfoService = new Services.ConnectionInfoService(_sharedData.Settings.DatabasePath);
-                    var allConnections = connectionInfoService.GetAll();
-                    var connectionInfo = allConnections.FirstOrDefault(c => c.Name == tnsName);
-
-                    if (connectionInfo == null)
-                    {
-                        await Application.Current.Dispatcher.InvokeAsync(() =>
-                        {
-                            MessageBox.Show($"접속 정보 '{tnsName}'를 찾을 수 없습니다.", "오류",
-                                MessageBoxButton.OK, MessageBoxImage.Error);
-                        });
-                        return;
-                    }
-
                     var selectedTns = _sharedData.TnsEntries.FirstOrDefault(t =>
-                        t.Name.Equals(connectionInfo.TNS, StringComparison.OrdinalIgnoreCase));
-
+                        t.Name.Equals(_selectedConnectionInfo.TNS, StringComparison.OrdinalIgnoreCase));
+                    
                     if (selectedTns == null)
                     {
                         await Application.Current.Dispatcher.InvokeAsync(() =>
                         {
-                            MessageBox.Show($"TNS '{connectionInfo.TNS}'를 찾을 수 없습니다.", "오류",
+                            MessageBox.Show($"TNS '{_selectedConnectionInfo.TNS}'를 찾을 수 없습니다.", "오류",
                                 MessageBoxButton.OK, MessageBoxImage.Error);
                         });
                         return;
                     }
-
-                    // 🔥 로컬 dbService 연결 설정
-                    await dbService.ConfigureAsync(selectedTns, connectionInfo.UserId, connectionInfo.Password);
+                    
+                    await dbService.ConfigureAsync(selectedTns, _selectedConnectionInfo.UserId, _selectedConnectionInfo.Password);
                 }
                 else if (queryItem.ConnectionInfoId.HasValue)
                 {
+                    // 쿼리에 설정된 접속 정보 사용
                     var connectionInfoService = new Services.ConnectionInfoService(_sharedData.Settings.DatabasePath);
                     var allConnections = connectionInfoService.GetAll();
                     var connectionInfo = allConnections.FirstOrDefault(c => c.Id == queryItem.ConnectionInfoId.Value);
@@ -1534,15 +1646,7 @@ namespace FACTOVA_QueryHelper.Controls
                         return;
                     }
                     
-                    // 🔥 로컬 dbService 연결 설정
                     await dbService.ConfigureAsync(selectedTns, connectionInfo.UserId, connectionInfo.Password);
-                }
-                else if (!string.IsNullOrWhiteSpace(queryItem.Host) &&
-                    !string.IsNullOrWhiteSpace(queryItem.Port) &&
-                    !string.IsNullOrWhiteSpace(queryItem.ServiceName))
-                {
-                    var tnsString = $"(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={queryItem.Host})(PORT={queryItem.Port}))(CONNECT_DATA=(SERVICE_NAME={queryItem.ServiceName})))";
-                    await dbService.ConfigureAsync(tnsString, queryItem.UserId, queryItem.Password);
                 }
                 else if (!string.IsNullOrWhiteSpace(queryItem.TnsName))
                 {
@@ -1559,14 +1663,13 @@ namespace FACTOVA_QueryHelper.Controls
                         return;
                     }
 
-                    // 🔥 로컬 dbService 연결 설정
                     await dbService.ConfigureAsync(selectedTns, queryItem.UserId, queryItem.Password);
                 }
                 else
                 {
                     await Application.Current.Dispatcher.InvokeAsync(() =>
                     {
-                        MessageBox.Show("연결 정보가 없습니다.\n쿼리에 TNS 또는 접속 정보를 설정해주세요.", "오류",
+                        MessageBox.Show("접속 정보를 선택하거나 쿼리에 TNS를 설정해주세요.", "오류",
                             MessageBoxButton.OK, MessageBoxImage.Error);
                     });
                     return;
@@ -1638,24 +1741,7 @@ namespace FACTOVA_QueryHelper.Controls
             // 🔥 1단계: AS 뒤의 파라미터는 알리아스로 처리 (@ 기호만 제거)
             result = ReplaceAliasParameters(result);
 
-            // 사업장 선택 정보 가져오기
-            var selectedSite = SiteComboBox.SelectedItem as SiteInfo;
-            
-            string factory = selectedSite?.RepresentativeFactory ?? _sharedData?.Settings.GmesFactory ?? "";
-            string org = selectedSite?.Organization ?? _sharedData?.Settings.GmesOrg ?? "";
-            string facility = selectedSite?.Facility ?? _sharedData?.Settings.GmesFacility ?? "";
-            string wipLineId = selectedSite?.WipLineId ?? _sharedData?.Settings.GmesWipLineId ?? "";
-            string equipLineId = selectedSite?.EquipLineId ?? _sharedData?.Settings.GmesEquipLineId ?? "";
-            string division = selectedSite?.Division ?? "";
-
-            // 🔥 2단계: DB Link 보호: 파라미터만 치환 (TABLE@DBLINK 형식은 치환하지 않음)
-            result = SafeReplaceParameter(result, "@REPRESENTATIVE_FACTORY_CODE", $"'{factory}'");
-            result = SafeReplaceParameter(result, "@ORGANIZATION_ID", $"'{org}'");
-            result = SafeReplaceParameter(result, "@FACILITY_CODE", $"'{facility}'");
-            result = SafeReplaceParameter(result, "@WIP_LINE_ID", $"'{wipLineId}'");
-            result = SafeReplaceParameter(result, "@LINE_ID", $"'{equipLineId}'");
-            result = SafeReplaceParameter(result, "@DIVISION", $"'{division}'");
-
+            // 🔥 2단계: 모든 파라미터를 기준정보 파라미터에서 치환
             if (_parameters != null)
             {
                 foreach (var param in _parameters)
@@ -1696,43 +1782,11 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 var paramWithAt = match.Groups[1].Value;
                 
-                // 🔥 파라미터 목록에서 해당 파라미터 찾기
-                string aliasValue = null;
+                // 🔥 기준정보 파라미터에서 찾기
+                string? aliasValue = null;
                 
-                // 표준 파라미터 확인
-                if (paramWithAt.Equals("@REPRESENTATIVE_FACTORY_CODE", StringComparison.OrdinalIgnoreCase))
+                if (_parameters != null)
                 {
-                    var selectedSite = SiteComboBox.SelectedItem as SiteInfo;
-                    aliasValue = selectedSite?.RepresentativeFactory ?? _sharedData?.Settings.GmesFactory ?? "";
-                }
-                else if (paramWithAt.Equals("@ORGANIZATION_ID", StringComparison.OrdinalIgnoreCase))
-                {
-                    var selectedSite = SiteComboBox.SelectedItem as SiteInfo;
-                    aliasValue = selectedSite?.Organization ?? _sharedData?.Settings.GmesOrg ?? "";
-                }
-                else if (paramWithAt.Equals("@FACILITY_CODE", StringComparison.OrdinalIgnoreCase))
-                {
-                    var selectedSite = SiteComboBox.SelectedItem as SiteInfo;
-                    aliasValue = selectedSite?.Facility ?? _sharedData?.Settings.GmesFacility ?? "";
-                }
-                else if (paramWithAt.Equals("@WIP_LINE_ID", StringComparison.OrdinalIgnoreCase))
-                {
-                    var selectedSite = SiteComboBox.SelectedItem as SiteInfo;
-                    aliasValue = selectedSite?.WipLineId ?? _sharedData?.Settings.GmesWipLineId ?? "";
-                }
-                else if (paramWithAt.Equals("@LINE_ID", StringComparison.OrdinalIgnoreCase))
-                {
-                    var selectedSite = SiteComboBox.SelectedItem as SiteInfo;
-                    aliasValue = selectedSite?.EquipLineId ?? _sharedData?.Settings.GmesEquipLineId ?? "";
-                }
-                else if (paramWithAt.Equals("@DIVISION", StringComparison.OrdinalIgnoreCase))
-                {
-                    var selectedSite = SiteComboBox.SelectedItem as SiteInfo;
-                    aliasValue = selectedSite?.Division ?? "";
-                }
-                else if (_parameters != null)
-                {
-                    // 사용자 정의 파라미터에서 찾기
                     var param = _parameters.FirstOrDefault(p => 
                         p.Parameter.Equals(paramWithAt, StringComparison.OrdinalIgnoreCase) ||
                         ("@" + p.Parameter).Equals(paramWithAt, StringComparison.OrdinalIgnoreCase));
@@ -2354,19 +2408,9 @@ namespace FACTOVA_QueryHelper.Controls
                     }
                 }
 
-                // 기본 사업장 파라미터 제외
-                var defaultParams = new HashSet<string>
-                {
-                    "@REPRESENTATIVE_FACTORY_CODE",
-                    "@ORGANIZATION_ID",
-                    "@FACILITY_CODE",
-                    "@WIP_LINE_ID",
-                    "@LINE_ID",
-                    "@DIVISION"
-                };
 
-                // 사용자 정의 파라미터만 필터링
-                var userDefinedParams = allUsedParameters.Except(defaultParams).ToList();
+                // 🔥 모든 파라미터를 기준정보에서 관리 (사업장 파라미터 제외 로직 제거)
+                var allParams = allUsedParameters.ToList();
 
                 // 기준정보 파라미터에 정의된 파라미터 목록
                 var definedParams = _parameters
@@ -2375,7 +2419,7 @@ namespace FACTOVA_QueryHelper.Controls
                     .ToHashSet();
 
                 // 없는 파라미터 확인
-                var missingParams = userDefinedParams.Except(definedParams).ToList();
+                var missingParams = allParams.Except(definedParams).ToList();
 
                 // 모든 파라미터 행의 색상 초기화
                 foreach (var param in _parameters)
@@ -2403,13 +2447,13 @@ namespace FACTOVA_QueryHelper.Controls
                     foreach (var param in _parameters)
                     {
                         var paramName = param.Parameter.StartsWith("@") ? param.Parameter : $"@{param.Parameter}";
-                        if (userDefinedParams.Contains(paramName))
+                        if (allParams.Contains(paramName))
                         {
                             param.IsHighlighted = true;
                         }
                     }
 
-                    ParameterStatusTextBlock.Text = $"✅ {userDefinedParams.Count}개 파라미터 확인 완료 (LightCoral 색상 표시)";
+                    ParameterStatusTextBlock.Text = $"✅ {allParams.Count}개 파라미터 확인 완료 (LightCoral 색상 표시)";
                     ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Green);
                 }
             }
@@ -2482,19 +2526,8 @@ namespace FACTOVA_QueryHelper.Controls
                 // 선택된 쿼리에서 사용되는 파라미터 추출
                 var usedParams = ExtractParametersFromQuery(selectedQuery.Query);
 
-                // 기본 사업장 파라미터 제외
-                var defaultParams = new HashSet<string>
-                {
-                    "@REPRESENTATIVE_FACTORY_CODE",
-                    "@ORGANIZATION_ID",
-                    "@FACILITY_CODE",
-                    "@WIP_LINE_ID",
-                    "@LINE_ID",
-                    "@DIVISION"
-                };
-
-                // 사용자 정의 파라미터만 필터링
-                var userDefinedParams = usedParams.Except(defaultParams).ToList();
+                // 🔥 모든 파라미터를 기준정보에서 관리 (사업장 파라미터 제외 로직 제거)
+                var allParams = usedParams.ToList();
 
                 // 기준정보 파라미터에 정의된 파라미터 목록
                 var definedParams = _parameters
@@ -2503,7 +2536,7 @@ namespace FACTOVA_QueryHelper.Controls
                     .ToHashSet();
 
                 // 없는 파라미터 확인
-                var missingParams = userDefinedParams.Except(definedParams).ToList();
+                var missingParams = allParams.Except(definedParams).ToList();
 
                 // 모든 파라미터 행의 색상 초기화
                 foreach (var param in _parameters)
@@ -2535,18 +2568,18 @@ namespace FACTOVA_QueryHelper.Controls
                     foreach (var param in _parameters)
                     {
                         var paramName = param.Parameter.StartsWith("@") ? param.Parameter : $"@{param.Parameter}";
-                        if (userDefinedParams.Contains(paramName))
+                        if (allParams.Contains(paramName))
                         {
                             param.IsHighlighted = true;
                         }
                     }
 
-                    if (userDefinedParams.Count > 0)
+                    if (allParams.Count > 0)
                     {
-                        gridInfo.ResultInfoTextBlock.Text = $"✅ {userDefinedParams.Count}개 파라미터 확인";
+                        gridInfo.ResultInfoTextBlock.Text = $"✅ {allParams.Count}개 파라미터 확인";
                         gridInfo.ResultInfoTextBlock.Foreground = new SolidColorBrush(Color.FromRgb(40, 167, 69));
 
-                        ParameterStatusTextBlock.Text = $"✅ 그리드 {gridInfo.Index}: {userDefinedParams.Count}개 파라미터 확인 완료 (LightCoral 색상 표시)";
+                        ParameterStatusTextBlock.Text = $"✅ 그리드 {gridInfo.Index}: {allParams.Count}개 파라미터 확인 완료 (LightCoral 색상 표시)";
                         ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Green);
                     }
                     else
@@ -2554,7 +2587,7 @@ namespace FACTOVA_QueryHelper.Controls
                         gridInfo.ResultInfoTextBlock.Text = "ℹ️ 파라미터 없음";
                         gridInfo.ResultInfoTextBlock.Foreground = new SolidColorBrush(Color.FromRgb(108, 117, 125));
 
-                        ParameterStatusTextBlock.Text = $"ℹ️ 그리드 {gridInfo.Index}: 사용자 정의 파라미터 없음";
+                        ParameterStatusTextBlock.Text = $"ℹ️ 그리드 {gridInfo.Index}: 파라미터 없음";
                         ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Gray);
                     }
                 }
