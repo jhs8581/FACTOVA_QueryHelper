@@ -116,8 +116,7 @@ namespace FACTOVA_QueryHelper
                 // 설정이 없으면 기본값 사용
                 if (tabSettings == null || tabSettings.Count == 0)
                 {
-                    System.Diagnostics.Debug.WriteLine("ℹ️ Tab settings not found, using default order");
-                    return;
+return;
                 }
 
                 // TabId와 TabItem 매핑
@@ -155,9 +154,7 @@ namespace FACTOVA_QueryHelper
                         // 표시 여부 설정
                         tabItem.Visibility = setting.IsVisible ? Visibility.Visible : Visibility.Collapsed;
                         MainTabControl.Items.Add(tabItem);
-                        
-                        System.Diagnostics.Debug.WriteLine($"📑 Tab '{setting.TabName}' - Order: {setting.Order}, Visible: {setting.IsVisible}");
-                    }
+}
                 }
 
                 // 설정에 없는 탭이 있으면 끝에 추가 (새로 추가된 탭)
@@ -166,7 +163,7 @@ namespace FACTOVA_QueryHelper
                     if (kvp.Value != null && !MainTabControl.Items.Contains(kvp.Value))
                     {
                         MainTabControl.Items.Add(kvp.Value);
-                        System.Diagnostics.Debug.WriteLine($"📑 Tab '{kvp.Key}' - Added (not in settings)");
+                        
                     }
                 }
 
@@ -179,13 +176,10 @@ namespace FACTOVA_QueryHelper
                         break;
                     }
                 }
-
-                System.Diagnostics.Debug.WriteLine($"✅ Tab settings applied: {sortedSettings.Count} tabs configured");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Failed to apply tab settings: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -205,8 +199,7 @@ namespace FACTOVA_QueryHelper
         /// </summary>
         private void OnConnectionInfoChanged(object? sender, EventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("🔔 Connection info changed - notifying all controls");
-            UpdateStatus("접속 정보가 업데이트되었습니다.", Colors.Blue);
+UpdateStatus("접속 정보가 업데이트되었습니다.", Colors.Blue);
             
             // 🔥 QueryEditorView의 접속 정보도 새로고침
             this.QueryEditorView.RefreshAllQueryExecutorConnections();
@@ -223,8 +216,7 @@ namespace FACTOVA_QueryHelper
         /// </summary>
         private void OnShortcutsChanged(object? sender, EventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("🔔 Table shortcuts changed - reloading shortcuts in all controls");
-            UpdateStatus("테이블 단축어가 업데이트되었습니다.", Colors.Green);
+UpdateStatus("테이블 단축어가 업데이트되었습니다.", Colors.Green);
             
             // 🔥 QueryEditorView의 모든 QueryExecutor에 단축어 재로드
             this.QueryEditorView.ReloadAllShortcuts();
@@ -269,15 +261,13 @@ namespace FACTOVA_QueryHelper
             catch (Exception ex)
             {
                 UpdateStatus($"TNS 로드 실패: {ex.Message}", Colors.Red);
-                System.Diagnostics.Debug.WriteLine($"TNS 로드 오류: {ex}");
-            }
+}
         }
 
         private void UpdateStatus(string message, Color color)
         {
             // 메인 윈도우에는 상태바가 없으므로 디버그 출력만 수행
-            System.Diagnostics.Debug.WriteLine($"[{DateTime.Now:HH:mm:ss}] {message}");
-        }
+}
 
         /// <summary>
         /// 🔥 쿼리 실행 탭에서 쿼리 열기
@@ -304,9 +294,7 @@ namespace FACTOVA_QueryHelper
                     
                     // QueryEditorView에 쿼리 전달
                     QueryEditorView.OpenQueryInNewTab(query);
-                    
-                    System.Diagnostics.Debug.WriteLine($"📤 Query '{query.BizName}' opened in Query Editor tab");
-                }
+}
                 else
                 {
                     MessageBox.Show("쿼리 실행 탭을 찾을 수 없습니다.", "오류",

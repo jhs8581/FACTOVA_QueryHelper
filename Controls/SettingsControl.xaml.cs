@@ -45,17 +45,14 @@ namespace FACTOVA_QueryHelper.Controls
         /// </summary>
         private void OnConnectionInfosSaved(object? sender, EventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("✅ Connection infos saved in ConnectionManagementControl");
-            
-            // 상위로 이벤트 전파
+// 상위로 이벤트 전파
             ConnectionInfoChanged?.Invoke(this, EventArgs.Empty);
             
             // 🔥 SharedDataContext의 이벤트 발생
             if (_sharedData != null)
             {
                 _sharedData.NotifyConnectionInfosChanged();
-                System.Diagnostics.Debug.WriteLine("🔔 NotifyConnectionInfosChanged called from SettingsControl");
-            }
+}
             
             // 🔥 SiteManagement의 ComboBox도 새로고침
             SiteManagement.RefreshConnectionInfos();
@@ -100,9 +97,7 @@ namespace FACTOVA_QueryHelper.Controls
         /// </summary>
         private void OnSiteInfosSaved(object? sender, EventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("✅ Site infos saved in SiteManagementControl");
-            
-            // 상태바 업데이트
+// 상태바 업데이트
             UpdateStatus("사업장 정보가 저장되었습니다.", Colors.Green);
         }
         
@@ -111,9 +106,7 @@ namespace FACTOVA_QueryHelper.Controls
         /// </summary>
         private void OnShortcutsSaved(object? sender, EventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("✅ Shortcuts saved in TableShortcutManagementControl");
-            
-            // 상위로 이벤트 전파
+// 상위로 이벤트 전파
             ShortcutsChanged?.Invoke(this, EventArgs.Empty);
             
             // 상태바 업데이트
@@ -139,13 +132,10 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     CacheConnectionComboBox.SelectedIndex = 0;
                 }
-                
-                System.Diagnostics.Debug.WriteLine($"✅ Loaded {connections.Count} connections for cache building");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Failed to load cache connections: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -312,7 +302,7 @@ namespace FACTOVA_QueryHelper.Controls
                 LastCheckTextBlock.Text = "업데이트 확인 중...";
                 HideUpdateStatus(); // 이전 상태 숨기기
 
-                System.Diagnostics.Debug.WriteLine("=== Manual Update Check Started (force refresh) ===");
+                
                 
                 // 🔥 forceCheck = true: 캐시 무시하고 강제로 API 호출
                 var updateInfo = await UpdateChecker.CheckForUpdatesAsync(forceCheck: true);
@@ -320,12 +310,10 @@ namespace FACTOVA_QueryHelper.Controls
                 var now = DateTime.Now;
                 LastCheckTextBlock.Text = $"마지막 확인: {now:yyyy-MM-dd HH:mm:ss}";
 
-                System.Diagnostics.Debug.WriteLine($"=== Manual Update Check Result ===");
-                System.Diagnostics.Debug.WriteLine($"   updateInfo is null: {updateInfo == null}");
 
                 if (updateInfo == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("❌ Update check returned null (should not happen)");
+                    
                     
                     ShowUpdateStatus(
                         "❌",
@@ -340,10 +328,7 @@ namespace FACTOVA_QueryHelper.Controls
                     return;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"   Current: {updateInfo.CurrentVersion}");
-                System.Diagnostics.Debug.WriteLine($"   Latest: {updateInfo.LatestVersion}");
-                System.Diagnostics.Debug.WriteLine($"   HasUpdate: {updateInfo.HasUpdate}");
-                System.Diagnostics.Debug.WriteLine($"   ErrorMessage: {updateInfo.ErrorMessage ?? "None"}");
+
 
                 // 🔥 Rate Limit 정보 업데이트
                 UpdateRateLimitDisplay();
@@ -351,9 +336,7 @@ namespace FACTOVA_QueryHelper.Controls
                 // 🔥 에러가 있는 경우
                 if (!string.IsNullOrEmpty(updateInfo.ErrorMessage))
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ Update check completed with error");
-                    
-                    ShowUpdateStatus(
+ShowUpdateStatus(
                         "⚠️",
                         "업데이트 확인 중 문제 발생",
                         $"현재 버전: {updateInfo.CurrentVersion}\n" +
@@ -367,9 +350,7 @@ namespace FACTOVA_QueryHelper.Controls
 
                 if (updateInfo.HasUpdate)
                 {
-                    System.Diagnostics.Debug.WriteLine("🎉 Update available!");
-                    
-                    ShowUpdateStatus(
+ShowUpdateStatus(
                         "🎉",
                         "새로운 버전이 있습니다!",
                         $"현재 버전: {updateInfo.CurrentVersion}\n" +
@@ -388,9 +369,7 @@ namespace FACTOVA_QueryHelper.Controls
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("✅ Already up to date");
-                    
-                    ShowUpdateStatus(
+ShowUpdateStatus(
                         "✅",
                         "최신 버전입니다",
                         $"현재 버전: {updateInfo.CurrentVersion}\n\n" +
@@ -401,10 +380,8 @@ namespace FACTOVA_QueryHelper.Controls
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Exception in CheckUpdateButton_Click:");
-                System.Diagnostics.Debug.WriteLine($"   Type: {ex.GetType().Name}");
-                System.Diagnostics.Debug.WriteLine($"   Message: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"   StackTrace: {ex.StackTrace}");
+
+
                 
                 LastCheckTextBlock.Text = "확인 실패";
                 
@@ -474,7 +451,7 @@ namespace FACTOVA_QueryHelper.Controls
                     RateLimitTextBlock.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF666666"));
                 }
                 
-                System.Diagnostics.Debug.WriteLine($"Rate Limit UI 업데이트: {remaining}/{limit} (리셋: {minutesUntilReset}분 후)");
+                
             }
             else
             {
@@ -695,10 +672,7 @@ namespace FACTOVA_QueryHelper.Controls
                 CacheBuildProgressBar.Value = 0;
                 CacheBuildStatusText.Text = "데이터베이스에 연결 중...";
                 CacheBuildDetailText.Text = "";
-
-                System.Diagnostics.Debug.WriteLine($"🚀 Starting cache build for: {selectedConnection.DisplayName}");
-
-                // 데이터베이스 연결
+// 데이터베이스 연결
                 if (_sharedData == null || _cacheDbService == null)
                 {
                     throw new Exception("서비스가 초기화되지 않았습니다.");
@@ -721,10 +695,7 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     throw new Exception("데이터베이스 연결에 실패했습니다.");
                 }
-
-                System.Diagnostics.Debug.WriteLine("✅ Database connected successfully");
-
-                // 진행 상태 업데이트
+// 진행 상태 업데이트
                 CacheBuildProgressBar.Value = 10;
                 CacheBuildStatusText.Text = "캐시 서비스 초기화 중...";
                 await Task.Delay(100); // UI 업데이트 대기
@@ -762,15 +733,11 @@ namespace FACTOVA_QueryHelper.Controls
 
                 // 성공 메시지 표시
                 ShowCacheBuildSuccess(cacheInfo, metadata.Tables.Count);
-
-                System.Diagnostics.Debug.WriteLine("✅ Cache build completed successfully");
-
-                UpdateStatus($"메타데이터 캐시 빌드 완료: {metadata.Tables.Count}개 테이블", Colors.Green);
+UpdateStatus($"메타데이터 캐시 빌드 완료: {metadata.Tables.Count}개 테이블", Colors.Green);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Cache build failed: {ex.Message}");
-                ShowCacheBuildError(ex.Message);
+ShowCacheBuildError(ex.Message);
                 UpdateStatus($"캐시 빌드 실패: {ex.Message}", Colors.Red);
             }
             finally
@@ -860,9 +827,7 @@ namespace FACTOVA_QueryHelper.Controls
                 }
 
                 System.Diagnostics.Process.Start("explorer.exe", cacheDir);
-                
-                System.Diagnostics.Debug.WriteLine($"📂 Opened cache folder: {cacheDir}");
-            }
+}
             catch (Exception ex)
             {
                 MessageBox.Show($"캐시 폴더를 열 수 없습니다:\n{ex.Message}", 

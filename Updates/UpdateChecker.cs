@@ -52,32 +52,25 @@ namespace FACTOVA_QueryHelper
                 var cachedInfo = LoadCache();
                 if (cachedInfo != null && (DateTime.Now - cachedInfo.CheckTime) < CacheValidDuration)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[UpdateChecker] 캐시 사용 (마지막 확인: {cachedInfo.CheckTime:HH:mm:ss})");
+                    
                     return cachedInfo.UpdateInfo;
                 }
             }
 
             try
             {
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] 업데이트 확인 시작: {UpdateUrl}");
-                
-                var response = await _httpClient.GetAsync(UpdateUrl);
+var response = await _httpClient.GetAsync(UpdateUrl);
                 
                 // ?? Rate Limit 정보 추출
                 ExtractRateLimitInfo(response);
                 
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] 응답 코드: {(int)response.StatusCode} {response.StatusCode}");
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] 성공 여부: {response.IsSuccessStatusCode}");
                 
-                // 상태 코드 확인
+// 상태 코드 확인
                 if (!response.IsSuccessStatusCode)
                 {
                     var statusCode = (int)response.StatusCode;
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    
-                    System.Diagnostics.Debug.WriteLine($"[UpdateChecker] 오류 응답: {errorContent}");
-                    
-                    // 사용자에게 더 친절한 메시지
+// 사용자에게 더 친절한 메시지
                     string errorMessage = statusCode switch
                     {
                         403 => "GitHub API 요청 제한에 도달했습니다. 잠시 후 다시 시도해주세요.\n(약 1시간 후 자동 복구)",
@@ -98,24 +91,15 @@ namespace FACTOVA_QueryHelper
                 }
                 
                 var json = await response.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] 응답 길이: {json.Length} bytes");
-                
-                var release = JsonSerializer.Deserialize<GitHubRelease>(json);
+var release = JsonSerializer.Deserialize<GitHubRelease>(json);
 
                 if (release == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("[UpdateChecker] 릴리즈 파싱 실패");
-                    return new UpdateInfo { HasUpdate = false };
+return new UpdateInfo { HasUpdate = false };
                 }
-
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] 최신 버전: {release.TagName}");
-                
-                var currentVersion = GetCurrentVersion();
+var currentVersion = GetCurrentVersion();
                 var latestVersion = ParseVersion(release.TagName);
-
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] 현재 버전: {currentVersion}, 최신 버전: {latestVersion}");
-
-                UpdateInfo updateInfo;
+UpdateInfo updateInfo;
                 
                 if (latestVersion > currentVersion)
                 {
@@ -126,8 +110,7 @@ namespace FACTOVA_QueryHelper
                         if (asset.Name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                         {
                             downloadUrl = asset.BrowserDownloadUrl;
-                            System.Diagnostics.Debug.WriteLine($"[UpdateChecker] 다운로드 URL: {downloadUrl}");
-                            break;
+break;
                         }
                     }
 
@@ -142,8 +125,7 @@ namespace FACTOVA_QueryHelper
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("[UpdateChecker] 이미 최신 버전 사용 중");
-                    updateInfo = new UpdateInfo { HasUpdate = false };
+updateInfo = new UpdateInfo { HasUpdate = false };
                 }
                 
                 // 성공 시 캐시 저장
@@ -153,8 +135,7 @@ namespace FACTOVA_QueryHelper
             }
             catch (HttpRequestException ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] 네트워크 오류: {ex.Message}");
-                return new UpdateInfo 
+return new UpdateInfo 
                 { 
                     HasUpdate = false, 
                     ErrorMessage = "네트워크 연결을 확인해주세요." 
@@ -162,8 +143,7 @@ namespace FACTOVA_QueryHelper
             }
             catch (TaskCanceledException)
             {
-                System.Diagnostics.Debug.WriteLine("[UpdateChecker] 업데이트 확인 시간 초과");
-                return new UpdateInfo 
+return new UpdateInfo 
                 { 
                     HasUpdate = false, 
                     ErrorMessage = "업데이트 확인 시간 초과" 
@@ -171,7 +151,7 @@ namespace FACTOVA_QueryHelper
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] 예외 발생: {ex.GetType().Name} - {ex.Message}");
+                
                 return new UpdateInfo { HasUpdate = false, ErrorMessage = $"오류: {ex.Message}" };
             }
         }
@@ -207,13 +187,11 @@ namespace FACTOVA_QueryHelper
 
                 _lastRateLimitInfo = rateLimitInfo;
 
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] Rate Limit: {rateLimitInfo.Remaining}/{rateLimitInfo.Limit} " +
-                    $"(리셋: {rateLimitInfo.ResetTime:HH:mm:ss})");
+                
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] Rate Limit 정보 추출 실패: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -237,13 +215,10 @@ namespace FACTOVA_QueryHelper
                 
                 var json = JsonSerializer.Serialize(cache, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(CacheFilePath, json);
-                
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] 캐시 저장: {CacheFilePath}");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] 캐시 저장 실패: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -265,8 +240,7 @@ namespace FACTOVA_QueryHelper
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[UpdateChecker] 캐시 로드 실패: {ex.Message}");
-                return null;
+return null;
             }
         }
 

@@ -326,49 +326,43 @@ namespace FACTOVA_QueryHelper.Database
             // H열이 'Y'가 아니면 알림을 추가하지 않음
             if (queryItem.NotifyFlag != "Y")
             {
-                System.Diagnostics.Debug.WriteLine($"[{queryItem.QueryName}] NotifyFlag != 'Y', 알림 건너뜀 (NotifyFlag={queryItem.NotifyFlag})");
+                
                 return;
             }
-
-            System.Diagnostics.Debug.WriteLine($"[{queryItem.QueryName}] 알림 체크 시작 - 결과 건수: {rowCount}건");
-
-            // I열: 이상일 때
+// I열: 이상일 때
             if (!string.IsNullOrWhiteSpace(queryItem.CountGreaterThan) &&
                 int.TryParse(queryItem.CountGreaterThan, out int greaterThan))
             {
-                System.Diagnostics.Debug.WriteLine($"  - I열(이상) 체크: {rowCount} >= {greaterThan} ?");
+                
                 if (rowCount >= greaterThan)
                 {
                     var msg = $"[{queryItem.QueryName}] 조회 결과 {rowCount}건 (기준: {greaterThan}건 이상)";
                     notifications.Add(msg);
-                    System.Diagnostics.Debug.WriteLine($"  [알림 추가] 알림 추가: {msg}");
-                }
+}
             }
 
             // J열: 같을 때
             if (!string.IsNullOrWhiteSpace(queryItem.CountEquals) &&
                 int.TryParse(queryItem.CountEquals, out int equals))
             {
-                System.Diagnostics.Debug.WriteLine($"  - J열(같음) 체크: {rowCount} == {equals} ?");
+                
                 if (rowCount == equals)
                 {
                     var msg = $"[{queryItem.QueryName}] 조회 결과 {rowCount}건 (기준: {equals}건과 같음)";
                     notifications.Add(msg);
-                    System.Diagnostics.Debug.WriteLine($"  [알림 추가] 알림 추가: {msg}");
-                }
+}
             }
 
             // K열: 이하일 때
             if (!string.IsNullOrWhiteSpace(queryItem.CountLessThan) &&
                 int.TryParse(queryItem.CountLessThan, out int lessThan))
             {
-                System.Diagnostics.Debug.WriteLine($"  - K열(이하) 체크: {rowCount} <= {lessThan} ?");
+                
                 if (rowCount <= lessThan)
                 {
                     var msg = $"[{queryItem.QueryName}] 조회 결과 {rowCount}건 (기준: {lessThan}건 이하)";
                     notifications.Add(msg);
-                    System.Diagnostics.Debug.WriteLine($"  [알림 추가] 알림 추가: {msg}");
-                }
+}
             }
         }
 
@@ -377,56 +371,45 @@ namespace FACTOVA_QueryHelper.Database
         /// </summary>
         private void CheckColumnValuesAndNotify(QueryItem queryItem, DataTable result, List<string> notifications)
         {
-            System.Diagnostics.Debug.WriteLine($"[{queryItem.QueryName}] CheckColumnValuesAndNotify 시작");
-            System.Diagnostics.Debug.WriteLine($"  - NotifyFlag: '{queryItem.NotifyFlag}'");
-            System.Diagnostics.Debug.WriteLine($"  - ColumnNames: '{queryItem.ColumnNames}'");
-            System.Diagnostics.Debug.WriteLine($"  - ColumnValues: '{queryItem.ColumnValues}'");
+
+
 
             // H열이 'Y'가 아니면 알림을 추가하지 않음
             if (queryItem.NotifyFlag != "Y")
             {
-                System.Diagnostics.Debug.WriteLine($"[{queryItem.QueryName}] NotifyFlag != 'Y', 컬럼 체크 건너뜀");
-                return;
+return;
             }
 
             // L열과 M열 체크
             if (string.IsNullOrWhiteSpace(queryItem.ColumnNames) ||
                 string.IsNullOrWhiteSpace(queryItem.ColumnValues))
             {
-                System.Diagnostics.Debug.WriteLine($"[{queryItem.QueryName}] L열/M열이 비어있음, 컬럼 체크 건너뜀");
-                System.Diagnostics.Debug.WriteLine($"  - ColumnNames IsNullOrWhiteSpace: {string.IsNullOrWhiteSpace(queryItem.ColumnNames)}");
-                System.Diagnostics.Debug.WriteLine($"  - ColumnValues IsNullOrWhiteSpace: {string.IsNullOrWhiteSpace(queryItem.ColumnValues)}");
+
+                
                 return;
             }
 
-            System.Diagnostics.Debug.WriteLine($"[{queryItem.QueryName}] 컬럼 값 체크 시작");
-            System.Diagnostics.Debug.WriteLine($"  - L열(컬럼명): '{queryItem.ColumnNames}'");
-            System.Diagnostics.Debug.WriteLine($"  - M열(값): '{queryItem.ColumnValues}'");
+            
 
             var columnNames = queryItem.ColumnNames.Split(',').Select(c => c.Trim()).ToList();
             var columnValues = queryItem.ColumnValues.Split(',').Select(v => v.Trim()).ToList();
 
-            System.Diagnostics.Debug.WriteLine($"  - 파싱된 컬럼명 개수: {columnNames.Count}, 값: [{string.Join(", ", columnNames)}]");
-            System.Diagnostics.Debug.WriteLine($"  - 파싱된 값 개수: {columnValues.Count}, 값: [{string.Join(", ", columnValues)}]");
+            
+            
 
             if (columnNames.Count != columnValues.Count)
             {
-                System.Diagnostics.Debug.WriteLine($"  [경고] 컬럼명 개수({columnNames.Count})와 값 개수({columnValues.Count})가 다름");
+                
                 return;
             }
 
-            System.Diagnostics.Debug.WriteLine($"  - 총 {result.Rows.Count}개 행 검사");
-            System.Diagnostics.Debug.WriteLine($"  - 결과 테이블 컬럼 목록: [{string.Join(", ", result.Columns.Cast<DataColumn>().Select(c => c.ColumnName))}]");
 
             int mismatchCount = 0;
             for (int i = 0; i < result.Rows.Count; i++)
             {
                 var row = result.Rows[i];
                 bool anyMismatch = false;
-
-                System.Diagnostics.Debug.WriteLine($"    행 {i + 1} 검사 시작:");
-
-                // OR 조건으로 변경: 하나라도 불일치하면 알림
+// OR 조건으로 변경: 하나라도 불일치하면 알림
                 for (int j = 0; j < columnNames.Count; j++)
                 {
                     string columnName = columnNames[j];
@@ -434,31 +417,26 @@ namespace FACTOVA_QueryHelper.Database
 
                     if (!result.Columns.Contains(columnName))
                     {
-                        System.Diagnostics.Debug.WriteLine($"      컬럼 '{columnName}' 없음");
-                        continue;
+continue;
                     }
 
                     var actualValue = row[columnName]?.ToString()?.Trim() ?? "";
                     bool isMatch = actualValue == expectedValue;
-                    System.Diagnostics.Debug.WriteLine($"      컬럼 '{columnName}': 실제값='{actualValue}', 기대값='{expectedValue}', 일치={isMatch}");
-                    
-                    // OR 조건: 하나라도 불일치하면 anyMismatch = true
+// OR 조건: 하나라도 불일치하면 anyMismatch = true
                     if (!isMatch)
                     {
                         anyMismatch = true;
-                        System.Diagnostics.Debug.WriteLine($"      [불일치] 불일치 발견: {columnName}");
-                    }
+}
                 }
 
                 if (anyMismatch)
                 {
                     mismatchCount++;
                     var checkInfo = string.Join(", ", columnNames.Zip(columnValues, (n, v) => $"{n}={v}"));
-                    System.Diagnostics.Debug.WriteLine($"    [불일치] 행 {i + 1}: 조건 불일치 발견 - 기대값: {checkInfo}");
-                }
+}
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"    [일치] 행 {i + 1}: 모든 조건 일치 (알림 없음)");
+                    
                 }
             }
 
@@ -468,14 +446,10 @@ namespace FACTOVA_QueryHelper.Database
                 var checkInfo = string.Join(", ", columnNames.Zip(columnValues, (n, v) => $"{n}={v}"));
                 var msg = $"[{queryItem.QueryName}] 조건 불일치 발견: {mismatchCount}개 행 (기대값: {checkInfo})";
                 notifications.Add(msg);
-                System.Diagnostics.Debug.WriteLine($"  [알림 추가] 알림 추가: {msg}");
-            }
+}
             else
             {
-                System.Diagnostics.Debug.WriteLine($"  [정보] 모든 행이 조건과 일치 - 알림 없음");
-            }
-
-            System.Diagnostics.Debug.WriteLine($"  - 컬럼 값 체크 완료, 총 불일치 행: {mismatchCount}개");
-        }
+}
+}
     }
 }

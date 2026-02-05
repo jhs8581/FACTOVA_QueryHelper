@@ -247,77 +247,52 @@ namespace FACTOVA_QueryHelper.Controls
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"구문 강조 로드 실패: {ex.Message}");
-            }
+}
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             QueryText = QueryTextEditor.Text;
-            
-            System.Diagnostics.Debug.WriteLine("=== SaveButton_Click 시작 ===");
-            System.Diagnostics.Debug.WriteLine($"QueryId: {_queryId?.ToString() ?? "null"}");
-            System.Diagnostics.Debug.WriteLine($"DatabasePath: {_databasePath ?? "null"}");
-            System.Diagnostics.Debug.WriteLine($"IsReadOnly: {_isReadOnly}");
-            System.Diagnostics.Debug.WriteLine($"QueryText Length: {QueryText?.Length ?? 0}");
-            
-            // 🔥 쿼리 ID가 있으면 DB에 저장
+
+
+// 🔥 쿼리 ID가 있으면 DB에 저장
             if (_queryId.HasValue && !string.IsNullOrEmpty(_databasePath))
             {
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine($"🔥 Saving query - ID: {_queryId.Value}, DB Path: {_databasePath}");
-                    
-                    // 🔥 DB 파일 존재 여부 확인
+// 🔥 DB 파일 존재 여부 확인
                     if (!System.IO.File.Exists(_databasePath))
                     {
-                        System.Diagnostics.Debug.WriteLine($"❌ Database file not found: {_databasePath}");
-                        MessageBox.Show($"데이터베이스 파일을 찾을 수 없습니다:\n{_databasePath}", "오류",
+MessageBox.Show($"데이터베이스 파일을 찾을 수 없습니다:\n{_databasePath}", "오류",
                             MessageBoxButton.OK, MessageBoxImage.Error);
                         return; // 🔥 창을 닫지 않고 리턴
                     }
-                    
-                    System.Diagnostics.Debug.WriteLine("✅ Database file exists");
-                    
-                    // 🔥 QueryDatabase 인스턴스 생성 및 DB 작업
+// 🔥 QueryDatabase 인스턴스 생성 및 DB 작업
                     var database = new QueryDatabase(_databasePath);
-                    System.Diagnostics.Debug.WriteLine("✅ QueryDatabase instance created");
-                    
-                    var allQueries = database.GetAllQueries();
-                    System.Diagnostics.Debug.WriteLine($"🔥 Total queries loaded: {allQueries.Count}");
-                    
-                    if (allQueries.Count > 0)
+var allQueries = database.GetAllQueries();
+if (allQueries.Count > 0)
                     {
-                        System.Diagnostics.Debug.WriteLine($"First 5 query IDs: {string.Join(", ", allQueries.Take(5).Select(q => q.RowNumber))}");
+                        
                     }
                     
                     var query = allQueries.FirstOrDefault(q => q.RowNumber == _queryId.Value);
                     
                     if (query != null)
                     {
-                        System.Diagnostics.Debug.WriteLine($"🔥 Query found - Name: {query.QueryName}, BizName: {query.BizName}");
-                        System.Diagnostics.Debug.WriteLine($"Original query length: {query.Query?.Length ?? 0}");
-                        System.Diagnostics.Debug.WriteLine($"New query length: {QueryText?.Length ?? 0}");
-                        
-                        query.Query = QueryText;
+
+query.Query = QueryText;
                         database.UpdateQuery(query);
-                        
-                        System.Diagnostics.Debug.WriteLine("✅ Query saved successfully to database");
-                        
-                        MessageBox.Show("쿼리가 저장되었습니다.", "저장 완료",
+MessageBox.Show("쿼리가 저장되었습니다.", "저장 완료",
                             MessageBoxButton.OK, MessageBoxImage.Information);
                         
                         // 🔥 저장 후 콜백 이벤트 발생
                         QuerySaved?.Invoke(this, EventArgs.Empty);
-                        System.Diagnostics.Debug.WriteLine("✅ QuerySaved event invoked");
-                        
-                        DialogResult = true;
+DialogResult = true;
                         Close();
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"❌ Query not found - ID: {_queryId.Value}");
-                        System.Diagnostics.Debug.WriteLine($"❌ Available IDs: {string.Join(", ", allQueries.Take(10).Select(q => q.RowNumber))}...");
+
                         
                         MessageBox.Show($"쿼리를 찾을 수 없습니다.\n\n" +
                             $"쿼리 ID: {_queryId.Value}\n" +
@@ -330,8 +305,7 @@ namespace FACTOVA_QueryHelper.Controls
                 }
                 catch (UnauthorizedAccessException uaEx)
                 {
-                    System.Diagnostics.Debug.WriteLine($"❌ Unauthorized access error: {uaEx.Message}");
-                    MessageBox.Show($"데이터베이스 파일에 대한 접근 권한이 없습니다.\n\n" +
+MessageBox.Show($"데이터베이스 파일에 대한 접근 권한이 없습니다.\n\n" +
                         $"파일: {_databasePath}\n\n" +
                         $"관리자 권한으로 실행하거나 파일 권한을 확인해주세요.\n\n" +
                         $"오류: {uaEx.Message}", 
@@ -340,12 +314,10 @@ namespace FACTOVA_QueryHelper.Controls
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"❌ Save error: {ex.GetType().Name} - {ex.Message}");
-                    System.Diagnostics.Debug.WriteLine($"❌ Stack trace: {ex.StackTrace}");
-                    if (ex.InnerException != null)
+                    
+if (ex.InnerException != null)
                     {
-                        System.Diagnostics.Debug.WriteLine($"❌ Inner exception: {ex.InnerException.Message}");
-                    }
+}
                     
                     MessageBox.Show($"쿼리 저장 중 오류가 발생했습니다.\n\n" +
                         $"오류 유형: {ex.GetType().Name}\n" +
@@ -359,9 +331,7 @@ namespace FACTOVA_QueryHelper.Controls
             else if (_queryId.HasValue && string.IsNullOrEmpty(_databasePath))
             {
                 // 🔥 DB 경로가 없는 경우 경고
-                System.Diagnostics.Debug.WriteLine($"❌ Database path is empty! QueryId: {_queryId.Value}");
-                
-                MessageBox.Show("데이터베이스 경로가 설정되지 않았습니다.\n\n" +
+MessageBox.Show("데이터베이스 경로가 설정되지 않았습니다.\n\n" +
                     "설정 탭에서 DB 파일 경로를 확인해 주세요.", 
                     "오류", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return; // 🔥 창을 닫지 않고 리턴
@@ -369,7 +339,7 @@ namespace FACTOVA_QueryHelper.Controls
             else
             {
                 // 🔥 쿼리 ID가 없는 경우 - 사용자에게 명확히 알림
-                System.Diagnostics.Debug.WriteLine($"⚠️ No queryId or databasePath - QueryId: {_queryId?.ToString() ?? "null"}, DbPath: {_databasePath ?? "null"}");
+                
                 
                 // 🔥 이 경우는 단순 텍스트 반환 모드이므로 사용자에게 알림
                 var result = MessageBox.Show(
@@ -381,19 +351,15 @@ namespace FACTOVA_QueryHelper.Controls
                 
                 if (result == MessageBoxResult.Yes)
                 {
-                    System.Diagnostics.Debug.WriteLine("✅ User confirmed - returning text only");
-                    DialogResult = true;
+DialogResult = true;
                     Close();
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("❌ User cancelled");
-                    return; // 🔥 창을 닫지 않음
+return; // 🔥 창을 닫지 않음
                 }
             }
-            
-            System.Diagnostics.Debug.WriteLine("=== SaveButton_Click 종료 ===");
-        }
+}
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {

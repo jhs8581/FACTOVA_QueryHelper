@@ -36,14 +36,12 @@ namespace FACTOVA_QueryHelper.Utils
                 if (match.Success)
                 {
                     var version = match.Groups[1].Value.Trim();
-                    System.Diagnostics.Debug.WriteLine($"✅ 쿼리에서 버전 추출: {version}");
-                    return version;
+return version;
                 }
             }
             
             // 버전 정보 없으면 기본값 2.0
-            System.Diagnostics.Debug.WriteLine("⚠️ 쿼리에 버전 정보 없음, 기본값 2.0 사용");
-            return "2.0";
+return "2.0";
         }
         
         /// <summary>
@@ -74,7 +72,7 @@ namespace FACTOVA_QueryHelper.Utils
                         .Where(s => !string.IsNullOrEmpty(s))
                         .ToList();
                     
-                    System.Diagnostics.Debug.WriteLine($"✅ 쿼리에서 대상 사업장 추출: {string.Join(", ", sites)}");
+                    
                     return sites;
                 }
             }

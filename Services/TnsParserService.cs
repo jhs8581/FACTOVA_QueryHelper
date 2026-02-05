@@ -73,13 +73,10 @@ namespace FACTOVA_QueryHelper.Services
                         tnsEntries.Add(entry);
                     }
                 }
-                
-                System.Diagnostics.Debug.WriteLine($"Total TNS entries parsed: {tnsEntries.Count}");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"TNS 파일 파싱 오류: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
+
             }
 
             return tnsEntries.OrderBy(x => x.Name).ToList();
@@ -131,7 +128,7 @@ namespace FACTOVA_QueryHelper.Services
                     entry.Protocol = protocolMatch.Groups[1].Value.Trim();
                 }
                 
-                System.Diagnostics.Debug.WriteLine($"Parsed TNS Entry: {entry.GetDetailString()}");
+                
                 
                 // 필수 정보가 있는지 확인
                 if (!string.IsNullOrEmpty(entry.Host) && !string.IsNullOrEmpty(entry.Port))
@@ -143,8 +140,7 @@ namespace FACTOVA_QueryHelper.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error parsing TNS block '{tnsName}': {ex.Message}");
-                return null;
+return null;
             }
         }
 
@@ -173,18 +169,15 @@ namespace FACTOVA_QueryHelper.Services
                 
                 if (!string.IsNullOrEmpty(userPath) && File.Exists(userPath))
                 {
-                    System.Diagnostics.Debug.WriteLine($"✅ Using user-specified TNS path: {userPath}");
-                    return userPath;
+return userPath;
                 }
                 else if (!string.IsNullOrEmpty(userPath))
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ User-specified TNS path not found: {userPath}");
-                }
+}
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"⚠️ Error reading user TNS path: {ex.Message}");
-            }
+}
 
             // 🔥 2순위: ORACLE_HOME 환경변수
             string oracleHome = Environment.GetEnvironmentVariable("ORACLE_HOME") ?? "";
@@ -194,15 +187,12 @@ namespace FACTOVA_QueryHelper.Services
                 string tnsPath = Path.Combine(oracleHome, "network", "admin", "tnsnames.ora");
                 if (File.Exists(tnsPath))
                 {
-                    System.Diagnostics.Debug.WriteLine($"✅ Using ORACLE_HOME TNS path: {tnsPath}");
-                    return tnsPath;
+return tnsPath;
                 }
             }
 
             // 🔥 3순위: 일반적인 설치 경로들 시도
-            System.Diagnostics.Debug.WriteLine("🔍 Searching for tnsnames.ora in common locations...");
-            
-            string[] defaultPaths = new[]
+string[] defaultPaths = new[]
             {
                 @"C:\oracle\product\21c\dbhome_1\network\admin\tnsnames.ora",  // Oracle 21c
                 @"C:\oracle\product\19c\dbhome_1\network\admin\tnsnames.ora",  // Oracle 19c
@@ -217,13 +207,10 @@ namespace FACTOVA_QueryHelper.Services
             {
                 if (File.Exists(path))
                 {
-                    System.Diagnostics.Debug.WriteLine($"✅ Found TNS file: {path}");
-                    return path;
+return path;
                 }
             }
-
-            System.Diagnostics.Debug.WriteLine("⚠️ No tnsnames.ora file found in any location");
-            return string.Empty;
+return string.Empty;
         }
     }
 }

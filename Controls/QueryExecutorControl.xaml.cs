@@ -74,8 +74,7 @@ namespace FACTOVA_QueryHelper.Controls
             if (_sharedData != null)
             {
                 _sharedData.ConnectionInfosChanged += OnConnectionInfosChanged;
-                System.Diagnostics.Debug.WriteLine("✅ QueryExecutorControl subscribed to ConnectionInfosChanged event");
-            }
+}
         }
         
         /// <summary>
@@ -83,9 +82,7 @@ namespace FACTOVA_QueryHelper.Controls
         /// </summary>
         private void OnConnectionInfosChanged(object? sender, EventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("🔄 QueryExecutorControl: Refreshing connection infos...");
-            
-            // 접속 정보 새로고침
+// 접속 정보 새로고침
             RefreshConnectionInfos();
         }
 
@@ -126,13 +123,10 @@ namespace FACTOVA_QueryHelper.Controls
                 // {
                 //     ConnectionComboBox.SelectedIndex = 0;
                 // }
-                
-                System.Diagnostics.Debug.WriteLine($"✅ Loaded {_connectionInfos.Count} connection infos from: {dbPath ?? "default path"}");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Failed to load connection infos: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"   Stack: {ex.StackTrace}");
+
             }
         }
 
@@ -199,13 +193,11 @@ namespace FACTOVA_QueryHelper.Controls
                 if (item != null)
                 {
                     ConnectionComboBox.SelectedItem = item;
-                    System.Diagnostics.Debug.WriteLine($"✅ ConnectionInfo set to ID: {connectionInfoId}");
-                }
+}
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Failed to set ConnectionInfoId: {ex.Message}");
-            }
+}
         }
         
         public void SetTabHeader(string header)
@@ -259,12 +251,10 @@ namespace FACTOVA_QueryHelper.Controls
                         {
                             bindVar.Value = kvp.Value;
                             matchedCount++;
-                            System.Diagnostics.Debug.WriteLine($"  ✅ Matched: {kvp.Key} = {kvp.Value}");
-                        }
+}
                         else
                         {
-                            System.Diagnostics.Debug.WriteLine($"  ⚠️ Not found in bind variables: {kvp.Key}");
-                        }
+}
                     }
 
                     // 결과 메시지
@@ -286,14 +276,11 @@ namespace FACTOVA_QueryHelper.Controls
                             MessageBoxButton.OK,
                             MessageBoxImage.Warning);
                     }
-
-                    System.Diagnostics.Debug.WriteLine($"✅ Input Data completed: {matchedCount}/{totalCount} matched");
-                }
+}
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error in InputDataButton_Click: {ex.Message}");
-                MessageBox.Show(
+MessageBox.Show(
                     $"Input Data 중 오류가 발생했습니다:\n\n{ex.Message}",
                     "오류",
                     MessageBoxButton.OK,
@@ -330,8 +317,7 @@ namespace FACTOVA_QueryHelper.Controls
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error parsing bind variables: {ex.Message}");
-            }
+}
         }
 
         private async void ExecuteQueryButton_Click(object sender, RoutedEventArgs e)
@@ -400,10 +386,7 @@ namespace FACTOVA_QueryHelper.Controls
                             return;
                         }
 
-                        System.Diagnostics.Debug.WriteLine($"🔌 Connecting with TNS Entry: {selectedTns.Name}");
-                        System.Diagnostics.Debug.WriteLine($"   Host: {selectedTns.Host}:{selectedTns.Port}");
-                        System.Diagnostics.Debug.WriteLine($"   Service: {selectedTns.ServiceName}");
-                        System.Diagnostics.Debug.WriteLine($"   User: {selectedConnection.UserId}");
+
 
                         // 🔥 TnsEntry 객체를 사용하여 연결 (1, 2번째 탭과 동일)
                         bool connected = await _dbService.ConfigureAsync(
@@ -431,12 +414,10 @@ namespace FACTOVA_QueryHelper.Controls
                         }
 
                         _isTemporaryConnection = true;
-                        System.Diagnostics.Debug.WriteLine("✅ Connected successfully");
-                    }
+}
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"❌ Connection error: {ex.Message}");
-                        MessageBox.Show(
+MessageBox.Show(
                             $"데이터베이스 연결 중 오류가 발생했습니다:\n\n{ex.Message}\n\n" +
                             $"TNS 이름: {selectedConnection.TNS}\n\n" +
                             "확인 사항:\n" +
@@ -650,8 +631,7 @@ namespace FACTOVA_QueryHelper.Controls
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error selecting column: {ex.Message}");
-            }
+}
         }
 
         private void SortButton_Click(object sender, RoutedEventArgs e)
@@ -769,8 +749,7 @@ namespace FACTOVA_QueryHelper.Controls
         public void ReloadShortcuts(string databasePath)
         {
             QueryTextBox.InitializeShortcutService(databasePath);
-            System.Diagnostics.Debug.WriteLine($"✅ Shortcuts reloaded for QueryExecutor with DB: {databasePath}");
-        }
+}
 
         private void QueryTextBox_TextChanged(object sender, EventArgs e)
         {
@@ -802,16 +781,13 @@ namespace FACTOVA_QueryHelper.Controls
                                 firstItem.Item,
                                 firstItem.Column,
                                 trimmedContent));
-                            
-                            System.Diagnostics.Debug.WriteLine($"✂️ Trimmed leading space from clipboard content");
-                        }
+}
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error in CopyingRowClipboardContent: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -833,8 +809,7 @@ namespace FACTOVA_QueryHelper.Controls
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error in ConnectionComboBox_SelectionChanged: {ex.Message}");
-            }
+}
         }
     }
 }

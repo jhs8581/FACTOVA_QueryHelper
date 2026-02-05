@@ -121,7 +121,7 @@ namespace FACTOVA_QueryHelper.Controls
             ConnectionsDataGrid.SelectedItem = newConnection;
             ConnectionsDataGrid.ScrollIntoView(newConnection);
             
-            System.Diagnostics.Debug.WriteLine($"✅ 신규 항목 추가: {newConnection.Name} (ID: {newConnection.Id})");
+            
         }
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
@@ -144,11 +144,11 @@ namespace FACTOVA_QueryHelper.Controls
                         // 🔥 삭제 시에도 이벤트 발생
                         ConnectionInfosSaved?.Invoke(this, EventArgs.Empty);
                         
-                        System.Diagnostics.Debug.WriteLine($"🗑️ DB에서 삭제: {selectedConnection.Name} (ID: {selectedConnection.Id})");
+                        
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"🗑️ 신규 항목 삭제 (DB 저장 전): {selectedConnection.Name}");
+                        
                     }
 
                     // 컬렉션 및 수정 목록에서 제거
@@ -208,13 +208,13 @@ namespace FACTOVA_QueryHelper.Controls
                         var newId = _connectionService.AddConnection(connection);
                         connection.Id = newId;
                         newCount++;
-                        System.Diagnostics.Debug.WriteLine($"✅ 신규 저장: {connection.Name} (새 ID: {newId})");
+                        
                     }
                     else
                     {
                         _connectionService.UpdateConnection(connection);
                         updateCount++;
-                        System.Diagnostics.Debug.WriteLine($"✅ 업데이트: {connection.Name} (ID: {connection.Id})");
+                        
                     }
                 }
 
@@ -232,7 +232,7 @@ namespace FACTOVA_QueryHelper.Controls
                 string message = $"저장 완료!\n\n신규: {newCount}개\n수정: {updateCount}개\n총: {newCount + updateCount}개";
                 MessageBox.Show(message, "성공", MessageBoxButton.OK, MessageBoxImage.Information);
                 
-                System.Diagnostics.Debug.WriteLine($"🔔 ConnectionInfosSaved event raised (신규: {newCount}, 수정: {updateCount})");
+                
                 
                 // 🔥 DataGrid 새로고침
                 ConnectionsDataGrid.Items.Refresh();
@@ -240,8 +240,7 @@ namespace FACTOVA_QueryHelper.Controls
             catch (System.Exception ex)
             {
                 MessageBox.Show($"저장 중 오류가 발생했습니다:\n{ex.Message}", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
-                System.Diagnostics.Debug.WriteLine($"❌ 저장 오류: {ex.Message}");
-            }
+}
         }
 
         private void CancelChangesButton_Click(object sender, RoutedEventArgs e)
@@ -264,9 +263,7 @@ namespace FACTOVA_QueryHelper.Controls
                 
                 // 🔥 편집 모드 Border 숨김
                 EditModeBorder.Visibility = Visibility.Collapsed;
-                
-                System.Diagnostics.Debug.WriteLine("🔄 변경사항 취소 및 다시 로드");
-            }
+}
         }
 
         private void ConnectionsDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
@@ -282,9 +279,8 @@ namespace FACTOVA_QueryHelper.Controls
                     // 🔥 편집 모드 Border 표시
                     EditModeBorder.Visibility = Visibility.Visible;
                     
-                    System.Diagnostics.Debug.WriteLine($"📝 항목 수정됨: {connection.Name} (ID: {connection.Id})");
-                    System.Diagnostics.Debug.WriteLine($"   현재 수정된 항목 수: {_modifiedConnections.Count}");
-                }
+                    
+}
             }
         }
 

@@ -172,8 +172,6 @@ namespace FACTOVA_QueryHelper.Services
                 throw new Exception("Password가 지정되지 않았습니다.");
             }
 
-            System.Diagnostics.Debug.WriteLine($"🔌 Connection Type: {connectionInfo.ConnectionType}");
-            System.Diagnostics.Debug.WriteLine($"   User: {connectionInfo.UserId}");
 
             return await OracleDatabase.ExecuteQueryAsync(
                 connectionInfo.ConnectionString,

@@ -56,19 +56,16 @@ namespace FACTOVA_QueryHelper.Controls
                         {
                             var highlightingDefinition = HighlightingLoader.Load(reader, HighlightingManager.Instance);
                             InputQueryTextBox.SyntaxHighlighting = highlightingDefinition;
-                            System.Diagnostics.Debug.WriteLine("✅ SQL Syntax Highlighting loaded successfully");
-                        }
+}
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine("⚠️ SQL.xshd resource not found");
-                    }
+}
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Failed to load SQL syntax highlighting: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -96,10 +93,7 @@ namespace FACTOVA_QueryHelper.Controls
                         "입력 오류", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-
-                System.Diagnostics.Debug.WriteLine($"📊 Found {queries.Count} queries to transform");
-
-                // 🔥 기존 탭 제거 (첫 번째 탭 제외)
+// 🔥 기존 탭 제거 (첫 번째 탭 제외)
                 RemoveAllTabsExceptFirst();
 
                 // 🔥 1. 통합 탭 먼저 생성 (모든 변환된 쿼리 포함)
@@ -116,13 +110,10 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     QueryTabControl.SelectedIndex = 1;
                 }
-
-                System.Diagnostics.Debug.WriteLine($"✅ {queries.Count} queries transformed: 1 unified tab + {queries.Count} individual tabs");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error in TransformButton_Click: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"   Stack: {ex.StackTrace}");
+
                 MessageBox.Show($"쿼리 변환 중 오류가 발생했습니다:\n{ex.Message}", 
                     "오류", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -152,13 +143,10 @@ namespace FACTOVA_QueryHelper.Controls
 
                 // 🔥 첫 번째 탭으로 이동
                 QueryTabControl.SelectedIndex = 0;
-
-                System.Diagnostics.Debug.WriteLine("✅ All tabs cleared, back to initial state");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error in ClearAllButton_Click: {ex.Message}");
-                MessageBox.Show($"초기화 중 오류가 발생했습니다:\n{ex.Message}", 
+MessageBox.Show($"초기화 중 오류가 발생했습니다:\n{ex.Message}", 
                     "오류", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -187,18 +175,12 @@ namespace FACTOVA_QueryHelper.Controls
                 // 예: [1] [DA:DA_CUS_SEL_ALL_INFO_BY_EQUIP]
                 var queryHeaderPattern = @"\[(\d+)\]\s*\[DA:([^\]]+)\]";
                 var matches = Regex.Matches(inputText, queryHeaderPattern);
-                
-                System.Diagnostics.Debug.WriteLine($"🔍 Found {matches.Count} query headers");
-
-                for (int i = 0; i < matches.Count; i++)
+for (int i = 0; i < matches.Count; i++)
                 {
                     var match = matches[i];
                     var queryNumber = match.Groups[1].Value;
                     var queryName = match.Groups[2].Value;
-                    
-                    System.Diagnostics.Debug.WriteLine($"\n📝 Processing Query {queryNumber}: {queryName}");
-                    
-                    // 🔥 현재 쿼리의 시작 위치
+// 🔥 현재 쿼리의 시작 위치
                     var startIndex = match.Index;
                     
                     // 🔥 다음 쿼리의 시작 위치 (또는 끝)
@@ -212,18 +194,14 @@ namespace FACTOVA_QueryHelper.Controls
                     
                     if (string.IsNullOrWhiteSpace(sqlStatement))
                     {
-                        System.Diagnostics.Debug.WriteLine($"   ⚠️ No SQL statement found for {queryName}");
-                        continue;
+continue;
                     }
                     
                     // 🔥 Parameters 추출
                     var parameters = ExtractParameters(queryBlock);
-                    
-                    System.Diagnostics.Debug.WriteLine($"   📊 Found {parameters.Count} parameters");
-                    foreach (var param in parameters)
+foreach (var param in parameters)
                     {
-                        System.Diagnostics.Debug.WriteLine($"      - {param}");
-                    }
+}
                     
                     // 🔥 쿼리 변환 (? → 파라미터 값)
                     var transformedQuery = TransformQuery(sqlStatement, parameters);
@@ -235,14 +213,11 @@ namespace FACTOVA_QueryHelper.Controls
                         Parameters = parameters,
                         TransformedQuery = transformedQuery
                     });
-                    
-                    System.Diagnostics.Debug.WriteLine($"   ✅ Query transformed successfully");
-                }
+}
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error parsing biz queries: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"   Stack: {ex.StackTrace}");
+
             }
             
             return queries;
@@ -277,8 +252,7 @@ namespace FACTOVA_QueryHelper.Controls
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error extracting SQL statement: {ex.Message}");
-                return "";
+return "";
             }
         }
 
@@ -321,8 +295,7 @@ namespace FACTOVA_QueryHelper.Controls
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error extracting parameters: {ex.Message}");
-            }
+}
             
             return parameters;
         }
@@ -360,15 +333,13 @@ namespace FACTOVA_QueryHelper.Controls
                 // 🔥 남은 ? 가 있으면 경고
                 if (result.Contains("?"))
                 {
-                    System.Diagnostics.Debug.WriteLine($"   ⚠️ Warning: Query still contains '?' after transformation. Params: {parameters.Count}, Remaining: ?");
-                }
+}
                 
                 return result;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error transforming query: {ex.Message}");
-                return query;
+return query;
             }
         }
 
@@ -383,15 +354,11 @@ namespace FACTOVA_QueryHelper.Controls
                 for (int i = QueryTabControl.Items.Count - 1; i > 0; i--)
                 {
                     QueryTabControl.Items.RemoveAt(i);
-                    System.Diagnostics.Debug.WriteLine($"🗑️ Removed tab at index {i}");
-                }
-
-                System.Diagnostics.Debug.WriteLine($"✅ All tabs removed except first. Remaining tabs: {QueryTabControl.Items.Count}");
-            }
+}
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error removing tabs: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -458,13 +425,10 @@ namespace FACTOVA_QueryHelper.Controls
 
                 // 🔥 TabControl에 추가
                 QueryTabControl.Items.Add(tabItem);
-
-                System.Diagnostics.Debug.WriteLine($"✅ Created unified tab with {queries.Count} queries");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error creating unified tab: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -499,13 +463,10 @@ namespace FACTOVA_QueryHelper.Controls
 
                 // 🔥 TabControl에 추가
                 QueryTabControl.Items.Add(tabItem);
-
-                System.Diagnostics.Debug.WriteLine($"✅ Created tab '{tabName}' with QueryExecutorControl");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error creating tab: {ex.Message}");
-            }
+}
         }
     }
 }

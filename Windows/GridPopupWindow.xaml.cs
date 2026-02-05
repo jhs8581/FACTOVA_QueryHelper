@@ -252,8 +252,7 @@ namespace FACTOVA_QueryHelper.Windows
                 }
                 catch (System.Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"복사 오류: {ex.Message}");
-                }
+}
             }
         }
 
@@ -285,8 +284,7 @@ namespace FACTOVA_QueryHelper.Windows
             }
             catch (System.Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"GetCellValue 오류: {ex.Message}");
-            }
+}
             
             return "";
         }

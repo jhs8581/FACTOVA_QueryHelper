@@ -45,9 +45,7 @@ namespace FACTOVA_QueryHelper.Controls
             QueryExecutor8.SetSharedDataContext(sharedData);
             QueryExecutor9.SetSharedDataContext(sharedData);
             QueryExecutor10.SetSharedDataContext(sharedData);
-            
-            System.Diagnostics.Debug.WriteLine("✅ SharedDataContext set to all QueryExecutors in QueryEditorView");
-        }
+}
 
         private void InitializeQueryExecutors()
         {
@@ -79,9 +77,7 @@ namespace FACTOVA_QueryHelper.Controls
             QueryExecutor8.SetCacheService(_cacheService);
             QueryExecutor9.SetCacheService(_cacheService);
             QueryExecutor10.SetCacheService(_cacheService);
-            
-            System.Diagnostics.Debug.WriteLine($"✅ CacheService set to all QueryExecutors");
-        }
+}
 
 
         /// <summary>
@@ -89,9 +85,7 @@ namespace FACTOVA_QueryHelper.Controls
         /// </summary>
         public void RefreshAllQueryExecutorConnections()
         {
-            System.Diagnostics.Debug.WriteLine("🔄 Refreshing all QueryExecutor connections...");
-            
-            QueryExecutor1.RefreshConnectionInfos();
+QueryExecutor1.RefreshConnectionInfos();
             QueryExecutor2.RefreshConnectionInfos();
             QueryExecutor3.RefreshConnectionInfos();
             QueryExecutor4.RefreshConnectionInfos();
@@ -101,21 +95,16 @@ namespace FACTOVA_QueryHelper.Controls
             QueryExecutor8.RefreshConnectionInfos();
             QueryExecutor9.RefreshConnectionInfos();
             QueryExecutor10.RefreshConnectionInfos();
-            
-            System.Diagnostics.Debug.WriteLine("✅ All QueryExecutor connections refreshed");
-        }
+}
         
         /// <summary>
         /// 🔥 모든 QueryExecutor의 테이블 단축어 재로드
         /// </summary>
         public void ReloadAllShortcuts()
         {
-            System.Diagnostics.Debug.WriteLine("🔄 Reloading all QueryExecutor shortcuts...");
-            
-            if (_sharedData == null)
+if (_sharedData == null)
             {
-                System.Diagnostics.Debug.WriteLine("⚠️ SharedData is null, cannot reload shortcuts");
-                return;
+return;
             }
             
             var dbPath = _sharedData.Settings.DatabasePath;
@@ -130,9 +119,7 @@ namespace FACTOVA_QueryHelper.Controls
             QueryExecutor8.ReloadShortcuts(dbPath);
             QueryExecutor9.ReloadShortcuts(dbPath);
             QueryExecutor10.ReloadShortcuts(dbPath);
-            
-            System.Diagnostics.Debug.WriteLine("✅ All QueryExecutor shortcuts reloaded");
-        }
+}
 
         private void LoadSettings()
         {
@@ -149,12 +136,10 @@ namespace FACTOVA_QueryHelper.Controls
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("✅ QueryEditorView initialized");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"⚠️ Initialization warning: {ex.Message}");
-            }
+}
         }
 
         private void UpdateConnectionStatus(bool isConfigured, string detail = "")
@@ -208,13 +193,9 @@ namespace FACTOVA_QueryHelper.Controls
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("=== LoadCacheButton_Click START ===");
-                
-                // 캐시 폴더의 모든 캐시 파일 찾기
+// 캐시 폴더의 모든 캐시 파일 찾기
                 var cacheDir = MetadataCacheService.GetCacheDirectory();
-                System.Diagnostics.Debug.WriteLine($"Cache Directory: {cacheDir}");
-                
-                if (!System.IO.Directory.Exists(cacheDir))
+if (!System.IO.Directory.Exists(cacheDir))
                 {
                     MessageBox.Show("캐시 폴더가 존재하지 않습니다.\n쿼리 생성기에서 먼저 캐시를 빌드해주세요.", 
                         "캐시 없음", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -222,9 +203,7 @@ namespace FACTOVA_QueryHelper.Controls
                 }
 
                 var cacheFiles = System.IO.Directory.GetFiles(cacheDir, "*_metadata.json");
-                System.Diagnostics.Debug.WriteLine($"Found {cacheFiles.Length} cache files");
-                
-                if (cacheFiles.Length == 0)
+if (cacheFiles.Length == 0)
                 {
                     MessageBox.Show("캐시 파일이 없습니다.\n쿼리 생성기에서 먼저 캐시를 빌드해주세요.", 
                         "캐시 없음", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -241,9 +220,7 @@ namespace FACTOVA_QueryHelper.Controls
                 }
 
                 var latestCache = cacheOptions.OrderByDescending(c => c.LastModified).First();
-                System.Diagnostics.Debug.WriteLine($"🔥 Auto-loading latest cache: {latestCache.FileName}");
-
-                LoadCacheButton.IsEnabled = false;
+LoadCacheButton.IsEnabled = false;
                 UpdateConnectionStatusLoading("캐시 로드 중...");
 
                 // 캐시 서비스 초기화
@@ -271,9 +248,7 @@ namespace FACTOVA_QueryHelper.Controls
                     
                     // 모든 QueryExecutor에 CacheService 설정
                     SetCacheServiceToAllExecutors();
-                    
-                    System.Diagnostics.Debug.WriteLine($"✅ Cache loaded successfully: {tableNames.Count} tables");
-                }
+}
                 else
                 {
                     UpdateConnectionStatus(false, "캐시 로드 실패");
@@ -283,8 +258,7 @@ namespace FACTOVA_QueryHelper.Controls
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Exception in LoadCacheButton_Click: {ex.Message}");
-                UpdateConnectionStatus(false, "캐시 로드 오류");
+UpdateConnectionStatus(false, "캐시 로드 오류");
                 MessageBox.Show($"캐시 로드 중 오류가 발생했습니다:\n{ex.Message}", 
                     "오류", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -353,9 +327,7 @@ namespace FACTOVA_QueryHelper.Controls
 
                 // 탐색기로 폴더 열기
                 System.Diagnostics.Process.Start("explorer.exe", cacheDir);
-                
-                System.Diagnostics.Debug.WriteLine($"📂 Opened cache folder: {cacheDir}");
-            }
+}
             catch (Exception ex)
             {
                 MessageBox.Show($"캐시 폴더를 열 수 없습니다:\n{ex.Message}", 
@@ -370,8 +342,7 @@ namespace FACTOVA_QueryHelper.Controls
         {
             if (_tables == null || _tables.Count == 0)
             {
-                System.Diagnostics.Debug.WriteLine("⚠️ No tables to register");
-                return;
+return;
             }
 
             var tableList = _tables.ToList();
@@ -386,9 +357,7 @@ namespace FACTOVA_QueryHelper.Controls
             QueryExecutor8.RegisterTableNames(tableList);
             QueryExecutor9.RegisterTableNames(tableList);
             QueryExecutor10.RegisterTableNames(tableList);
-            
-            System.Diagnostics.Debug.WriteLine($"✅ Registered {tableList.Count} table names to all QueryExecutors");
-        }
+}
 
         /// <summary>
         /// 탭 이름 변경 이벤트 핸들러
@@ -418,14 +387,12 @@ namespace FACTOVA_QueryHelper.Controls
                     if (!string.IsNullOrWhiteSpace(newName))
                     {
                         tabItem.Header = newName;
-                        System.Diagnostics.Debug.WriteLine($"✅ Tab {tabIndex + 1} renamed to: {newName}");
-                    }
+}
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error renaming tab: {ex.Message}");
-                MessageBox.Show($"탭 이름 변경 중 오류가 발생했습니다:\n{ex.Message}", 
+MessageBox.Show($"탭 이름 변경 중 오류가 발생했습니다:\n{ex.Message}", 
                     "오류", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -493,13 +460,10 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     tabItem.Header = query.BizName ?? query.QueryName ?? $"Query {targetIndex + 1}";
                 }
-
-                System.Diagnostics.Debug.WriteLine($"📤 Query opened in tab {targetIndex + 1}: {query.BizName}");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error opening query in tab: {ex.Message}");
-                MessageBox.Show($"쿼리 탭 열기 중 오류가 발생했습니다:\n{ex.Message}", 
+MessageBox.Show($"쿼리 탭 열기 중 오류가 발생했습니다:\n{ex.Message}", 
                     "오류", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

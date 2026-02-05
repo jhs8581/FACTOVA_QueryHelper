@@ -131,8 +131,7 @@ namespace FACTOVA_QueryHelper.SFC
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"JSON 파싱 오류: {ex.Message}");
-            }
+}
 
             return "";
         }

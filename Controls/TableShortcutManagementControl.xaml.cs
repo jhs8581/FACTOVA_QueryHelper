@@ -55,9 +55,7 @@ namespace FACTOVA_QueryHelper.Controls
 
                 // 총 개수 업데이트
                 TotalCountTextBlock.Text = $"{_shortcuts.Count}개";
-
-                System.Diagnostics.Debug.WriteLine($"✅ Loaded {_shortcuts.Count} table shortcuts");
-            }
+}
             catch (Exception ex)
             {
                 MessageBox.Show($"단축어 목록 로드 실패:\n{ex.Message}", 

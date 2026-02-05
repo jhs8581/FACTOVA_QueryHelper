@@ -46,9 +46,7 @@ namespace FACTOVA_QueryHelper.Controls
             
             // DataGrid 새로고침
             SiteDataGrid.Items.Refresh();
-            
-            System.Diagnostics.Debug.WriteLine("✅ 사업장 관리: 접속 정보 ComboBox 새로고침 완료");
-        }
+}
 
         /// <summary>
         /// 🔥 접속 정보 목록을 로드하고 ComboBox에 바인딩합니다.
@@ -59,48 +57,36 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 var connectionService = new Services.ConnectionInfoService(_database?.GetDatabasePath());
                 _connectionInfos = connectionService.GetAllConnections();
-                
-                System.Diagnostics.Debug.WriteLine($"===== LoadConnectionInfos 실행 =====");
-                System.Diagnostics.Debug.WriteLine($"로드된 접속 정보 개수: {_connectionInfos.Count}");
+
                 
                 if (_connectionInfos.Count > 0)
                 {
-                    System.Diagnostics.Debug.WriteLine("접속 정보 목록:");
-                    foreach (var conn in _connectionInfos)
+foreach (var conn in _connectionInfos)
                     {
-                        System.Diagnostics.Debug.WriteLine($"  - {conn.DisplayName}");
-                    }
+}
                 }
-                
-                System.Diagnostics.Debug.WriteLine($"SiteDataGrid.Columns.Count: {SiteDataGrid.Columns.Count}");
-                
-                // 🔥 모든 컬럼을 순회하면서 ComboBox 찾기
+// 🔥 모든 컬럼을 순회하면서 ComboBox 찾기
                 for (int i = 0; i < SiteDataGrid.Columns.Count; i++)
                 {
                     if (SiteDataGrid.Columns[i] is DataGridComboBoxColumn comboColumn)
                     {
                         var header = comboColumn.Header?.ToString() ?? "";
-                        System.Diagnostics.Debug.WriteLine($"컬럼 [{i}]: {header}");
-                        
-                        if (header == "TNS (1.0)")
+if (header == "TNS (1.0)")
                         {
                             comboColumn.ItemsSource = _connectionInfos;
-                            System.Diagnostics.Debug.WriteLine($"✅ TNS (1.0) ComboBox ItemsSource 설정 완료 (컬럼 인덱스: {i})");
+                            
                         }
                         else if (header == "TNS (2.0)")
                         {
                             comboColumn.ItemsSource = _connectionInfos;
-                            System.Diagnostics.Debug.WriteLine($"✅ TNS (2.0) ComboBox ItemsSource 설정 완료 (컬럼 인덱스: {i})");
+                            
                         }
                     }
                 }
-                
-                System.Diagnostics.Debug.WriteLine($"====================================");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ 접속 정보 로드 오류: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"   StackTrace: {ex.StackTrace}");
+
                 _connectionInfos = new List<Models.ConnectionInfo>();
             }
         }
@@ -142,8 +128,7 @@ namespace FACTOVA_QueryHelper.Controls
                 
                 // 🔥 DataGrid 강제 새로고침 (ComboBox 바인딩 문제 해결)
                 SiteDataGrid.Items.Refresh();
-                System.Diagnostics.Debug.WriteLine($"✅ 사업장 로드 완료: {_sites.Count}개, DataGrid 새로고침 완료");
-            }
+}
             catch (Exception ex)
             {
                 MessageBox.Show($"사업장 목록 로드 실패:\n{ex.Message}", "오류",
@@ -200,7 +185,7 @@ namespace FACTOVA_QueryHelper.Controls
             SiteDataGrid.SelectedItem = newSite;
             SiteDataGrid.ScrollIntoView(newSite);
             
-            System.Diagnostics.Debug.WriteLine($"✅ 신규 사업장 추가: {newSite.SiteName} (ID: {newSite.Id})");
+            
         }
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
@@ -225,11 +210,11 @@ namespace FACTOVA_QueryHelper.Controls
                             // 🔥 삭제 시에도 이벤트 발생
                             SiteInfosSaved?.Invoke(this, EventArgs.Empty);
                             
-                            System.Diagnostics.Debug.WriteLine($"🗑️ DB에서 삭제: {selectedSite.SiteName} (ID: {selectedSite.SiteName})");
+                            
                         }
                         else
                         {
-                            System.Diagnostics.Debug.WriteLine($"🗑️ 신규 항목 삭제 (DB 저장 전): {selectedSite.SiteName}");
+                            
                         }
 
                         // 컬렉션 및 수정 목록에서 제거
@@ -291,13 +276,13 @@ namespace FACTOVA_QueryHelper.Controls
                         }
                         
                         newCount++;
-                        System.Diagnostics.Debug.WriteLine($"✅ 신규 저장: {site.SiteName} (새 ID: {site.Id})");
+                        
                     }
                     else
                     {
                         _database.UpdateSite(site);
                         updateCount++;
-                        System.Diagnostics.Debug.WriteLine($"✅ 업데이트: {site.SiteName} (ID: {site.Id})");
+                        
                     }
                 }
 
@@ -315,7 +300,7 @@ namespace FACTOVA_QueryHelper.Controls
                 string message = $"저장 완료!\n\n신규: {newCount}개\n수정: {updateCount}개\n총: {newCount + updateCount}개";
                 MessageBox.Show(message, "성공", MessageBoxButton.OK, MessageBoxImage.Information);
                 
-                System.Diagnostics.Debug.WriteLine($"🔔 SiteInfosSaved event raised (신규: {newCount}, 수정: {updateCount})");
+                
                 
                 // 🔥 DataGrid 새로고침
                 SiteDataGrid.Items.Refresh();
@@ -323,8 +308,7 @@ namespace FACTOVA_QueryHelper.Controls
             catch (Exception ex)
             {
                 MessageBox.Show($"저장 중 오류가 발생했습니다:\n{ex.Message}", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
-                System.Diagnostics.Debug.WriteLine($"❌ 저장 오류: {ex.Message}");
-            }
+}
         }
 
         private void CancelChangesButton_Click(object sender, RoutedEventArgs e)
@@ -347,9 +331,7 @@ namespace FACTOVA_QueryHelper.Controls
                 
                 // 🔥 편집 모드 Border 숨김
                 EditModeBorder.Visibility = Visibility.Collapsed;
-                
-                System.Diagnostics.Debug.WriteLine("🔄 변경사항 취소 및 다시 로드");
-            }
+}
         }
 
         private void SiteDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
@@ -365,9 +347,8 @@ namespace FACTOVA_QueryHelper.Controls
                     // 🔥 편집 모드 Border 표시
                     EditModeBorder.Visibility = Visibility.Visible;
                     
-                    System.Diagnostics.Debug.WriteLine($"📝 사업장 수정됨: {site.SiteName} (ID: {site.Id})");
-                    System.Diagnostics.Debug.WriteLine($"   현재 수정된 항목 수: {_modifiedSites.Count}");
-                }
+                    
+}
             }
         }
 

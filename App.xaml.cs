@@ -213,20 +213,17 @@ namespace FACTOVA_QueryHelper
                     {
                         // 현재 프로세스의 환경변수 설정 (앱 실행 중에만 유효)
                         Environment.SetEnvironmentVariable("TNS_ADMIN", tnsDirectory);
-                        System.Diagnostics.Debug.WriteLine($"✅ TNS_ADMIN set to: {tnsDirectory}");
-                        System.Diagnostics.Debug.WriteLine($"✅ tnsnames.ora file: {tnsPath}");
+
                     }
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ tnsnames.ora file not found: {tnsPath}");
-                    System.Diagnostics.Debug.WriteLine($"⚠️ TNS_ADMIN not set - Oracle connections may fail with ORA-12154");
+
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error setting TNS_ADMIN: {ex.Message}");
-            }
+}
         }
     }
 }

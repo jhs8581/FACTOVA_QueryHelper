@@ -76,12 +76,11 @@ namespace FACTOVA_QueryHelper.Controls
                         {
                             Clipboard.SetText(selectedParam.Value ?? "");
                             e.Handled = true;
-                            System.Diagnostics.Debug.WriteLine($"✅ 파라미터 값 복사 완료: {selectedParam.Value}");
                         }
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        System.Diagnostics.Debug.WriteLine($"복사 오류: {ex.Message}");
+                        // 복사 실패 시 무시
                     }
                 }
             };
@@ -113,8 +112,6 @@ namespace FACTOVA_QueryHelper.Controls
             UpdateFontSizeDisplay();
             
             _isInitializing = false;
-            
-            System.Diagnostics.Debug.WriteLine("=== Initialize 완료 ===");
         }
 
         #region 접속 정보 관리
@@ -137,16 +134,11 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     ConnectionInfoComboBox.SelectedItem = connections[0];
                     _selectedConnectionInfo = connections[0];
-                    
-                    System.Diagnostics.Debug.WriteLine($"=== 접속 정보 로드 완료 ===");
-                    System.Diagnostics.Debug.WriteLine($"총 {connections.Count}개 접속 정보");
-                    System.Diagnostics.Debug.WriteLine($"선택된 접속 정보: {connections[0].Name}");
-                    System.Diagnostics.Debug.WriteLine("========================");
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"❌ 접속 정보 로드 오류: {ex.Message}");
+                // 접속 정보 로드 실패 시 무시
             }
         }
 
@@ -160,7 +152,6 @@ namespace FACTOVA_QueryHelper.Controls
             if (ConnectionInfoComboBox.SelectedItem is Models.ConnectionInfo selectedConnection)
             {
                 _selectedConnectionInfo = selectedConnection;
-                System.Diagnostics.Debug.WriteLine($"=== 접속 정보 선택 변경: {selectedConnection.Name} ===");
             }
         }
 
@@ -323,11 +314,9 @@ namespace FACTOVA_QueryHelper.Controls
                 }
                 else
                 {
-                    ParameterStatusTextBlock.Text = $"📋 {newParameterList.Count}개 파라미터 (최근 입력값 로드됨)";
+                ParameterStatusTextBlock.Text = $"📋 {newParameterList.Count}개 파라미터 (최근 입력값 로드됨)";
                     ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Green);
                 }
-
-                System.Diagnostics.Debug.WriteLine($"✅ 쿼리 그룹 '{queryName}'에서 {newParameterList.Count}개 파라미터 추출됨");
             }
             catch (Exception ex)
             {
@@ -546,13 +535,11 @@ namespace FACTOVA_QueryHelper.Controls
                         {
                             // 신규 파라미터 추가
                             _database.AddParameter(param);
-                            System.Diagnostics.Debug.WriteLine($"✅ 신규 파라미터 저장: {param.Parameter}");
                         }
                         else
                         {
                             // 기존 파라미터 업데이트
                             _database.UpdateParameter(param);
-                            System.Diagnostics.Debug.WriteLine($"✅ 파라미터 업데이트: {param.Parameter}");
                         }
 
                         // 하이라이트 해제 (저장 완료 표시)
@@ -562,10 +549,9 @@ namespace FACTOVA_QueryHelper.Controls
                         ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Green);
                     }
                 }
-                catch (Exception ex)
+                catch
                 {
-                    System.Diagnostics.Debug.WriteLine($"❌ 파라미터 자동 저장 실패: {ex.Message}");
-                    ParameterStatusTextBlock.Text = $"❌ 저장 실패: {ex.Message}";
+                    ParameterStatusTextBlock.Text = "❌ 저장 실패";
                     ParameterStatusTextBlock.Foreground = new SolidColorBrush(Colors.Red);
                 }
             }), System.Windows.Threading.DispatcherPriority.Background);
@@ -783,12 +769,10 @@ namespace FACTOVA_QueryHelper.Controls
                 if (detailQueries.Count > 0)
                 {
                     GenerateDynamicGridsWithQueries(detailQueries);
-                    System.Diagnostics.Debug.WriteLine($"✅ 그룹명 '{queryName}'에 대한 {detailQueries.Count}개의 상세 쿼리가 자동 바인딩되었습니다.");
                 }
                 else
                 {
                     CreateDynamicGrids(20);
-                    System.Diagnostics.Debug.WriteLine($"⚠️ 그룹명 '{queryName}'에 대한 상세 쿼리(순번 1 이상)가 없습니다.");
                 }
             }
             catch (Exception ex)
@@ -1291,13 +1275,11 @@ namespace FACTOVA_QueryHelper.Controls
                             var textToCopy = string.Join(Environment.NewLine, rows);
                             Clipboard.SetText(textToCopy);
                             e.Handled = true;
-
-                            System.Diagnostics.Debug.WriteLine($"✅ 동적 그리드 복사 완료: {rows.Count}행");
                         }
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        System.Diagnostics.Debug.WriteLine($"복사 오류: {ex.Message}");
+                        // 복사 실패 시 무시
                     }
                 }
             };
@@ -1526,9 +1508,9 @@ namespace FACTOVA_QueryHelper.Controls
                 // 레이아웃 업데이트
                 dataGrid.UpdateLayout();
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"컬럼 너비 재계산 오류: {ex.Message}");
+                // 컬럼 너비 재계산 실패 시 무시
             }
         }
 
@@ -1564,9 +1546,6 @@ namespace FACTOVA_QueryHelper.Controls
                 }
 
                 await System.Threading.Tasks.Task.WhenAll(tasks);
-                
-                // 🔥 조회 완료 팝업 제거 - 각 그리드에 결과 표시됨
-                System.Diagnostics.Debug.WriteLine($"✅ {tasks.Count}개의 쿼리 조회 완료");
             }
             catch (Exception ex)
             {
@@ -1710,7 +1689,7 @@ namespace FACTOVA_QueryHelper.Controls
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"⚠️ 조회 결과 0건 - 그리드 초기화됨");
+                        // 조회 결과 0건
                     }
                 });
             }
@@ -2029,7 +2008,7 @@ namespace FACTOVA_QueryHelper.Controls
                     }
                     catch
                     {
-                        System.Diagnostics.Debug.WriteLine($"⚠️ Invalid BACKGROUND_COLOR: {bgColor}");
+                        // 유효하지 않은 색상값 무시
                     }
                 }
                 
@@ -2044,7 +2023,7 @@ namespace FACTOVA_QueryHelper.Controls
                     }
                     catch
                     {
-                        System.Diagnostics.Debug.WriteLine($"⚠️ Invalid FOREGROUND_COLOR: {fgColor}");
+                        // 유효하지 않은 색상값 무시
                     }
                 }
                 
@@ -2106,9 +2085,9 @@ namespace FACTOVA_QueryHelper.Controls
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"GetCellValue 오류: {ex.Message}");
+                // 오류 무시
             }
             
             return "";
@@ -2509,9 +2488,9 @@ namespace FACTOVA_QueryHelper.Controls
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"파라미터 추출 오류: {ex.Message}");
+                // 파라미터 추출 실패 시 무시
             }
 
             return parameters;

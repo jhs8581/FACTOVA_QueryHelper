@@ -49,14 +49,10 @@ namespace FACTOVA_QueryHelper.Services
             {
                 string dataSource = tnsEntry.GetConnectionString();
                 _connectionString = $"Data Source={dataSource};User Id={userId};Password={password};";
+
+
+
                 
-                System.Diagnostics.Debug.WriteLine($"=== Connection Configuration ===");
-                System.Diagnostics.Debug.WriteLine($"TNS Name: {tnsEntry.Name}");
-                System.Diagnostics.Debug.WriteLine($"Host: {tnsEntry.Host}");
-                System.Diagnostics.Debug.WriteLine($"Port: {tnsEntry.Port}");
-                System.Diagnostics.Debug.WriteLine($"Service: {tnsEntry.ServiceName}");
-                System.Diagnostics.Debug.WriteLine($"User: {userId}");
-                System.Diagnostics.Debug.WriteLine($"Connection String: {_connectionString.Replace(password, "***")}");
                 
                 // 연결 테스트
                 using var connection = new OracleConnection(_connectionString);
@@ -64,19 +60,15 @@ namespace FACTOVA_QueryHelper.Services
                 // using 블록 종료 시 자동으로 연결 닫힘
                 
                 _isConfigured = true;
-                
-                System.Diagnostics.Debug.WriteLine("✅ Connection configured and tested successfully!");
-                System.Diagnostics.Debug.WriteLine("🔌 Connection closed (will reconnect when needed)");
+
                 return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Configuration Error: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
+
                 if (ex.InnerException != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Inner Exception: {ex.InnerException.Message}");
-                }
+}
                 _connectionString = null;
                 _isConfigured = false;
                 throw;
@@ -103,7 +95,7 @@ namespace FACTOVA_QueryHelper.Services
                 
                 _connectionString = connectionString;
                 
-                System.Diagnostics.Debug.WriteLine($"Configuring connection with manual TNS: {connectionString.Replace(password, "***")}");
+                
                 
                 // 연결 테스트
                 using var connection = new OracleConnection(_connectionString);
@@ -111,19 +103,15 @@ namespace FACTOVA_QueryHelper.Services
                 // using 블록 종료 시 자동으로 연결 닫힘
                 
                 _isConfigured = true;
-                
-                System.Diagnostics.Debug.WriteLine("✅ Connection configured and tested successfully!");
-                System.Diagnostics.Debug.WriteLine("🔌 Connection closed (will reconnect when needed)");
+
                 return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Configuration Error: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Stack Trace: {ex.StackTrace}");
+
                 if (ex.InnerException != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Inner Exception: {ex.InnerException.Message}");
-                }
+}
                 _connectionString = null;
                 _isConfigured = false;
                 throw;
@@ -141,17 +129,11 @@ namespace FACTOVA_QueryHelper.Services
             }
 
             var sw = System.Diagnostics.Stopwatch.StartNew();
-            System.Diagnostics.Debug.WriteLine("🔌 Creating temporary connection...");
-            
-            var connection = new OracleConnection(_connectionString);
+var connection = new OracleConnection(_connectionString);
             await connection.OpenAsync();
-            System.Diagnostics.Debug.WriteLine($"  ⏱️ Connection opened: {sw.ElapsedMilliseconds}ms");
-            
-            // 🔥 NLS 설정을 비동기로 실행
+// 🔥 NLS 설정을 비동기로 실행
             await Task.Run(() => SetSessionNlsSettings(connection));
-            System.Diagnostics.Debug.WriteLine($"  ⏱️ NLS settings applied: {sw.ElapsedMilliseconds}ms");
-            
-            System.Diagnostics.Debug.WriteLine($"✅ Temporary connection opened (total: {sw.ElapsedMilliseconds}ms)");
+
             return connection;
         }
 
@@ -178,14 +160,11 @@ namespace FACTOVA_QueryHelper.Services
                 ";
                 
                 command.ExecuteNonQuery();
-                
-                System.Diagnostics.Debug.WriteLine("✅ NLS settings applied to session");
-            }
+}
             catch (Exception ex)
             {
                 // NLS 설정 실패는 경고만 하고 계속 진행
-                System.Diagnostics.Debug.WriteLine($"⚠️ Failed to set NLS settings: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -198,8 +177,7 @@ namespace FACTOVA_QueryHelper.Services
             
             _connectionString = null;
             _isConfigured = false;
-            System.Diagnostics.Debug.WriteLine("🔌 Connection configuration cleared");
-        }
+}
 
         /// <summary>
         /// 현재 실행 중인 쿼리 취소
@@ -210,22 +188,17 @@ namespace FACTOVA_QueryHelper.Services
             {
                 if (_currentCommand != null)
                 {
-                    System.Diagnostics.Debug.WriteLine("❌ Cancelling Oracle command...");
-                    _currentCommand.Cancel();
-                    System.Diagnostics.Debug.WriteLine("✅ Oracle command cancelled successfully");
-                }
+_currentCommand.Cancel();
+}
                 
                 if (_currentQueryCancellation != null && !_currentQueryCancellation.IsCancellationRequested)
                 {
-                    System.Diagnostics.Debug.WriteLine("❌ Cancelling query token...");
-                    _currentQueryCancellation.Cancel();
-                    System.Diagnostics.Debug.WriteLine("✅ Query token cancelled successfully");
-                }
+_currentQueryCancellation.Cancel();
+}
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"⚠️ Error during cancellation: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -235,8 +208,7 @@ namespace FACTOVA_QueryHelper.Services
         {
             if (!IsConfigured)
             {
-                System.Diagnostics.Debug.WriteLine("⚠️ Not configured");
-                return new List<string>();
+return new List<string>();
             }
 
             var tables = new List<string>();
@@ -259,12 +231,11 @@ namespace FACTOVA_QueryHelper.Services
                     tables.Add(reader.GetString(0));
                 }
 
-                System.Diagnostics.Debug.WriteLine($"✅ Loaded {tables.Count} tables (connection auto-closed)");
+                
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error getting tables: {ex.Message}");
-            }
+}
 
             return tables;
         }
@@ -273,8 +244,7 @@ namespace FACTOVA_QueryHelper.Services
         {
             if (!IsConfigured || string.IsNullOrEmpty(tableName))
             {
-                System.Diagnostics.Debug.WriteLine("⚠️ Not configured or table name is empty");
-                return new List<ColumnInfo>();
+return new List<ColumnInfo>();
             }
 
             var columns = new List<ColumnInfo>();
@@ -311,12 +281,11 @@ namespace FACTOVA_QueryHelper.Services
                     });
                 }
 
-                System.Diagnostics.Debug.WriteLine($"✅ Loaded {columns.Count} columns for {tableName} (connection auto-closed)");
+                
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error getting columns: {ex.Message}");
-            }
+}
 
             return columns;
         }
@@ -325,8 +294,7 @@ namespace FACTOVA_QueryHelper.Services
         {
             if (!IsConfigured || string.IsNullOrEmpty(tableName))
             {
-                System.Diagnostics.Debug.WriteLine("⚠️ Not configured or table name is empty");
-                return new List<IndexInfo>();
+return new List<IndexInfo>();
             }
 
             var indexes = new List<IndexInfo>();
@@ -393,12 +361,11 @@ namespace FACTOVA_QueryHelper.Services
                     });
                 }
 
-                System.Diagnostics.Debug.WriteLine($"✅ Loaded {indexes.Count} indexes for {tableName} (connection auto-closed)");
+                
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error getting indexes: {ex.Message}");
-            }
+}
 
             return indexes;
         }
@@ -435,13 +402,11 @@ namespace FACTOVA_QueryHelper.Services
 
             try
             {
-                System.Diagnostics.Debug.WriteLine($"📊 Starting query execution...");
-                connection = await CreateConnectionAsync();
+connection = await CreateConnectionAsync();
                 
                 // 🔥 쿼리에 ROWNUM 제한 추가 (설정에 따라)
                 var limitedQuery = _enableRowLimit ? WrapQueryWithRowLimit(query, _rowLimitCount) : query;
-                System.Diagnostics.Debug.WriteLine($"Original query: {query}");
-                System.Diagnostics.Debug.WriteLine($"Limited query: {limitedQuery}");
+
                 
                 var command = new OracleCommand(limitedQuery, connection);
                 command.CommandTimeout = 10; // 10초 타임아웃
@@ -459,21 +424,17 @@ namespace FACTOVA_QueryHelper.Services
                 // 취소 토큰 등록 (🔥 로컬 변수 사용)
                 using var registration = cancellationToken.Register(() =>
                 {
-                    System.Diagnostics.Debug.WriteLine("🛑 Cancellation requested - attempting to cancel command");
-                    try
+try
                     {
                         command.Cancel();
-                        System.Diagnostics.Debug.WriteLine("✅ Command.Cancel() called successfully");
+                        
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"⚠️ Error calling Command.Cancel(): {ex.Message}");
+                        
                     }
                 });
-
-                System.Diagnostics.Debug.WriteLine("⏳ Executing Oracle query...");
-                
-                // 🔥 OracleDataReader를 직접 사용하여 중복 컬럼명 자동 처리
+// 🔥 OracleDataReader를 직접 사용하여 중복 컬럼명 자동 처리
                 await Task.Run(async () => 
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -481,25 +442,23 @@ namespace FACTOVA_QueryHelper.Services
                     BuildDataTableFromReader(reader, dataTable);
                 }, cancellationToken);
 
-                System.Diagnostics.Debug.WriteLine($"✅ Query executed successfully. Rows: {dataTable.Rows.Count} (max 2000)");
+                
             }
             catch (OperationCanceledException)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Query execution cancelled or timed out (10 seconds)");
+                
                 throw new TimeoutException("쿼리 실행이 취소되었거나 10초를 초과했습니다.");
             }
             catch (OracleException oex) when (oex.Number == 1013) // ORA-01013: user requested cancel of current operation
             {
-                System.Diagnostics.Debug.WriteLine($"✅ Query successfully cancelled by user (ORA-01013)");
+                
                 throw new OperationCanceledException("쿼리가 사용자에 의해 취소되었습니다.");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Query execution error: {ex.Message}");
-                if (ex.InnerException != null)
+if (ex.InnerException != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"  Inner Exception: {ex.InnerException.Message}");
-                }
+}
                 throw;
             }
             finally
@@ -514,8 +473,7 @@ namespace FACTOVA_QueryHelper.Services
                     {
                         connection.Close();
                         connection.Dispose();
-                        System.Diagnostics.Debug.WriteLine("🔌 Connection closed");
-                    }
+}
                     catch { }
                 }
             }
@@ -550,8 +508,7 @@ namespace FACTOVA_QueryHelper.Services
 
             try
             {
-                System.Diagnostics.Debug.WriteLine($"📊 Starting query execution...");
-                connection = await CreateConnectionAsync();
+connection = await CreateConnectionAsync();
                 
                 // 쿼리에 ROWNUM 제한 추가 (서브쿼리로 감싸지 않음)
                 var limitedQuery = WrapQueryWithRowLimit(query, 2000);
@@ -562,9 +519,7 @@ namespace FACTOVA_QueryHelper.Services
                     @"[&@](\w+)",
                     m => $":{m.Groups[1].Value}"
                 );
-                
-                System.Diagnostics.Debug.WriteLine($"Original query: {query}");
-                System.Diagnostics.Debug.WriteLine($"Oracle query: {oracleQuery}");
+
                 
                 var command = new OracleCommand(oracleQuery, connection);
                 command.CommandTimeout = 10; // 10초 타임아웃
@@ -577,28 +532,23 @@ namespace FACTOVA_QueryHelper.Services
                     foreach (var param in parameters)
                     {
                         command.Parameters.Add(new OracleParameter(param.Key, param.Value ?? DBNull.Value));
-                        System.Diagnostics.Debug.WriteLine($"  Binding: :{param.Key} = '{param.Value}'");
-                    }
+}
                 }
 
                 // 취소 토큰 등록 (🔥 로컬 변수 사용)
                 using var registration = cancellationToken.Register(() =>
                 {
-                    System.Diagnostics.Debug.WriteLine("🛑 Cancellation requested - attempting to cancel command");
-                    try
+try
                     {
                         command.Cancel();
-                        System.Diagnostics.Debug.WriteLine("✅ Command.Cancel() called successfully");
+                        
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"⚠️ Error calling Command.Cancel(): {ex.Message}");
+                        
                     }
                 });
-
-                System.Diagnostics.Debug.WriteLine("⏳ Executing Oracle query...");
-                
-                // 🔥 OracleDataReader를 직접 사용하여 중복 컬럼명 자동 처리
+// 🔥 OracleDataReader를 직접 사용하여 중복 컬럼명 자동 처리
                 await Task.Run(async () => 
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -606,25 +556,23 @@ namespace FACTOVA_QueryHelper.Services
                     BuildDataTableFromReader(reader, dataTable);
                 }, cancellationToken);
 
-                System.Diagnostics.Debug.WriteLine($"✅ Query with parameters executed successfully. Rows: {dataTable.Rows.Count} (max 2000)");
+                
             }
             catch (OperationCanceledException)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Query execution cancelled or timed out (10 seconds)");
+                
                 throw new TimeoutException("쿼리 실행이 취소되었거나 10초를 초과했습니다.");
             }
             catch (OracleException oex) when (oex.Number == 1013) // ORA-01013: user requested cancel of current operation
             {
-                System.Diagnostics.Debug.WriteLine($"✅ Query successfully cancelled by user (ORA-01013)");
+                
                 throw new OperationCanceledException("쿼리가 사용자에 의해 취소되었습니다.");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Query execution error: {ex.Message}");
-                if (ex.InnerException != null)
+if (ex.InnerException != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"  Inner Exception: {ex.InnerException.Message}");
-                }
+}
                 throw;
             }
             finally
@@ -639,8 +587,7 @@ namespace FACTOVA_QueryHelper.Services
                     {
                         connection.Close();
                         connection.Dispose();
-                        System.Diagnostics.Debug.WriteLine("🔌 Connection closed");
-                    }
+}
                     catch { }
                 }
             }
@@ -677,8 +624,7 @@ namespace FACTOVA_QueryHelper.Services
                     // 중복된 컬럼명 → 순번 추가 (PL/SQL Developer 방식)
                     columnNames[escapedName]++;
                     finalColumnName = $"{escapedName}__{columnNames[escapedName]}";
-                    System.Diagnostics.Debug.WriteLine($"🔧 Duplicate column detected: {originalName} → {finalColumnName}");
-                }
+}
                 else
                 {
                     finalColumnName = escapedName;
@@ -686,8 +632,7 @@ namespace FACTOVA_QueryHelper.Services
                     
                     if (escapedName != originalName)
                     {
-                        System.Diagnostics.Debug.WriteLine($"🔧 Escaped column name: {originalName} → {escapedName}");
-                    }
+}
                 }
 
                 dataTable.Columns.Add(finalColumnName, dataType);
@@ -703,9 +648,7 @@ namespace FACTOVA_QueryHelper.Services
                 }
                 dataTable.Rows.Add(row);
             }
-
-            System.Diagnostics.Debug.WriteLine($"✅ DataTable built with {dataTable.Columns.Count} columns, {dataTable.Rows.Count} rows");
-        }
+}
 
         /// <summary>
         /// 🔥 중복 컬럼명 문제 해결: 쿼리를 서브쿼리로 감싸고 각 컬럼에 자동 alias 부여

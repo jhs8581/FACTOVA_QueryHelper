@@ -45,7 +45,6 @@ namespace FACTOVA_QueryHelper.Controls
         public void NotifyConnectionInfosChanged()
         {
             ConnectionInfosChanged?.Invoke(this, EventArgs.Empty);
-            System.Diagnostics.Debug.WriteLine("🔔 ConnectionInfosChanged event raised");
-        }
+}
     }
 }

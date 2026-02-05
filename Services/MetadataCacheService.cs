@@ -55,16 +55,10 @@ namespace FACTOVA_QueryHelper.Services
             {
                 if (!CacheExists())
                 {
-                    System.Diagnostics.Debug.WriteLine("⚠️ Cache file not found");
-                    return null;
+return null;
                 }
+var json = await File.ReadAllTextAsync(_cacheFilePath);
 
-                System.Diagnostics.Debug.WriteLine($"📂 Loading metadata from cache: {_cacheFilePath}");
-                
-                var json = await File.ReadAllTextAsync(_cacheFilePath);
-                
-                System.Diagnostics.Debug.WriteLine($"   📄 JSON file size: {json.Length} characters");
-                System.Diagnostics.Debug.WriteLine($"   📄 JSON preview (first 500 chars): {json.Substring(0, Math.Min(500, json.Length))}");
                 
                 // 🔥 저장할 때와 동일한 JsonSerializerOptions 사용!
                 var options = new JsonSerializerOptions
@@ -77,39 +71,32 @@ namespace FACTOVA_QueryHelper.Services
 
                 if (_metadata != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"✅ Loaded {_metadata.Tables.Count} tables from cache");
-                    System.Diagnostics.Debug.WriteLine($"   Cache date: {_metadata.CachedDate:yyyy-MM-dd HH:mm:ss}");
+
                     
                     // 🔥 첫 5개 테이블 이름 확인
                     if (_metadata.Tables.Count > 0)
                     {
-                        System.Diagnostics.Debug.WriteLine($"   First 5 tables:");
-                        int count = 0;
+int count = 0;
                         foreach (var tableName in _metadata.Tables.Keys.Take(5))
                         {
-                            System.Diagnostics.Debug.WriteLine($"      [{count}]: {tableName}");
-                            count++;
+count++;
                         }
                     }
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ Deserialized metadata is null!");
-                }
+}
 
                 return _metadata;
             }
             catch (JsonException jsonEx)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ JSON deserialization error: {jsonEx.Message}");
-                System.Diagnostics.Debug.WriteLine($"   Path: {jsonEx.Path}");
-                System.Diagnostics.Debug.WriteLine($"   Line: {jsonEx.LineNumber}");
-                return null;
+
+return null;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error loading cache: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"   Stack trace: {ex.StackTrace}");
+
                 return null;
             }
         }
@@ -119,9 +106,7 @@ namespace FACTOVA_QueryHelper.Services
         /// </summary>
         public async Task<DatabaseMetadata> BuildAndSaveCacheAsync(IProgress<CacheBuildProgress>? progress = null)
         {
-            System.Diagnostics.Debug.WriteLine("🔨 Building metadata cache from database...");
-            
-            _metadata = new DatabaseMetadata
+_metadata = new DatabaseMetadata
             {
                 CachedDate = DateTime.Now,
                 Tables = new Dictionary<string, TableMetadata>()
@@ -132,10 +117,7 @@ namespace FACTOVA_QueryHelper.Services
                 // 1단계: 테이블 목록 가져오기
                 progress?.Report(new CacheBuildProgress { Stage = "테이블 목록 조회 중...", CurrentTable = 0, TotalTables = 0 });
                 var tableNames = await _dbService.GetTablesAsync();
-                
-                System.Diagnostics.Debug.WriteLine($"📊 Found {tableNames.Count} tables to cache");
-
-                // 2단계: 각 테이블의 컬럼과 인덱스 정보 가져오기
+// 2단계: 각 테이블의 컬럼과 인덱스 정보 가져오기
                 int processedCount = 0;
                 foreach (var tableName in tableNames)
                 {
@@ -173,13 +155,11 @@ namespace FACTOVA_QueryHelper.Services
                         // 100개마다 진행 상황 로그
                         if (processedCount % 100 == 0)
                         {
-                            System.Diagnostics.Debug.WriteLine($"   Progress: {processedCount}/{tableNames.Count} tables processed");
-                        }
+}
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"⚠️ Error processing table {tableName}: {ex.Message}");
-                        // 개별 테이블 오류는 무시하고 계속 진행
+// 개별 테이블 오류는 무시하고 계속 진행
                     }
                 }
 
@@ -193,21 +173,16 @@ namespace FACTOVA_QueryHelper.Services
 
                 await SaveCacheAsync();
 
-                System.Diagnostics.Debug.WriteLine($"✅ Metadata cache built successfully!");
-                System.Diagnostics.Debug.WriteLine($"   Total tables: {_metadata.Tables.Count}");
-                System.Diagnostics.Debug.WriteLine($"   Cache file: {_cacheFilePath}");
-                
-                if (File.Exists(_cacheFilePath))
+if (File.Exists(_cacheFilePath))
                 {
-                    System.Diagnostics.Debug.WriteLine($"   File size: {new FileInfo(_cacheFilePath).Length / 1024 / 1024:F2} MB");
+                    
                 }
 
                 return _metadata;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error building cache: {ex.Message}");
-                throw;
+throw;
             }
         }
 
@@ -279,8 +254,7 @@ namespace FACTOVA_QueryHelper.Services
             if (File.Exists(_cacheFilePath))
             {
                 File.Delete(_cacheFilePath);
-                System.Diagnostics.Debug.WriteLine($"🗑️ Cache file deleted: {_cacheFilePath}");
-            }
+}
             _metadata = null;
         }
 

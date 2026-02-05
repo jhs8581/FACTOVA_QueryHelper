@@ -40,7 +40,7 @@ namespace FACTOVA_QueryHelper.Database
                         fullConnectionString = $"Data Source={connectionString};User Id={userId};Password={password};";
                     }
                     
-                    System.Diagnostics.Debug.WriteLine($"Connection String: {fullConnectionString.Replace(password, "***")}");
+                    
                     
                     // 🔥 쿼리에 ROWNUM 제한이 없으면 설정에 따라 제한 추가
                     string processedQuery = enableRowLimit 
@@ -49,15 +49,11 @@ namespace FACTOVA_QueryHelper.Database
                     
                     if (processedQuery != query)
                     {
-                        System.Diagnostics.Debug.WriteLine($"⚠️ 쿼리에 ROWNUM 제한이 없어서 자동으로 {rowLimitCount}건 제한을 추가했습니다.");
-                    }
+}
                     
                     // 🔍 실행될 전체 쿼리 로깅
-                    System.Diagnostics.Debug.WriteLine("=== 실행될 쿼리 ===");
-                    System.Diagnostics.Debug.WriteLine(processedQuery);
-                    System.Diagnostics.Debug.WriteLine("==================");
-                        
-                    using var connection = new OracleConnection(fullConnectionString);
+
+using var connection = new OracleConnection(fullConnectionString);
                     connection.Open();
 
                     // 🔥 세션 NLS 설정 통일 (탭마다 다른 결과 방지)
@@ -70,11 +66,9 @@ namespace FACTOVA_QueryHelper.Database
                     adapter.Fill(dataTable);
                     
                     // 디버그: 반환된 컬럼명 확인
-                    System.Diagnostics.Debug.WriteLine("=== Oracle에서 반환된 컬럼명 ===");
-                    foreach (DataColumn col in dataTable.Columns)
+foreach (DataColumn col in dataTable.Columns)
                     {
-                        System.Diagnostics.Debug.WriteLine($"  - {col.ColumnName}");
-                    }
+}
                 });
             }
             catch (OracleException ex)
@@ -205,14 +199,13 @@ namespace FACTOVA_QueryHelper.Database
             catch (OracleException ex)
             {
                 // 디버그용 로깅 (운영에서는 제외)
-                System.Diagnostics.Debug.WriteLine($"Oracle 연결 테스트 실패 (ORA-{ex.Number:D5}): {ex.Message}");
+                
                 return false;
             }
             catch (Exception ex)
             {
                 // 일반 오류 로깅
-                System.Diagnostics.Debug.WriteLine($"연결 테스트 실패: {ex.Message}");
-                return false;
+return false;
             }
         }
 
@@ -239,14 +232,11 @@ namespace FACTOVA_QueryHelper.Database
                 ";
                 
                 command.ExecuteNonQuery();
-                
-                System.Diagnostics.Debug.WriteLine("✅ NLS settings applied to session");
-            }
+}
             catch (Exception ex)
             {
                 // NLS 설정 실패는 경고만 하고 계속 진행
-                System.Diagnostics.Debug.WriteLine($"⚠️ Failed to set NLS settings: {ex.Message}");
-            }
+}
         }
     }
 }

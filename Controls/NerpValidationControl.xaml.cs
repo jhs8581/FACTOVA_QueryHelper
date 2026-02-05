@@ -66,16 +66,12 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     _connectionInfos.Add(new SelectableConnectionInfo(conn));
                 }
-                
-                System.Diagnostics.Debug.WriteLine($"✅ Loaded {_connectionInfos.Count} connection infos for NERP validation");
-                
-                // 🔥 초기 텍스트 설정
+// 🔥 초기 텍스트 설정
                 UpdateConnectionComboBoxText();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Failed to load connection infos: {ex.Message}");
-            }
+}
         }
 
         private void LoadQueries()
@@ -85,22 +81,16 @@ namespace FACTOVA_QueryHelper.Controls
             try
             {
                 var allQueries = _database.GetAllQueries();
-                
-                System.Diagnostics.Debug.WriteLine($"===== All Queries Count: {allQueries.Count} =====");
-                
-                // "NERP 검증" 타입 쿼리만 필터링
+// "NERP 검증" 타입 쿼리만 필터링
                 _queries = allQueries
                     .Where(q => q.QueryType == "NERP 검증")
                     .OrderBy(q => q.QueryName)  // 🔥 그룹명 기준 정렬
                     .ThenBy(q => q.Version)
                     .ToList();
-                
-                System.Diagnostics.Debug.WriteLine($"===== NERP 검증 Queries Count: {_queries.Count} =====");
-                
-                // 🔥 디버그: 각 쿼리의 QueryName과 Version 출력
+// 🔥 디버그: 각 쿼리의 QueryName과 Version 출력
                 foreach (var q in _queries)
                 {
-                    System.Diagnostics.Debug.WriteLine($"  - QueryName(그룹명): '{q.QueryName}', BizName: '{q.BizName}', Version: '{q.Version}'");
+                    
                 }
                 
                 // 🔥 QueryName(그룹명) 기준으로 그룹화 (BizName 대신 QueryName 사용)
@@ -111,17 +101,15 @@ namespace FACTOVA_QueryHelper.Controls
                 // 🔥 디버그: 그룹별 쿼리 개수 출력
                 foreach (var group in _queriesByGroup)
                 {
-                    System.Diagnostics.Debug.WriteLine($"  그룹명 '{group.Key}': {group.Value.Count} queries");
-                    foreach (var q in group.Value)
+foreach (var q in group.Value)
                     {
-                        System.Diagnostics.Debug.WriteLine($"    - Version '{q.Version}': {q.BizName}");
-                    }
+}
                 }
                 
                 // 🔥 그룹 ComboBox에 그룹명(QueryName) 목록 설정
                 var groupNames = _queriesByGroup.Keys.OrderBy(k => k).ToList();
                 
-                System.Diagnostics.Debug.WriteLine($"📋 그룹명(QueryName) for ComboBox: {string.Join(", ", groupNames)}");
+                
                 
                 QueryGroupComboBox.ItemsSource = groupNames;
                 
@@ -131,15 +119,13 @@ namespace FACTOVA_QueryHelper.Controls
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("⚠️ No 'NERP 검증' type queries found!");
-                }
+}
                 
-                System.Diagnostics.Debug.WriteLine($"✅ Loaded {_queries.Count} NERP validation queries in {_queriesByGroup.Count} groups (by QueryName)");
+                
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Failed to load queries: {ex.Message}");
-            }
+}
         }
 
         private void QueryGroupComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -147,8 +133,7 @@ namespace FACTOVA_QueryHelper.Controls
             // 그룹 선택만 하고, 실제 쿼리 매칭은 실행 시 DB Version에 따라 자동으로 처리
             if (QueryGroupComboBox.SelectedItem is string groupName)
             {
-                System.Diagnostics.Debug.WriteLine($"📋 Selected Group: '{groupName}' - Queries will be auto-matched by DB version");
-            }
+}
         }
 
         public void SetQuery(string query)
@@ -285,7 +270,7 @@ namespace FACTOVA_QueryHelper.Controls
                 List<string> errors = new List<string>();
                 Dictionary<string, int> versionExecutionCount = new Dictionary<string, int>();
 
-                System.Diagnostics.Debug.WriteLine($"📋 Query Group: '{selectedGroupName}' with {groupQueries.Count} version(s)");
+                
 
                 foreach (var selectableConnection in selectedConnections)
                 {
@@ -294,10 +279,7 @@ namespace FACTOVA_QueryHelper.Controls
 
                     var connection = selectableConnection.ConnectionInfo;
                     var dbVersion = connection.Version?.Trim() ?? "";
-                    
-                    System.Diagnostics.Debug.WriteLine($"🔌 DB: {connection.Name}, Version: '{dbVersion}'");
-                    
-                    // 🔥 DB Version에 맞는 쿼리 찾기
+// 🔥 DB Version에 맞는 쿼리 찾기
                     var matchedQuery = groupQueries.FirstOrDefault(q => 
                         (string.IsNullOrWhiteSpace(q.Version) ? "" : q.Version.Trim()).Equals(dbVersion, StringComparison.OrdinalIgnoreCase));
                     
@@ -309,8 +291,7 @@ namespace FACTOVA_QueryHelper.Controls
                     
                     if (matchedQuery == null)
                     {
-                        System.Diagnostics.Debug.WriteLine($"⏭️ Skipped {connection.Name}: No query found for version '{dbVersion}'");
-                        skippedCount++;
+skippedCount++;
                         continue;
                     }
                     
@@ -320,10 +301,7 @@ namespace FACTOVA_QueryHelper.Controls
                     {
                         versionExecutionCount[versionKey] = 0;
                     }
-                    
-                    System.Diagnostics.Debug.WriteLine($"✅ Matched query version '{matchedQuery.Version}' for DB '{connection.Name}'");
-                    
-                    try
+try
                     {
                         ResultStatusText.Text = $"⏳ Executing on {connection.Name} (Ver: {versionKey})...";
                         
@@ -408,14 +386,13 @@ namespace FACTOVA_QueryHelper.Controls
                         successCount++;
                         versionExecutionCount[versionKey]++;
                         
-                        System.Diagnostics.Debug.WriteLine($"✅ {connection.Name} (Ver: {versionKey}): {resultTable.Rows.Count} rows");
+                        
                     }
                     catch (Exception ex)
                     {
                         errors.Add($"❌ {connection.Name}: {ex.Message}");
                         errorCount++;
-                        System.Diagnostics.Debug.WriteLine($"❌ Error executing on {connection.Name}: {ex.Message}");
-                    }
+}
                 }
 
                 if (cancellationToken.IsCancellationRequested)
@@ -563,9 +540,7 @@ namespace FACTOVA_QueryHelper.Controls
             // 쌍이 있으면 비교 스타일 적용
             if (!string.IsNullOrEmpty(pairColumnName))
             {
-                System.Diagnostics.Debug.WriteLine($"🎨 Setting up comparison: {e.PropertyName} ↔ {pairColumnName}");
-                
-                // 🔥 DataTrigger를 사용하여 셀 배경색 설정
+// 🔥 DataTrigger를 사용하여 셀 배경색 설정
                 var cellStyle = new Style(typeof(DataGridCell));
                 cellStyle.Setters.Add(new Setter(DataGridCell.BackgroundProperty, Brushes.White));
                 // 🔥 선택 시에도 검정색 글자 유지

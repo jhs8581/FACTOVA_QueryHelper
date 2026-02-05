@@ -96,8 +96,7 @@ namespace FACTOVA_QueryHelper.Controls
             if (_sharedData != null)
             {
                 _sharedData.ConnectionInfosChanged += OnConnectionInfosChanged;
-                System.Diagnostics.Debug.WriteLine("✅ QueryManagementControl subscribed to ConnectionInfosChanged event");
-            }
+}
         }
         
         /// <summary>
@@ -105,9 +104,7 @@ namespace FACTOVA_QueryHelper.Controls
         /// </summary>
         private void OnConnectionInfosChanged(object? sender, EventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("🔄 QueryManagementControl: Refreshing connection infos...");
-            
-            // 접속 정보 목록 다시 로드
+// 접속 정보 목록 다시 로드
             LoadConnectionInfos();
             
             // 🔥 현재 표시 중인 모든 DataGrid의 콤보박스를 새로고침하기 위해
@@ -155,12 +152,11 @@ namespace FACTOVA_QueryHelper.Controls
                 _connectionInfos = new List<Models.ConnectionInfo> { placeholder };
                 _connectionInfos.AddRange(allConnections);
                 
-                System.Diagnostics.Debug.WriteLine($"접속 정보 {allConnections.Count}개 로드됨 (플레이스홀더 포함: {_connectionInfos.Count}개)");
+                
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"접속 정보 로드 실패: {ex.Message}");
-                _connectionInfos = new List<Models.ConnectionInfo>();
+_connectionInfos = new List<Models.ConnectionInfo>();
             }
         }
 
@@ -369,9 +365,7 @@ namespace FACTOVA_QueryHelper.Controls
         private void CreateQueryManagementUI(Grid parentGrid, string queryType, int tabIndex)
         {
             // 🔥 디버그 로그 추가
-            System.Diagnostics.Debug.WriteLine($"CreateQueryManagementUI called - tabIndex: {tabIndex}, queryType: '{queryType}'");
-            
-            parentGrid.Children.Clear();
+parentGrid.Children.Clear();
             parentGrid.RowDefinitions.Clear();
             
             parentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -783,9 +777,7 @@ namespace FACTOVA_QueryHelper.Controls
         private void AddDataGridColumns(DataGrid dataGrid, string queryType, int tabIndex)
         {
             // 🔥 디버그 로그 추가
-            System.Diagnostics.Debug.WriteLine($"AddDataGridColumns called - tabIndex: {tabIndex}, queryType: '{queryType}'");
-            
-            // ID 형식화
+// ID 형식화
             var idColumn = new DataGridTextColumn
             {
                 Header = "ID",
@@ -1048,9 +1040,7 @@ namespace FACTOVA_QueryHelper.Controls
             // 🔥 쿼리 실행 탭 전용 컬럼들 - 탭 인덱스 기준으로 변경
             if (tabIndex == 0) // 실시간 모니터링
             {
-                System.Diagnostics.Debug.WriteLine($"✅ Adding '쿼리 실행' specific columns for tabIndex: {tabIndex}");
-                
-                dataGrid.Columns.Add(new DataGridCheckBoxColumn
+dataGrid.Columns.Add(new DataGridCheckBoxColumn
                 {
                     Header = "실행",
                     Binding = new System.Windows.Data.Binding("EnabledFlagBool") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged },
@@ -1112,9 +1102,7 @@ namespace FACTOVA_QueryHelper.Controls
                     Binding = new System.Windows.Data.Binding("DefaultFlagBool") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged },
                     Width = 60
                 });
-                
-                System.Diagnostics.Debug.WriteLine($"✅ Total columns added: {dataGrid.Columns.Count}");
-            }
+}
             
             // 🔥 정보 조회, 비즈 조회, NERP 검증 탭에 사용여부 컬럼 추가 - 탭 인덱스 기준으로 변경
             if (tabIndex == 1 || tabIndex == 2 || tabIndex == 3) // 정보 조회, 비즈 조회, NERP 검증
@@ -1445,9 +1433,7 @@ namespace FACTOVA_QueryHelper.Controls
 
             {
                 // 예외 처리를 위한 디버그 출력
-                System.Diagnostics.Debug.WriteLine($"저장 중 오류: {ex.Message}");
-
-                // 사용자에게 오류 메시지 표시
+// 사용자에게 오류 메시지 표시
                 MessageBox.Show("저장 중 오류가 발생했습니다.\n\n" +
                                 $"오류 내용: {ex.Message}\n" +
                                 "상세한 오류 정보는 디버그 출력을 확인하세요.",
@@ -1941,8 +1927,7 @@ namespace FACTOVA_QueryHelper.Controls
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ FilterTextBox_TextChanged error: {ex.Message}");
-            }
+}
         }
 
         /// <summary>

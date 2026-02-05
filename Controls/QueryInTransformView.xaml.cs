@@ -57,13 +57,10 @@ namespace FACTOVA_QueryHelper.Controls
 
                 // 🔥 결과 출력
                 OutputTextBox.Text = result;
-
-                System.Diagnostics.Debug.WriteLine($"✅ Transformed {transformedValues.Count} values to IN condition format");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error in TransformButton_Click: {ex.Message}");
-                MessageBox.Show($"변환 중 오류가 발생했습니다:\n{ex.Message}", 
+MessageBox.Show($"변환 중 오류가 발생했습니다:\n{ex.Message}", 
                     "오류", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -77,13 +74,10 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 InputTextBox.Text = string.Empty;
                 OutputTextBox.Text = string.Empty;
-                
-                System.Diagnostics.Debug.WriteLine("✅ Input and output cleared");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error in ClearButton_Click: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -107,13 +101,10 @@ namespace FACTOVA_QueryHelper.Controls
                 
                 MessageBox.Show("클립보드에 복사되었습니다.", 
                     "복사 완료", MessageBoxButton.OK, MessageBoxImage.Information);
-                
-                System.Diagnostics.Debug.WriteLine($"✅ Copied {outputText.Length} characters to clipboard");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error in CopyButton_Click: {ex.Message}");
-                MessageBox.Show($"클립보드 복사 중 오류가 발생했습니다:\n{ex.Message}", 
+MessageBox.Show($"클립보드 복사 중 오류가 발생했습니다:\n{ex.Message}", 
                     "오류", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

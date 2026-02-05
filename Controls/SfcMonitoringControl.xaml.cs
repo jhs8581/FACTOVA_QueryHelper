@@ -149,16 +149,12 @@ namespace FACTOVA_QueryHelper.Controls
 
         private void LoadSfcExcelButton_Click(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("=== SFC Excel 로드 시작 ===");
-            System.Diagnostics.Debug.WriteLine($"Excel 파일 경로: {SfcExcelFilePathTextBox.Text}");
+
 
             try
             {
                 var equipmentList = ExcelManager.LoadSfcEquipmentList(SfcExcelFilePathTextBox.Text);
-                
-                System.Diagnostics.Debug.WriteLine($"로드된 설비 수: {equipmentList.Count}개");
-
-                _sfcEquipmentList.Clear();
+_sfcEquipmentList.Clear();
                 foreach (var item in equipmentList)
                 {
                     _sfcEquipmentList.Add(item);
@@ -167,13 +163,10 @@ namespace FACTOVA_QueryHelper.Controls
                 ExecuteSfcQueryButton.IsEnabled = _sfcEquipmentList.Count > 0;
                 ApplySfcFilter();
                 UpdateStatus($"{_sfcEquipmentList.Count}개의 설비 정보를 로드했습니다.", Colors.Green);
-                
-                System.Diagnostics.Debug.WriteLine("=== SFC Excel 로드 완료 ===");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"=== SFC Excel 로드 실패 ===");
-                System.Diagnostics.Debug.WriteLine($"오류 메시지: {ex.Message}");
+
 
                 var errorMessage = new StringBuilder();
                 errorMessage.AppendLine($"Excel 파일 로드 실패: {ex.Message}");

@@ -28,8 +28,7 @@ namespace FACTOVA_QueryHelper.Converters
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ RowColor 변환 실패: {value} - {ex.Message}");
-                return Brushes.Transparent;
+return Brushes.Transparent;
             }
         }
 

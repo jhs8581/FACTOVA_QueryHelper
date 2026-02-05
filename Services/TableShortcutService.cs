@@ -40,13 +40,10 @@ namespace FACTOVA_QueryHelper.Services
 
                 using var command = new SqliteCommand(createTableSql, connection);
                 command.ExecuteNonQuery();
-
-                System.Diagnostics.Debug.WriteLine("✅ TableShortcuts table initialized");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Failed to initialize TableShortcuts table: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -74,13 +71,10 @@ namespace FACTOVA_QueryHelper.Services
                         Description = reader.IsDBNull(2) ? string.Empty : reader.GetString(2)
                     });
                 }
-
-                System.Diagnostics.Debug.WriteLine($"✅ Loaded {shortcuts.Count} table shortcuts");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Failed to load table shortcuts: {ex.Message}");
-            }
+}
 
             return shortcuts;
         }
@@ -104,8 +98,7 @@ namespace FACTOVA_QueryHelper.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Failed to get table name for shortcut '{shortcut}': {ex.Message}");
-                return null;
+return null;
             }
         }
 

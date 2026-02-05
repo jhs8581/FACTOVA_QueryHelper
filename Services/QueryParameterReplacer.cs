@@ -53,9 +53,7 @@ namespace FACTOVA_QueryHelper.Services
                         result = result.Replace(parameterNameNoUnderscore, $"'{columnValue}'");
                     }
                 }
-
-                System.Diagnostics.Debug.WriteLine($"✅ Row-based parameter replacement completed. Replaced {table.Columns.Count} columns.");
-            }
+}
 
             return result;
         }
@@ -81,8 +79,7 @@ namespace FACTOVA_QueryHelper.Services
                     if (result.Contains(parameterName))
                     {
                         result = result.Replace(parameterName, $"'{param.Value}'");
-                        System.Diagnostics.Debug.WriteLine($"  - Replaced {parameterName} → '{param.Value}'");
-                    }
+}
                 }
             }
 
@@ -129,8 +126,6 @@ namespace FACTOVA_QueryHelper.Services
             result = result.Replace("@PARAM3", $"'{gmesParameters.Param3}'");
             result = result.Replace("@PARAM4", $"'{gmesParameters.Param4}'");
 
-            System.Diagnostics.Debug.WriteLine("✅ GMES standard parameters replaced");
-            System.Diagnostics.Debug.WriteLine($"   Factory: {gmesParameters.Factory}, Org: {gmesParameters.Organization}");
 
             return result;
         }

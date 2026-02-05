@@ -84,14 +84,11 @@ namespace FACTOVA_QueryHelper.Controls
                             var textToCopy = string.Join("\t", values);
                             Clipboard.SetText(textToCopy);
                             e.Handled = true;
-                            
-                            System.Diagnostics.Debug.WriteLine($"✅ 복사 완료: {textToCopy.Length}자");
-                        }
+}
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"복사 오류: {ex.Message}");
-                    }
+}
                 }
             };
             
@@ -183,8 +180,7 @@ namespace FACTOVA_QueryHelper.Controls
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ 더블클릭 시 선택된 행 정보 표시 오류: {ex.Message}");
-            }
+}
 
             // 전체 조회 버튼 클릭과 동일한 로직 실행
             try
@@ -295,24 +291,19 @@ namespace FACTOVA_QueryHelper.Controls
                 await System.Threading.Tasks.Task.Run(() =>
                 {
                     // 데이터 로드는 백그라운드에서
-                    System.Diagnostics.Debug.WriteLine("📊 Loading site infos...");
-                });
+});
                 
                 // UI 업데이트는 UI 스레드에서
                 LoadSiteInfos();
                 LoadInputValues();
                 LoadInfoQueries();
-                
-                System.Diagnostics.Debug.WriteLine("📊 Creating 20 dynamic grids...");
-                var sw = System.Diagnostics.Stopwatch.StartNew();
+var sw = System.Diagnostics.Stopwatch.StartNew();
                 
                 // 그리드를 항상 20개로 고정 생성
                 CreateDynamicGrids(20);
                 
                 sw.Stop();
-                System.Diagnostics.Debug.WriteLine($"✅ Grids created in {sw.ElapsedMilliseconds}ms");
-                
-                // 폰트 크기 적용
+// 폰트 크기 적용
                 ApplyFontSize();
                 UpdateFontSizeDisplay();
             }
@@ -330,15 +321,10 @@ namespace FACTOVA_QueryHelper.Controls
                 _sharedData.Settings.GmesWipLineId = selectedSite.WipLineId;
                 _sharedData.Settings.GmesEquipLineId = selectedSite.EquipLineId;
                 _sharedData.SaveSettingsCallback?.Invoke();
-                
-                System.Diagnostics.Debug.WriteLine("=== Initialize 완료 후 사업장 정보 재확인 ===");
-                System.Diagnostics.Debug.WriteLine($"선택된 사업장: {selectedSite.SiteName}");
-                System.Diagnostics.Debug.WriteLine($"Factory: {_sharedData.Settings.GmesFactory}");
-                System.Diagnostics.Debug.WriteLine($"Org: {_sharedData.Settings.GmesOrg}");
-                System.Diagnostics.Debug.WriteLine($"Facility: {_sharedData.Settings.GmesFacility}");
-                System.Diagnostics.Debug.WriteLine($"WipLineId: {_sharedData.Settings.GmesWipLineId}");
-                System.Diagnostics.Debug.WriteLine($"EquipLineId: {_sharedData.Settings.GmesEquipLineId}");
-                System.Diagnostics.Debug.WriteLine("============================================");
+
+
+
+
             }
         }
 
@@ -360,22 +346,15 @@ namespace FACTOVA_QueryHelper.Controls
                 if (sites.Count > 0)
                 {
                     SiteComboBox.SelectedItem = sites[0]; // 🔥 SelectedIndex 대신 SelectedItem 사용
-                    
-                    System.Diagnostics.Debug.WriteLine($"=== 사업장 로드 완료 ===");
-                    System.Diagnostics.Debug.WriteLine($"총 {sites.Count}개 사업장");
-                    System.Diagnostics.Debug.WriteLine($"선택된 사업장: {sites[0].SiteName}");
-                    System.Diagnostics.Debug.WriteLine($"  - Factory: {sites[0].RepresentativeFactory}");
-                    System.Diagnostics.Debug.WriteLine($"  - Org: {sites[0].Organization}");
-                    System.Diagnostics.Debug.WriteLine($"  - Facility: {sites[0].Facility}");
-                    System.Diagnostics.Debug.WriteLine($"  - WipLineId: {sites[0].WipLineId}");
-                    System.Diagnostics.Debug.WriteLine($"  - EquipLineId: {sites[0].EquipLineId}");
-                    System.Diagnostics.Debug.WriteLine("========================");
-                }
+
+
+
+
+}
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ 사업장 정보 로드 오류: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -390,14 +369,10 @@ namespace FACTOVA_QueryHelper.Controls
             if (_sharedData != null)
             {
                 // 🔥 디버깅: 변경 전 값 로깅
-                System.Diagnostics.Debug.WriteLine("=== 사업장 선택 변경 (변경 전) ===");
-                System.Diagnostics.Debug.WriteLine($"이전 Factory: {_sharedData.Settings.GmesFactory}");
-                System.Diagnostics.Debug.WriteLine($"이전 Org: {_sharedData.Settings.GmesOrg}");
-                System.Diagnostics.Debug.WriteLine($"이전 Facility: {_sharedData.Settings.GmesFacility}");
-                System.Diagnostics.Debug.WriteLine($"이전 WipLineId: {_sharedData.Settings.GmesWipLineId}");
-                System.Diagnostics.Debug.WriteLine($"이전 EquipLineId: {_sharedData.Settings.GmesEquipLineId}");
                 
-                _sharedData.Settings.GmesFactory = selectedSite.RepresentativeFactory;
+
+
+_sharedData.Settings.GmesFactory = selectedSite.RepresentativeFactory;
                 _sharedData.Settings.GmesOrg = selectedSite.Organization;
                 _sharedData.Settings.GmesFacility = selectedSite.Facility;
                 _sharedData.Settings.GmesWipLineId = selectedSite.WipLineId;
@@ -405,15 +380,11 @@ namespace FACTOVA_QueryHelper.Controls
                 _sharedData.SaveSettingsCallback?.Invoke();
                 
                 // 🔥 디버깅: 변경 후 선택된 사업장 정보 로깅
-                System.Diagnostics.Debug.WriteLine("=== 사업장 선택 변경 (변경 후) ===");
-                System.Diagnostics.Debug.WriteLine($"사업장명: {selectedSite.SiteName}");
-                System.Diagnostics.Debug.WriteLine($"신규 Factory: {_sharedData.Settings.GmesFactory}");
-                System.Diagnostics.Debug.WriteLine($"신규 Org: {_sharedData.Settings.GmesOrg}");
-                System.Diagnostics.Debug.WriteLine($"신규 Facility: {_sharedData.Settings.GmesFacility}");
-                System.Diagnostics.Debug.WriteLine($"신규 WipLineId: {_sharedData.Settings.GmesWipLineId}");
-                System.Diagnostics.Debug.WriteLine($"신규 EquipLineId: {_sharedData.Settings.GmesEquipLineId}");
-                System.Diagnostics.Debug.WriteLine("===================================");
-            }
+                
+
+
+
+}
         }
 
         private void LoadInputValues()
@@ -524,15 +495,13 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     // 동적 그리드 생성 및 쿼리 자동 바인딩 (최대 20개)
                     GenerateDynamicGridsWithQueries(detailQueries);
-                    
-                    System.Diagnostics.Debug.WriteLine($"✅ 그룹명 '{queryName}'에 대한 {detailQueries.Count}개의 상세 쿼리가 자동 바인딩되었습니다.");
-                }
+}
                 else
                 {
                     // 상세 쿼리가 없으면 동적 그리드를 20개 빈 상태로 재생성
                     CreateDynamicGrids(20);
                     
-                    System.Diagnostics.Debug.WriteLine($"⚠️ 그룹명 '{queryName}'에 대한 상세 쿼리(순번 1 이상)가 없습니다. 빈 그리드 20개를 생성했습니다.");
+                    
                 }
             }
             catch (Exception ex)
@@ -649,11 +618,11 @@ namespace FACTOVA_QueryHelper.Controls
                     if (matchingQuery != null)
                     {
                         gridInfo.QueryComboBox.SelectedItem = matchingQuery;
-                        System.Diagnostics.Debug.WriteLine($"✅ 그리드 {gridInfo.Index}: '{query.QueryBizName}' (순번 {query.OrderNumber}) 자동 선택됨");
+                        
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"❌ 그리드 {gridInfo.Index}: '{query.QueryName}' (비즈명: {query.BizName}, 순번: {query.OrderNumber}) 쿼리를 찾을 수 없습니다.");
+                        
                     }
                 }
             }
@@ -874,16 +843,11 @@ namespace FACTOVA_QueryHelper.Controls
                             var textToCopy = string.Join(Environment.NewLine, rows);
                             Clipboard.SetText(textToCopy);
                             e.Handled = true;
-
-
-
-                            System.Diagnostics.Debug.WriteLine($"✅ 동적 그리드 복사 완료: {rows.Count}행, {textToCopy.Length}자");
-                        }
+}
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"복사 오류: {ex.Message}");
-                    }
+}
                 }
             };
 
@@ -1385,8 +1349,7 @@ namespace FACTOVA_QueryHelper.Controls
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ 조회 결과 0건 - 그리드 초기화됨");
-                }
+}
             }
             catch (Exception ex)
             {
@@ -1504,8 +1467,7 @@ namespace FACTOVA_QueryHelper.Controls
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ 조회 결과 0건 - 그리드 초기화됨");
-                }
+}
             }
             catch (Exception ex)
             {
@@ -1561,15 +1523,10 @@ namespace FACTOVA_QueryHelper.Controls
             string equipLineId = _sharedData?.Settings.GmesEquipLineId ?? "";
 
             // 🔥 디버깅: 쿼리 파라미터 치환 전 값 확인
-            System.Diagnostics.Debug.WriteLine("=== ReplaceQueryParameters 실행 ===");
-            System.Diagnostics.Debug.WriteLine($"Factory: '{factory}'");
-            System.Diagnostics.Debug.WriteLine($"Org: '{org}'");
-            System.Diagnostics.Debug.WriteLine($"Facility: '{facility}'");
-            System.Diagnostics.Debug.WriteLine($"WipLineId: '{wipLineId}'");
-            System.Diagnostics.Debug.WriteLine($"EquipLineId: '{equipLineId}'");
-            System.Diagnostics.Debug.WriteLine("=====================================");
 
-            // 🔥 DB Link 보호: 파라미터만 치환 (TABLE@DBLINK 형식은 치환하지 않음)
+
+
+// 🔥 DB Link 보호: 파라미터만 치환 (TABLE@DBLINK 형식은 치환하지 않음)
             result = SafeReplaceParameter(result, "@REPRESENTATIVE_FACTORY_CODE", $"'{factory}'");
             result = SafeReplaceParameter(result, "@ORGANIZATION_ID", $"'{org}'");
             result = SafeReplaceParameter(result, "@PRODUCTION_YMD_START", $"'{DateFromPicker.SelectedDate?.ToString("yyyyMMdd") ?? ""}'");
@@ -1804,8 +1761,7 @@ namespace FACTOVA_QueryHelper.Controls
                     }
                     catch
                     {
-                        System.Diagnostics.Debug.WriteLine($"⚠️ Invalid BACKGROUND_COLOR: {bgColor}");
-                    }
+}
                 }
                 
                 // 🔥 FOREGROUND_COLOR 컬럼 확인 (원본 또는 이스케이프된 이름)
@@ -1819,8 +1775,7 @@ namespace FACTOVA_QueryHelper.Controls
                     }
                     catch
                     {
-                        System.Diagnostics.Debug.WriteLine($"⚠️ Invalid FOREGROUND_COLOR: {fgColor}");
-                    }
+}
                 }
                 
                 // 🔥 CHK 컬럼 처리 (기존 로직 - BACKGROUND/FOREGROUND가 없을 때만)
@@ -2182,8 +2137,7 @@ namespace FACTOVA_QueryHelper.Controls
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"GetCellValue 오류: {ex.Message}");
-            }
+}
             
             return "";
         }

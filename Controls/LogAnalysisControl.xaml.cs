@@ -124,15 +124,10 @@ namespace FACTOVA_QueryHelper.Controls
 
             try
             {
-                System.Diagnostics.Debug.WriteLine("=== DB에서 쿼리 로드 시작 ===");
-                
-                var allQueries = _database.GetAllQueries();
+var allQueries = _database.GetAllQueries();
                 // "쿼리 실행" 구분만 필터링
                 _sharedData.LoadedQueries = allQueries.Where(q => q.QueryType == "쿼리 실행").ToList();
-                
-                System.Diagnostics.Debug.WriteLine($"로드된 쿼리 수: {_sharedData.LoadedQueries.Count}개");
-                
-                // 쿼리 필터 콤보박스 초기화
+// 쿼리 필터 콤보박스 초기화
                 InitializeQueryFilterComboBox();
 
                 LoadedQueriesTextBlock.Text = $"{_sharedData.LoadedQueries.Count}개";
@@ -143,12 +138,10 @@ namespace FACTOVA_QueryHelper.Controls
                 ToggleAutoQueryButton.IsEnabled = _sharedData.LoadedQueries.Count > 0;
 
                 UpdateStatus($"데이터베이스에서 {_sharedData.LoadedQueries.Count}개의 쿼리를 로드했습니다.", Colors.Green);
-                System.Diagnostics.Debug.WriteLine("=== DB에서 쿼리 로드 완료 ===");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"=== DB 로드 실패 ===");
-                System.Diagnostics.Debug.WriteLine($"오류: {ex.Message}");
+
                 
                 MessageBox.Show($"데이터베이스 로드 실패:\n{ex.Message}", "오류",
                     MessageBoxButton.OK, MessageBoxImage.Error);
@@ -589,9 +582,7 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 ToggleAutoQueryButton.Content = "실행";
             }
-
-            System.Diagnostics.Debug.WriteLine($"자동 실행 활성화 설정 변경: {_sharedData.Settings.EnableAutoExecution}");
-        }
+}
 
         private void StopOnNotificationCheckBox_Changed(object sender, RoutedEventArgs e)
         {
@@ -600,9 +591,7 @@ namespace FACTOVA_QueryHelper.Controls
             // 체크박스 상태를 설정에 저장
             _sharedData.Settings.StopOnNotification = StopOnNotificationCheckBox.IsChecked ?? true;
             _sharedData.SaveSettingsCallback?.Invoke();
-
-            System.Diagnostics.Debug.WriteLine($"알림 시 자동 실행 중지 설정 변경: {_sharedData.Settings.StopOnNotification}");
-        }
+}
 
         private void StartAutoQuery(int intervalSeconds)
         {

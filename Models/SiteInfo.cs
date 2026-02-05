@@ -115,16 +115,12 @@
                 
                 if (mapping != null && mapping.TryGetValue(version, out var tnsName))
                 {
-                    System.Diagnostics.Debug.WriteLine($"✅ 사업장 '{SiteName}' 버전 {version} → TNS: {tnsName}");
-                    return tnsName;
+return tnsName;
                 }
-                
-                System.Diagnostics.Debug.WriteLine($"⚠️ 사업장 '{SiteName}'에 버전 {version}에 대한 TNS 매핑 없음");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ TNS 매핑 파싱 오류: {ex.Message}");
-            }
+}
             
             return null;
         }

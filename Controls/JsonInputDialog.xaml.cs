@@ -52,16 +52,14 @@ namespace FACTOVA_QueryHelper.Controls
 
                 if (ParsedData != null && ParsedData.Count > 0)
                 {
-                    System.Diagnostics.Debug.WriteLine($"✅ Data parsed successfully: {ParsedData.Count} items");
-                    DialogResult = true;
+DialogResult = true;
                     Close();
                 }
             }
             catch (Exception ex)
             {
                 StatusText.Text = $"❌ 오류:\n{ex.Message}";
-                System.Diagnostics.Debug.WriteLine($"❌ Error: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -78,15 +76,12 @@ namespace FACTOVA_QueryHelper.Controls
 
                 // 모든 요소를 순회하면서 텍스트 값이 있는 요소만 추출
                 TraverseXmlNodes(xmlDoc.DocumentElement);
-
-                System.Diagnostics.Debug.WriteLine($"✅ XML parsed: {ParsedData.Count} variables");
-                StatusText.Text = "";
+StatusText.Text = "";
             }
             catch (XmlException ex)
             {
                 StatusText.Text = $"❌ XML 파싱 오류:\n{ex.Message}";
-                System.Diagnostics.Debug.WriteLine($"❌ XML parsing error: {ex.Message}");
-                throw;
+throw;
             }
         }
 
@@ -108,11 +103,11 @@ namespace FACTOVA_QueryHelper.Controls
                 if (!ParsedData!.ContainsKey(variableName))
                 {
                     ParsedData[variableName] = value;
-                    System.Diagnostics.Debug.WriteLine($"  📌 Parsed (XML): {variableName} = {value}");
+                    
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"  ⚠️ Duplicate ignored (XML): {variableName} = {value}");
+                    
                 }
             }
 
@@ -155,17 +150,14 @@ namespace FACTOVA_QueryHelper.Controls
                         : property.Value.ToString();
                     
                     ParsedData[key] = value;
-                    System.Diagnostics.Debug.WriteLine($"  📌 Parsed (JSON): {key} = {value}");
+                    
                 }
-
-                System.Diagnostics.Debug.WriteLine($"✅ JSON parsed: {ParsedData.Count} variables");
-                StatusText.Text = "";
+StatusText.Text = "";
             }
             catch (JsonException ex)
             {
                 StatusText.Text = $"❌ JSON 파싱 오류:\n{ex.Message}";
-                System.Diagnostics.Debug.WriteLine($"❌ JSON parsing error: {ex.Message}");
-                throw;
+throw;
             }
         }
 

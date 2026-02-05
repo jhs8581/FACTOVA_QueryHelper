@@ -66,13 +66,11 @@ namespace FACTOVA_QueryHelper.Services
                 var alterCommand = connection.CreateCommand();
                 alterCommand.CommandText = "ALTER TABLE Connections ADD COLUMN Org TEXT";
                 alterCommand.ExecuteNonQuery();
-                System.Diagnostics.Debug.WriteLine("✅ Org 컬럼 추가 완료");
-            }
+}
             catch
             {
                 // 컬럼이 이미 존재하면 무시
-                System.Diagnostics.Debug.WriteLine("ℹ️ Org 컬럼이 이미 존재합니다");
-            }
+}
             
             // 🔥 기존 테이블에 Version 컬럼이 없으면 추가 (마이그레이션)
             try
@@ -80,13 +78,11 @@ namespace FACTOVA_QueryHelper.Services
                 var alterCommand = connection.CreateCommand();
                 alterCommand.CommandText = "ALTER TABLE Connections ADD COLUMN Version TEXT";
                 alterCommand.ExecuteNonQuery();
-                System.Diagnostics.Debug.WriteLine("✅ Version 컬럼 추가 완료");
-            }
+}
             catch
             {
                 // 컬럼이 이미 존재하면 무시
-                System.Diagnostics.Debug.WriteLine("ℹ️ Version 컬럼이 이미 존재합니다");
-            }
+}
         }
 
         /// <summary>

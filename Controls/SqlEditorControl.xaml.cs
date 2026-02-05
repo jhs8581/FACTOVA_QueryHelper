@@ -99,15 +99,13 @@ namespace FACTOVA_QueryHelper.Controls
                         {
                             var highlightingDefinition = HighlightingLoader.Load(reader, HighlightingManager.Instance);
                             SqlTextEditor.SyntaxHighlighting = highlightingDefinition;
-                            System.Diagnostics.Debug.WriteLine("✅ SQL Syntax Highlighting loaded successfully");
-                        }
+}
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Failed to load SQL syntax highlighting: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -134,7 +132,7 @@ namespace FACTOVA_QueryHelper.Controls
         {
             var key = alias.ToUpper();
             _externalTableColumnsCache[key] = columns;
-            System.Diagnostics.Debug.WriteLine($"🔧 [External] Registered columns for alias '{key}': {columns.Count} columns (for Single/Multi Join buttons only)");
+            
         }
 
         /// <summary>
@@ -143,8 +141,7 @@ namespace FACTOVA_QueryHelper.Controls
         public void RegisterTableNames(List<string> tableNames)
         {
             _tableNamesCache = tableNames;
-            System.Diagnostics.Debug.WriteLine($"🔧 Registered {tableNames.Count} table names for autocomplete");
-        }
+}
         
         /// <summary>
         /// 🔥 단축어 서비스 초기화 (DB 경로 지정)
@@ -153,16 +150,12 @@ namespace FACTOVA_QueryHelper.Controls
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🔍 InitializeShortcutService called with DB: {databasePath}");
-                
-                _shortcutService = new TableShortcutService(databasePath);
+_shortcutService = new TableShortcutService(databasePath);
                 LoadShortcuts();
-                System.Diagnostics.Debug.WriteLine($"✅ TableShortcutService initialized with DB: {databasePath}");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Failed to initialize shortcut service: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"   Stack: {ex.StackTrace}");
+
             }
         }
         
@@ -175,35 +168,35 @@ namespace FACTOVA_QueryHelper.Controls
             {
                 if (_shortcutService == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("⚠️ LoadShortcuts: _shortcutService is null");
-                    return;
+return;
                 }
 
                 _tableShortcuts.Clear();
                 var shortcuts = _shortcutService.GetAll();
-                
-                System.Diagnostics.Debug.WriteLine($"🔍 LoadShortcuts: Retrieved {shortcuts.Count} shortcuts from DB");
-                
-                foreach (var shortcut in shortcuts)
+foreach (var shortcut in shortcuts)
                 {
                     _tableShortcuts[shortcut.Shortcut.ToUpper()] = shortcut.FullTableName.ToUpper();
-                    System.Diagnostics.Debug.WriteLine($"   📌 Added: {shortcut.Shortcut} → {shortcut.FullTableName}");
-                }
-
-                System.Diagnostics.Debug.WriteLine($"✅ Loaded {_tableShortcuts.Count} table shortcuts into cache");
-            }
+}
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Failed to load shortcuts: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"   Stack: {ex.StackTrace}");
+
             }
         }
         
         /// <summary>
         /// 현재 커서 위치의 쿼리만 추출 (세미콜론으로 구분)
+        /// 🔥 선택된 텍스트가 있으면 선택된 텍스트만 반환
         /// </summary>
         public string GetCurrentQuery()
         {
+            // 🔥 선택된 텍스트가 있으면 선택된 텍스트만 반환
+            var selectedText = SqlTextEditor.SelectedText;
+            if (!string.IsNullOrWhiteSpace(selectedText))
+            {
+return selectedText.Trim();
+            }
+
             var fullText = SqlTextEditor.Text;
             var caretOffset = SqlTextEditor.CaretOffset;
 
@@ -256,12 +249,9 @@ namespace FACTOVA_QueryHelper.Controls
                 if (uniqueVariables.Add(varName))
                 {
                     variables.Add(varName);
-                    System.Diagnostics.Debug.WriteLine($"  📌 Found bind variable: {varName}");
-                }
+}
             }
-
-            System.Diagnostics.Debug.WriteLine($"✅ Extracted {variables.Count} bind variables");
-            return variables;
+return variables;
         }
 
         #region AvalonEdit 이벤트 핸들러
@@ -289,8 +279,7 @@ namespace FACTOVA_QueryHelper.Controls
                 var currentQuery = GetCurrentQuery();
                 
                 // 🔥 디버그 로그: 어떤 쿼리가 파싱되는지 확인
-                System.Diagnostics.Debug.WriteLine($"📍 Caret at position {caretOffset}");
-                System.Diagnostics.Debug.WriteLine($"📝 Current query being parsed: {currentQuery.Substring(0, Math.Min(100, currentQuery.Length))}...");
+
                 
                 ParseQueryForTableAliases(currentQuery);
 
@@ -307,9 +296,7 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     var alias = currentWord.Substring(0, dotIndex).ToUpper();
                     var filterText = dotIndex < currentWord.Length - 1 ? currentWord.Substring(dotIndex + 1).ToUpper() : "";
-                    
-                    System.Diagnostics.Debug.WriteLine($"🔍 Looking for alias '{alias}' with filter '{filterText}'");
-                    System.Diagnostics.Debug.WriteLine($"   Cached aliases: {string.Join(", ", _queryParsedAliases.Keys)}");
+
                     
                     // 🔥 쿼리에서 파싱한 alias인지 확인
                     if (_queryColumnsCache.ContainsKey(alias))
@@ -326,8 +313,7 @@ namespace FACTOVA_QueryHelper.Controls
                             AutocompleteHeaderText.Text = $"Columns for '{alias}' ({columns.Count} items)";
                             AutocompleteListBox.ItemsSource = columns;
                             ShowPopup();
-                            System.Diagnostics.Debug.WriteLine($"✅ Showing {columns.Count} columns for alias '{alias}'");
-                            return;
+return;
                         }
                     }
                 }
@@ -356,8 +342,7 @@ namespace FACTOVA_QueryHelper.Controls
                         AutocompleteHeaderText.Text = $"Shortcuts ({matchedShortcuts.Count} items)";
                         AutocompleteListBox.ItemsSource = matchedShortcuts;
                         ShowPopup();
-                        System.Diagnostics.Debug.WriteLine($"✅ Showing {matchedShortcuts.Count} shortcut matches for '{filterText}'");
-                        return;
+return;
                     }
                     
                     // 🔥 우선순위 2: 테이블명 검색
@@ -397,12 +382,12 @@ namespace FACTOVA_QueryHelper.Controls
                         AutocompleteHeaderText.Text = $"Tables ({matchedTables.Count} items)";
                         AutocompleteListBox.ItemsSource = matchedTables;
                         ShowPopup();
-                        System.Diagnostics.Debug.WriteLine($"✅ Showing {matchedTables.Count} tables for '{filterText}' (total cache: {_tableNamesCache.Count})");
+                        
                         return;
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"⚠️ No tables matched for '{filterText}' (total cache: {_tableNamesCache.Count})");
+                        
                     }
                 }
               
@@ -410,8 +395,7 @@ namespace FACTOVA_QueryHelper.Controls
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error in SqlTextEditor_TextChanged: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -472,8 +456,7 @@ namespace FACTOVA_QueryHelper.Controls
         /// </summary>
         private void SqlTextEditor_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine($"🖱️ Right-click - Selected: '{SqlTextEditor.SelectedText}'");
-        }
+}
 
         #endregion
 
@@ -494,10 +477,7 @@ namespace FACTOVA_QueryHelper.Controls
                 _queryParsedAliases.Clear();
                 // 🔥 컬럼 캐시도 초기화 (이전 쿼리의 alias와 혼동 방지)
                 _queryColumnsCache.Clear();
-
-                System.Diagnostics.Debug.WriteLine($"🔄 Cleared query cache, parsing new query");
-
-                var patterns = new[]
+var patterns = new[]
                 {
                     @"\bFROM\s+(\w+)\s+(?:AS\s+)?(\w+)",
                     @",\s*(\w+)\s+(?:AS\s+)?(\w+)",
@@ -523,20 +503,17 @@ namespace FACTOVA_QueryHelper.Controls
 
                             // 🔥 쿼리 내부 alias 매핑 저장
                             _queryParsedAliases[alias] = tableName;
-                            System.Diagnostics.Debug.WriteLine($"   📌 Found: {tableName} AS {alias}");
-
-                            // 🔥 쿼리 캐시에 컬럼 로드 (alias 덮어쓰기)
+// 🔥 쿼리 캐시에 컬럼 로드 (alias 덮어쓰기)
                             LoadColumnsForQueryAlias(alias, tableName);
                         }
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"✅ Parsed aliases: {string.Join(", ", _queryParsedAliases.Select(kvp => $"{kvp.Key}→{kvp.Value}"))}");
+                
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error parsing query for aliases: {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -546,17 +523,14 @@ namespace FACTOVA_QueryHelper.Controls
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🔍 [Query] Loading columns for alias '{alias}' -> table '{tableName}'");
-
-                // 🔥 오프라인 모드 우선 (캐시 서비스)
+// 🔥 오프라인 모드 우선 (캐시 서비스)
                 if (_cacheService != null)
                 {
                     var columns = _cacheService.GetTableColumns(tableName);
                     if (columns != null && columns.Count > 0)
                     {
                         _queryColumnsCache[alias] = columns;
-                        System.Diagnostics.Debug.WriteLine($"✅ [Query] Loaded {columns.Count} columns from CACHE for alias '{alias}'");
-                        return;
+return;
                     }
                 }
 
@@ -569,14 +543,12 @@ namespace FACTOVA_QueryHelper.Controls
                     if (columns != null && columns.Count > 0)
                     {
                         _queryColumnsCache[alias] = columns;
-                        System.Diagnostics.Debug.WriteLine($"✅ [Query] Loaded {columns.Count} columns from DB for alias '{alias}'");
-                    }
+}
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"⚠️ Could not load columns for query alias '{alias}': {ex.Message}");
-            }
+}
         }
 
         /// <summary>
@@ -639,8 +611,7 @@ namespace FACTOVA_QueryHelper.Controls
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error in InsertAutocompleteText: {ex.Message}");
-            }
+}
         }
 
         #endregion
@@ -732,13 +703,10 @@ namespace FACTOVA_QueryHelper.Controls
                 SqlTextEditor.Document.Replace(selectionStart, selectionLength, transformedText);
                 SqlTextEditor.Select(selectionStart, transformedText.Length);
                 SqlTextEditor.Focus();
-                
-                System.Diagnostics.Debug.WriteLine($"✅ IN 조건 변환 완료: {transformedValues.Count}개 값");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error in InConditionTransform_Click: {ex.Message}");
-                MessageBox.Show($"IN 조건 변환 중 오류가 발생했습니다:\n{ex.Message}",
+MessageBox.Show($"IN 조건 변환 중 오류가 발생했습니다:\n{ex.Message}",
                     "오류", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -779,13 +747,10 @@ namespace FACTOVA_QueryHelper.Controls
                 SqlTextEditor.Document.Replace(selectionStart, selectionLength, transformedText);
                 SqlTextEditor.Select(selectionStart, transformedText.Length);
                 SqlTextEditor.Focus();
-                
-                System.Diagnostics.Debug.WriteLine($"✅ MULTI_ITEM 변환 완료: {variableName}");
-            }
+}
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error in MultiItemTransform_Click: {ex.Message}");
-                MessageBox.Show($"MULTI_ITEM 변환 중 오류가 발생했습니다:\n{ex.Message}",
+MessageBox.Show($"MULTI_ITEM 변환 중 오류가 발생했습니다:\n{ex.Message}",
                     "오류", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

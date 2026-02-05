@@ -38,22 +38,18 @@ namespace FACTOVA_QueryHelper.Services
             {
                 if (!File.Exists(SettingsFilePath))
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ Settings file not found: {SettingsFilePath}");
-                    return new UserSettings();
+return new UserSettings();
                 }
 
                 var json = File.ReadAllText(SettingsFilePath);
                 var settings = JsonSerializer.Deserialize<UserSettings>(json);
 
-                System.Diagnostics.Debug.WriteLine($"✅ Settings loaded from: {SettingsFilePath}");
-                System.Diagnostics.Debug.WriteLine($"   TnsFilePath: {settings?.TnsFilePath}");
 
                 return settings ?? new UserSettings();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error loading settings: {ex.Message}");
-                return new UserSettings();
+return new UserSettings();
             }
         }
 
@@ -68,8 +64,7 @@ namespace FACTOVA_QueryHelper.Services
                 if (!Directory.Exists(SettingsDirectory))
                 {
                     Directory.CreateDirectory(SettingsDirectory);
-                    System.Diagnostics.Debug.WriteLine($"📁 Created settings directory: {SettingsDirectory}");
-                }
+}
 
                 var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions
                 {
@@ -78,13 +73,10 @@ namespace FACTOVA_QueryHelper.Services
 
                 File.WriteAllText(SettingsFilePath, json);
 
-                System.Diagnostics.Debug.WriteLine($"✅ Settings saved to: {SettingsFilePath}");
-                System.Diagnostics.Debug.WriteLine($"   TnsFilePath: {settings.TnsFilePath}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Error saving settings: {ex.Message}");
-                throw;
+throw;
             }
         }
 
