@@ -135,7 +135,7 @@
                               VerticalContentAlignment="Center"
                               IsEditable="True"
                               IsReadOnly="True"
-                              Margin="0,0,20,5"
+                              Margin="0,0,10,5"
                               DropDownClosed="QueryFilterComboBox_DropDownClosed">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
@@ -146,6 +146,32 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
+                    
+                    <Button x:Name="SelectAllQueriesButton" 
+                            Content="✓ 전체선택" 
+                            Width="80" Height="32"
+                            Click="SelectAllQueriesButton_Click"
+                            Background="#FF28A745" 
+                            Foreground="White"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            FontWeight="SemiBold"
+                            FontSize="11"
+                            ToolTip="모든 쿼리 선택"
+                            Margin="0,0,5,5"/>
+                    
+                    <Button x:Name="DeselectAllQueriesButton" 
+                            Content="✗ 전체해제" 
+                            Width="80" Height="32"
+                            Click="DeselectAllQueriesButton_Click"
+                            Background="#FFDC3545" 
+                            Foreground="White"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            FontWeight="SemiBold"
+                            FontSize="11"
+                            ToolTip="모든 쿼리 선택 해제"
+                            Margin="0,0,20,5"/>
 
                     <TextBlock Text="디폴트 폼:" 
                                VerticalAlignment="Center" 

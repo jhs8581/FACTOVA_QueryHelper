@@ -162,14 +162,7 @@ var allQueries = _database.GetAllQueries();
 
             _sharedData.QueryFilterItems.Clear();
 
-            // "전체" 항목 추가 (기본값: 체크 해제)
-            _sharedData.QueryFilterItems.Add(new CheckableComboBoxItem 
-            { 
-                Text = "전체", 
-                IsChecked = false 
-            });
-
-            // ID 순으로 정렬하여 각 쿼리를 항목으로 추가
+            // ID 순으로 정렬하여 각 쿼리를 항목으로 추가 ("전체" 항목 제거)
             var sortedQueries = _sharedData.LoadedQueries.OrderBy(q => q.RowNumber).ToList();
             
             foreach (var query in sortedQueries)
@@ -260,35 +253,20 @@ var allQueries = _database.GetAllQueries();
                 return;
             }
 
-            var checkedItems = _sharedData.QueryFilterItems.Where(item => item.IsChecked && item.Text != "전체").ToList();
-            int totalQueries = _sharedData.QueryFilterItems.Count - 1;
+            var checkedItems = _sharedData.QueryFilterItems.Where(item => item.IsChecked).ToList();
+            int totalQueries = _sharedData.QueryFilterItems.Count;
             
             if (checkedItems.Count == 0)
             {
                 QueryFilterComboBox.Text = "선택 안 됨";
-                var allItem = _sharedData.QueryFilterItems.FirstOrDefault(item => item.Text == "전체");
-                if (allItem != null && allItem.IsChecked)
-                {
-                    allItem.IsChecked = false;
-                }
             }
             else if (checkedItems.Count == totalQueries)
             {
                 QueryFilterComboBox.Text = "전체";
-                var allItem = _sharedData.QueryFilterItems.FirstOrDefault(item => item.Text == "전체");
-                if (allItem != null && !allItem.IsChecked)
-                {
-                    allItem.IsChecked = true;
-                }
             }
             else
             {
                 QueryFilterComboBox.Text = string.Join(", ", checkedItems.Select(item => item.Text));
-                var allItem = _sharedData.QueryFilterItems.FirstOrDefault(item => item.Text == "전체");
-                if (allItem != null && allItem.IsChecked)
-                {
-                    allItem.IsChecked = false;
-                }
             }
         }
 
@@ -306,35 +284,43 @@ var allQueries = _database.GetAllQueries();
             UpdateQueryFilterComboBoxText();
         }
 
+        /// <summary>
+        /// 전체선택 버튼 클릭 이벤트
+        /// </summary>
+        private void SelectAllQueriesButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_sharedData == null || _sharedData.QueryFilterItems == null) return;
+
+            // 모든 항목 체크
+            foreach (var item in _sharedData.QueryFilterItems)
+            {
+                item.IsChecked = true;
+            }
+
+            UpdateQueryFilterComboBoxText();
+            UpdateStatus("모든 쿼리가 선택되었습니다.", Colors.Green);
+        }
+
+        /// <summary>
+        /// 전체해제 버튼 클릭 이벤트
+        /// </summary>
+        private void DeselectAllQueriesButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_sharedData == null || _sharedData.QueryFilterItems == null) return;
+
+            // 모든 항목 해제
+            foreach (var item in _sharedData.QueryFilterItems)
+            {
+                item.IsChecked = false;
+            }
+
+            UpdateQueryFilterComboBoxText();
+            UpdateStatus("모든 쿼리 선택이 해제되었습니다.", Colors.Orange);
+        }
+
         private void HandleQueryFilterCheckBoxChanged(CheckableComboBoxItem changedItem)
         {
             if (_sharedData == null) return;
-
-            if (changedItem.Text == "전체")
-            {
-                foreach (var item in _sharedData.QueryFilterItems.Where(i => i.Text != "전체"))
-                {
-                    item.IsChecked = changedItem.IsChecked;
-                }
-            }
-            else
-            {
-                var allItem = _sharedData.QueryFilterItems.FirstOrDefault(item => item.Text == "전체");
-                if (allItem != null)
-                {
-                    int totalItems = _sharedData.QueryFilterItems.Count - 1;
-                    int checkedItems = _sharedData.QueryFilterItems.Count(item => item.IsChecked && item.Text != "전체");
-                    
-                    if (checkedItems == totalItems && !allItem.IsChecked)
-                    {
-                        allItem.IsChecked = true;
-                    }
-                    else if (checkedItems < totalItems && allItem.IsChecked)
-                    {
-                        allItem.IsChecked = false;
-                    }
-                }
-            }
 
             UpdateQueryFilterComboBoxText();
         }
@@ -350,7 +336,7 @@ var allQueries = _database.GetAllQueries();
             }
 
             var selectedQueryNames = _sharedData.QueryFilterItems
-                .Where(item => item.IsChecked && item.Text != "전체")
+                .Where(item => item.IsChecked)
                 .Select(item => item.Text)
                 .ToList();
 
