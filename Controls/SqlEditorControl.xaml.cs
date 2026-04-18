@@ -231,6 +231,7 @@ return selectedText.Trim();
 
         /// <summary>
         /// 쿼리에서 바인드 변수 추출 (& 또는 @ 문자 인식)
+        /// 주석(/* ... */, -- ...) 내부는 제외
         /// </summary>
         public List<string> ExtractBindVariables(string query)
         {
@@ -238,9 +239,12 @@ return selectedText.Trim();
             if (string.IsNullOrWhiteSpace(query))
                 return variables;
 
+            // 🔥 주석 제거 후 바인드 변수 추출
+            var queryWithoutComments = RemoveSqlComments(query);
+
             // 🔥 & 또는 @ 문자 뒤의 변수명 추출
             var regex = new System.Text.RegularExpressions.Regex(@"[&@](\w+)");
-            var matches = regex.Matches(query);
+            var matches = regex.Matches(queryWithoutComments);
 
             var uniqueVariables = new HashSet<string>();
             foreach (System.Text.RegularExpressions.Match match in matches)
@@ -249,9 +253,25 @@ return selectedText.Trim();
                 if (uniqueVariables.Add(varName))
                 {
                     variables.Add(varName);
-}
+                }
             }
-return variables;
+            return variables;
+        }
+
+        /// <summary>
+        /// SQL 주석(/* ... */ 블록 주석, -- 라인 주석)을 공백으로 치환
+        /// </summary>
+        private static string RemoveSqlComments(string sql)
+        {
+            // /* ... */ 블록 주석 제거 → 줄바꿈은 유지(위치 보존)
+            var result = System.Text.RegularExpressions.Regex.Replace(
+                sql, @"/\*.*?\*/", m => new string(' ', m.Length), System.Text.RegularExpressions.RegexOptions.Singleline);
+
+            // -- 라인 주석 제거
+            result = System.Text.RegularExpressions.Regex.Replace(
+                result, @"--[^\r\n]*", m => new string(' ', m.Length));
+
+            return result;
         }
 
         #region AvalonEdit 이벤트 핸들러

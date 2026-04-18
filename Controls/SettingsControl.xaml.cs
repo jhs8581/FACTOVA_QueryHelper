@@ -853,9 +853,10 @@ ShowCacheBuildError(ex.Message);
                 new TabSetting { TabId = "NerpValidation", TabName = "🔍 NERP 검증", IsVisible = true, Order = 6 },
                 new TabSetting { TabId = "SfcMonitoring", TabName = "📡 SFC 모니터링", IsVisible = true, Order = 7 },
                 new TabSetting { TabId = "BizTransform", TabName = "🔄 비즈 변환", IsVisible = true, Order = 8 },
-                new TabSetting { TabId = "InTransform", TabName = "📋 IN 조건 변환", IsVisible = true, Order = 9 },
-                new TabSetting { TabId = "Settings", TabName = "⚙️ 설정", IsVisible = true, Order = 10 },
-                new TabSetting { TabId = "Help", TabName = "📖 도움말", IsVisible = true, Order = 11 }
+                new TabSetting { TabId = "MonitoringBizTransform", TabName = "🔄 모니터링 비즈 변환", IsVisible = true, Order = 9 },
+                new TabSetting { TabId = "InTransform", TabName = "📋 IN 조건 변환", IsVisible = true, Order = 10 },
+                new TabSetting { TabId = "Settings", TabName = "⚙️ 설정", IsVisible = true, Order = 11 },
+                new TabSetting { TabId = "Help", TabName = "📖 도움말", IsVisible = true, Order = 12 }
             };
         }
 

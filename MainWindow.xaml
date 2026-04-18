@@ -55,6 +55,11 @@
                 <controls:QueryBizTransformView x:Name="QueryBizTransformView"/>
             </TabItem>
 
+            <!-- 모니터링 비즈 변환 탭 -->
+            <TabItem Header="🔄 모니터링 비즈 변환">
+                <controls:QueryMonitoringBizTransformView x:Name="QueryMonitoringBizTransformView"/>
+            </TabItem>
+
             <!-- IN 조건 변환 탭 -->
             <TabItem Header="📋 IN 조건 변환">
                 <controls:QueryInTransformView x:Name="QueryInTransformView"/>

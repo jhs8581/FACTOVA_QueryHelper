@@ -93,6 +93,7 @@ namespace FACTOVA_QueryHelper
             this.NerpValidationControl.SetSharedDataContext(_sharedData);  // 🔥 NERP 검증 컨트롤 초기화
             this.SfcMonitoringControl.Initialize(_sharedData);
             this.QueryBizTransformView.Initialize(_sharedData);
+            this.QueryMonitoringBizTransformView.Initialize(_sharedData);
             this.SettingsControl.Initialize(_sharedData);
             
             // 설정 탭의 이벤트 구독
