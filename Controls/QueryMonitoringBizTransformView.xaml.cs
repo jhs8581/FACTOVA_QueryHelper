@@ -207,7 +207,7 @@ namespace FACTOVA_QueryHelper.Controls
                 {
                     var paramStart = SkipSeparatorLine(body, paramSepIndex);
                     var paramText = body.Substring(paramStart);
-                    entry.Parameters = ExtractParameters(paramText);
+                    entry.Parameters = ExtractMonitoringParameters(paramText);
                 }
 
                 // 변환
@@ -240,9 +240,9 @@ namespace FACTOVA_QueryHelper.Controls
         }
 
         /// <summary>
-        /// Parameters 블록에서 "Param N : 값" 추출
+        /// Parameters 블록에서 "Param N : 값" 추출 (모니터링 로그용)
         /// </summary>
-        private List<string> ExtractParameters(string parametersBlock)
+        private List<string> ExtractMonitoringParameters(string parametersBlock)
         {
             var result = new List<string>();
 

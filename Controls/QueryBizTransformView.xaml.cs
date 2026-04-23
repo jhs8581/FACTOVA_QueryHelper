@@ -198,7 +198,7 @@ continue;
                     }
                     
                     // 🔥 Parameters 추출
-                    var parameters = ExtractParameters(queryBlock);
+                    var parameters = ExtractBizParameters(queryBlock);
 foreach (var param in parameters)
                     {
 }
@@ -257,27 +257,27 @@ return "";
         }
 
         /// <summary>
-        /// Parameters 추출
+        /// Parameters 추출 (비즈 변환용: [Parameters Start] ~ [Parameters End] 형식)
         /// </summary>
-        private List<string> ExtractParameters(string queryBlock)
+        private List<string> ExtractBizParameters(string queryBlock)
         {
             var parameters = new List<string>();
-            
+
             try
             {
                 // [Parameters Start] ~ [Parameters End] 사이의 Param 추출
                 var parametersPattern = @"\[Parameters Start\](.*?)\[Parameters End\]";
                 var match = Regex.Match(queryBlock, parametersPattern, RegexOptions.Singleline);
-                
+
                 if (!match.Success)
                     return parameters;
-                
+
                 var parametersBlock = match.Groups[1].Value;
-                
+
                 // Param N : 값 형태 파싱
                 var paramPattern = @"Param\s+\d+\s*:\s*(.*)";
                 var paramMatches = Regex.Matches(parametersBlock, paramPattern);
-                
+
                 foreach (Match paramMatch in paramMatches)
                 {
                     var value = paramMatch.Groups[1].Value.Trim();
