@@ -469,6 +469,21 @@ parentGrid.Children.Clear();
             excelButton.Margin = new Thickness(10, 0, 0, 0);
             buttonPanel.Children.Add(excelButton);
 
+            // 구분선
+            buttonPanel.Children.Add(new Rectangle
+            {
+                Width = 1,
+                Height = 24,
+                Fill = new SolidColorBrush(Color.FromRgb(224, 224, 224)),
+                Margin = new Thickness(10, 0, 5, 0)
+            });
+
+            // 🔥 변경사항 저장 버튼
+            var saveButton = CreateButton("💾", "변경사항 저장", 150, "#FF0078D7");
+            saveButton.Click += SaveEditButton_Click;
+            saveButton.Margin = new Thickness(5, 0, 0, 0);
+            buttonPanel.Children.Add(saveButton);
+
             Grid.SetColumn(buttonPanel, 0);
             grid.Children.Add(buttonPanel);
 
@@ -1319,10 +1334,7 @@ dataGrid.Columns.Add(new DataGridCheckBoxColumn
 
         private void QueriesDataGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
         {
-            if (_currentEditModeBorder != null)
-            {
-                _currentEditModeBorder.Visibility = Visibility.Visible;
-            }
+            // 편집 모드 Border 표시 제거 (사용자 피드백 반영)
             UpdateStatus("편집 모드: 변경 후 '💾 변경사항 저장' 버튼을 클릭하세요.", Colors.Orange);
         }
 

@@ -16,6 +16,7 @@ namespace FACTOVA_QueryHelper.Controls
         public List<TnsEntry> TnsEntries { get; set; }
         public List<QueryItem> LoadedQueries { get; set; }
         public ObservableCollection<CheckableComboBoxItem> QueryFilterItems { get; set; }
+        public ObservableCollection<CheckableComboBoxItem> AlarmFilterItems { get; set; }
         
         // 각 컨트롤에서 사용하는 Manager들
         public QueryExecutionManager? QueryExecutionManager { get; set; }
@@ -37,6 +38,7 @@ namespace FACTOVA_QueryHelper.Controls
             TnsEntries = new List<TnsEntry>();
             LoadedQueries = new List<QueryItem>();
             QueryFilterItems = new ObservableCollection<CheckableComboBoxItem>();
+            AlarmFilterItems = new ObservableCollection<CheckableComboBoxItem>();
         }
         
         /// <summary>

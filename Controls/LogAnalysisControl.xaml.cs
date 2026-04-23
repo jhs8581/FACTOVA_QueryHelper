@@ -187,6 +187,9 @@ var allQueries = _database.GetAllQueries();
 
             // 디폴트 폼 콤보박스 초기화
             InitializeDefaultFormComboBox();
+            
+            // 알람 필터 콤보박스 초기화
+            InitializeAlarmFilterComboBox();
         }
 
         /// <summary>
@@ -325,6 +328,151 @@ var allQueries = _database.GetAllQueries();
             UpdateQueryFilterComboBoxText();
         }
 
+        #endregion
+
+        #region 알람 필터 관련 메서드
+
+        /// <summary>
+        /// 알람 필터 콤보박스를 초기화합니다.
+        /// </summary>
+        private void InitializeAlarmFilterComboBox()
+        {
+            if (_sharedData == null) return;
+
+            _sharedData.AlarmFilterItems.Clear();
+
+            // ID 순으로 정렬하여 각 쿼리를 항목으로 추가
+            var sortedQueries = _sharedData.LoadedQueries.OrderBy(q => q.RowNumber).ToList();
+            
+            foreach (var query in sortedQueries)
+            {
+                // 제외된 쿼리는 알람 필터에도 표시하지 않음
+                if (string.Equals(query.ExcludeFlag, "Y", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+                
+                // DB에서 설정된 NotifyFlag 값에 따라 초기 체크 상태 설정
+                _sharedData.AlarmFilterItems.Add(new CheckableComboBoxItem
+                {
+                    Text = query.QueryName,
+                    IsChecked = string.Equals(query.NotifyFlag, "Y", StringComparison.OrdinalIgnoreCase)
+                });
+            }
+
+            AlarmFilterComboBox.ItemsSource = _sharedData.AlarmFilterItems;
+            UpdateAlarmFilterComboBoxText();
+        }
+
+        /// <summary>
+        /// 알람 필터 콤보박스의 표시 텍스트를 업데이트합니다.
+        /// </summary>
+        private void UpdateAlarmFilterComboBoxText()
+        {
+            if (_sharedData?.AlarmFilterItems == null || _sharedData.AlarmFilterItems.Count == 0)
+            {
+                AlarmFilterComboBox.Text = "";
+                return;
+            }
+
+            var checkedItems = _sharedData.AlarmFilterItems.Where(item => item.IsChecked).ToList();
+            int totalQueries = _sharedData.AlarmFilterItems.Count;
+            
+            if (checkedItems.Count == 0)
+            {
+                AlarmFilterComboBox.Text = "알람 없음";
+            }
+            else if (checkedItems.Count == totalQueries)
+            {
+                AlarmFilterComboBox.Text = "전체 알람";
+            }
+            else
+            {
+                AlarmFilterComboBox.Text = $"{checkedItems.Count}개 알람 활성화";
+            }
+        }
+
+        private void AlarmFilterCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            if (sender is CheckBox checkBox && 
+                checkBox.DataContext is CheckableComboBoxItem item)
+            {
+                HandleAlarmFilterCheckBoxChanged(item);
+            }
+        }
+
+        private void AlarmFilterComboBox_DropDownClosed(object sender, EventArgs e)
+        {
+            UpdateAlarmFilterComboBoxText();
+        }
+
+        /// <summary>
+        /// 알람 전체선택 버튼 클릭 이벤트
+        /// </summary>
+        private void SelectAllAlarmButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_sharedData == null || _sharedData.AlarmFilterItems == null) return;
+
+            foreach (var item in _sharedData.AlarmFilterItems)
+            {
+                item.IsChecked = true;
+            }
+
+            // LoadedQueries의 NotifyFlag도 임시로 업데이트
+            ApplyAlarmFilterToQueries();
+
+            UpdateAlarmFilterComboBoxText();
+            UpdateStatus("모든 쿼리의 알람이 활성화되었습니다.", Colors.Green);
+        }
+
+        /// <summary>
+        /// 알람 전체해제 버튼 클릭 이벤트
+        /// </summary>
+        private void DeselectAllAlarmButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_sharedData == null || _sharedData.AlarmFilterItems == null) return;
+
+            foreach (var item in _sharedData.AlarmFilterItems)
+            {
+                item.IsChecked = false;
+            }
+
+            // LoadedQueries의 NotifyFlag도 임시로 업데이트
+            ApplyAlarmFilterToQueries();
+
+            UpdateAlarmFilterComboBoxText();
+            UpdateStatus("모든 쿼리의 알람이 비활성화되었습니다.", Colors.Orange);
+        }
+
+        private void HandleAlarmFilterCheckBoxChanged(CheckableComboBoxItem changedItem)
+        {
+            if (_sharedData == null) return;
+
+            // LoadedQueries의 해당 쿼리 NotifyFlag 임시 업데이트
+            ApplyAlarmFilterToQueries();
+
+            UpdateAlarmFilterComboBoxText();
+        }
+
+        /// <summary>
+        /// 알람 필터 상태를 LoadedQueries에 적용합니다.
+        /// </summary>
+        private void ApplyAlarmFilterToQueries()
+        {
+            if (_sharedData == null || _sharedData.AlarmFilterItems == null) return;
+
+            foreach (var alarmItem in _sharedData.AlarmFilterItems)
+            {
+                var query = _sharedData.LoadedQueries.FirstOrDefault(q => q.QueryName == alarmItem.Text);
+                if (query != null)
+                {
+                    query.NotifyFlag = alarmItem.IsChecked ? "Y" : "N";
+                }
+            }
+        }
+
+        #endregion
+
         /// <summary>
         /// 선택된 쿼리 목록을 반환합니다.
         /// </summary>
@@ -349,8 +497,6 @@ var allQueries = _database.GetAllQueries();
                 .Where(q => selectedQueryNames.Contains(q.QueryName))
                 .ToList();
         }
-
-        #endregion
 
         #region 쿼리 실행 관련 메서드
 
